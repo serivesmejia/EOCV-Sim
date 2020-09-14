@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim;
+package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.FlowLayout;
 
