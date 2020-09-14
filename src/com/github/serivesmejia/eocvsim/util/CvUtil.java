@@ -7,7 +7,7 @@ import org.opencv.core.Mat;
 
 public class CvUtil {
 
-	 public BufferedImage matToBufferedImage(Mat m) {
+	 public static BufferedImage matToBufferedImage(Mat m) {
 		 
 		 // Fastest code
 		 // output can be assigned either to a BufferedImage or to an Image
@@ -16,15 +16,14 @@ public class CvUtil {
 			 type = BufferedImage.TYPE_3BYTE_BGR;
 		 }
 		 
-		 int bufferSize = m.channels()*m.cols()*m.rows();
-		 byte [] b = new byte[bufferSize];
-		 m.get(0,0,b); // get all the pixels
+		 // Create an empty image in matching format
+		 BufferedImage buffImg = new BufferedImage(m.width(), m.height(), type);
+
+		 // Get the BufferedImage's backing array and copy the pixels directly into it
+		 byte[] data = ((DataBufferByte) buffImg.getRaster().getDataBuffer()).getData();
+		 m.get(0, 0, data);
 		 
-		 BufferedImage image = new BufferedImage(m.cols(),m.rows(), type);
-		 final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-		 System.arraycopy(b, 0, targetPixels, 0, b.length); 
-		 
-		 return image;
+		 return buffImg;
 		 
 	}
 	
