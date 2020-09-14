@@ -25,8 +25,6 @@ public class Main {
 		
 		String os = null;
 		
-		boolean is64bit = System.getProperty("sun.arch.data.model").contains("64");
-		
 		switch(OS) { //getting os prefix
 			case WINDOWS:
 				os = "win";
@@ -36,18 +34,38 @@ public class Main {
 				break;
 		}
 		
-		String arch = is64bit ? "64" : "32"; //getting os arch
+		boolean is64bit = !System.getProperty("sun.arch.data.model").contains("64");
+		
+		loadLib(os, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
+		
+	}
+	
+	private static void loadLib(String os, boolean is64bit, String name, int attemps) {
+	
+		String arch = is64bit ? "64" : "32"; //getting os arch	
 		
 		String libName = os + arch + "_" + Core.NATIVE_LIBRARY_NAME; //resultant lib name from those two
 		
 		System.out.println("Loading native lib \"" + libName + "\"");
 		
 		try {
+			
 			System.loadLibrary(libName); //Loading OpenCV native library
 			System.out.println("Successfully loaded native lib \"" + libName + "\"");
-		} catch (Exception ex) {
+			
+		} catch (UnsatisfiedLinkError ex) {
+			
 			ex.printStackTrace();
-		} 
+			
+			if(attemps < 4) {
+				System.out.println("Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attemps + " attemps)");
+				loadLib(os, !is64bit, Core.NATIVE_LIBRARY_NAME, attemps + 1);
+			} else {
+				System.out.println("Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
+				System.exit(1);
+			}
+			
+		}
 		
 	}
 

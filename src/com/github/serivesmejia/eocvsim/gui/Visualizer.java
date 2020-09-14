@@ -1,8 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.FlowLayout;
-import java.awt.image.BufferedImage;
-
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,13 +22,14 @@ public class Visualizer {
 	public void init() {
 		
 		frame.setSize(640, 480);
-		frame.setTitle("EasyOpenCV Simulator - No pipeline");
+		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
 	    frame.setLayout(new FlowLayout());
 		
 	    frame.setVisible(true);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    frame.setLocationRelativeTo(null);
-	   
+	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
 	    frame.add(img);
 	    
 	}
