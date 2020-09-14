@@ -3,6 +3,8 @@ package com.github.serivesmejia.eocvsim.util;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
+import org.opencv.core.Mat;
+
 public class CvUtil {
 
 	 public BufferedImage matToBufferedImage(Mat m) {

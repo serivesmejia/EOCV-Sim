@@ -1,12 +1,14 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.FlowLayout;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 
 public class Visualizer {
 
 	public JFrame frame = new JFrame();
+	
 	
 	public Visualizer() {
 		
@@ -19,7 +21,12 @@ public class Visualizer {
 		
 	    frame.setVisible(true);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    frame.setLocationRelativeTo(null);
 	    
+	}
+	
+	public void updateVImage(BufferedImage image) {
+		
 	}
 	
 }
