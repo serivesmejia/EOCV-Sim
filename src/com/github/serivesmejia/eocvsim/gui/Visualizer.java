@@ -1,7 +1,10 @@
 package com.github.serivesmejia.eocvsim.gui;
 
+import java.awt.ComponentOrientation;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -22,6 +25,9 @@ public class Visualizer {
 	
 	public JScrollPane imgScrollPane = null;
 	public JPanel imgScrollContainer = null;
+	public JPanel leftContainer = null;
+	
+	public GridBagLayout gridBagLayout = null;
 	
 	private EOCVSim eocvSim = null;
 	
@@ -37,15 +43,30 @@ public class Visualizer {
 	
 	public void init() {
 		
+		gridBagLayout = new GridBagLayout();
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		
 		imgScrollContainer = new JPanel();
+		leftContainer = new JPanel();
+
 		imgScrollPane = new JScrollPane(imgScrollContainer);
+		
+	    gbc = getGbc(0, 0, 4, 1, 0.75);
+	    gridBagLayout.setConstraints(imgScrollPane, gbc);
+
+	    gbc = getGbc(1, 0, 3, 1, 0.5);
+	    gridBagLayout.setConstraints(leftContainer, gbc);
 		
 		imgScrollContainer.add(img);
 		
 		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		
+		frame.setLayout(gridBagLayout);
+		
 		frame.getContentPane().add(imgScrollPane);
+		frame.add(leftContainer);
 		
 		frame.setSize(640, 480);
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
@@ -55,6 +76,19 @@ public class Visualizer {
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    
+	}
+	
+	private GridBagConstraints getGbc(int x, int y, int height, int width, double weightY) {
+	    GridBagConstraints gbc = new GridBagConstraints();
+	    gbc.gridx = x;
+	    gbc.gridy = y;
+	    gbc.gridheight = height;
+	    gbc.gridwidth = width;
+	    gbc.fill = GridBagConstraints.BOTH;
+	    gbc.weightx = 1.0;
+	    gbc.weighty = weightY;
+
+	    return gbc;
 	}
 	
 	public void updateVisualizedMat(Mat mat) {
