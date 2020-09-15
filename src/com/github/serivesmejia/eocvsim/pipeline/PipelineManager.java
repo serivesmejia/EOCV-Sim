@@ -44,56 +44,38 @@ public class PipelineManager {
 		
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
-		ClassGraph classGraph = new ClassGraph()
-									//.verbose()
-									.enableAllInfo()
-									.acceptPackages("org.firstinspires.ftc.teamcode");
+		//Scan for all classes in the classpath
+		ClassGraph classGraph = new ClassGraph().enableAllInfo();
 		
 		ScanResult scanResult = classGraph.scan();
 		
+		//iterate over the results of the scan
 	    for (ClassInfo routeClassInfo : scanResult.getAllClasses()) {
 	    	
-	    	boolean isPipelineAnnotated = false;
-			
-	    	for(AnnotationInfo annotInfo : routeClassInfo.getAnnotationInfo()) {
-	    		
-	    		Class<?> annotClass = null;
-	    		
-				try { 
-					annotClass = Class.forName(annotInfo.getName()); 
-				} catch (ClassNotFoundException e) { 
-					e.printStackTrace(); 
+	    	Class<?> foundClass = null;
+	    	
+			try {
+				foundClass = Class.forName(routeClassInfo.getName());
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+				continue; //continue because we couldn't get the class...
+			}
+
+			//Scan recursively until we find a OpenCvPipeline superclass or we hit the Object superclass
+			Class<?> superClass = foundClass.getSuperclass();
+			while (superClass != null) {
+				
+				if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
+					Log.info("PipelineManager", "Found pipeline class " + routeClassInfo.getName());
+					addPipelineClass(foundClass);
+					break;
 				}
 				
-	    		if(annotClass == Pipeline.class) {
-		    		isPipelineAnnotated = true;	
-		    		break;
-	    		}
-	    		
-	    	}
-	    	
-	    	Log.info("PipelineManager", "Found class " + routeClassInfo.getName() + " | isPipelineAnnotated: " + isPipelineAnnotated);
-	    	
-	    	if(isPipelineAnnotated) {
-	    		
-	    		Class<?> pipelineClass = null;
-	    		
-				try { 
-					pipelineClass = Class.forName(routeClassInfo.getName()); 
-				} catch (ClassNotFoundException e) { 
-					e.printStackTrace(); 
-				}
-
-				try {
-					pipelines.add((Class<OpenCvPipeline>) pipelineClass);
-				} catch (Throwable ex) {
-					ex.printStackTrace();
-					Log.error("PipelineManager", "Unable to cast " + pipelineClass.getName() + " to OpenCvPipeline class.");
-					Log.error("PipelineManager", "Remember that the pipeline class should extend OpenCvPipeline");
-				}
-					
-	    	}
-	    	
+				//Didn't found a pipeline, continue searching...
+				superClass = superClass.getSuperclass();
+				
+			}
+		
 	    }
 	    
 	    Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
@@ -101,6 +83,16 @@ public class PipelineManager {
 		
 	    changePipeline(0);
 	    
+	}
+	
+	private void addPipelineClass(Class<?> C) {
+		try {
+			pipelines.add((Class<OpenCvPipeline>) C);
+		} catch (Throwable ex) {
+			ex.printStackTrace();
+			Log.error("PipelineManager", "Unable to cast " + C.getName() + " to OpenCvPipeline class.");
+			Log.error("PipelineManager", "Remember that the pipeline class should extend OpenCvPipeline");
+		}
 	}
 	
 	public void update(Mat inputMat) {

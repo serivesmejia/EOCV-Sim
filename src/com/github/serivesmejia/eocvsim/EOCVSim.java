@@ -36,7 +36,7 @@ public class EOCVSim {
 		pipelineManager.init();
 		inputSourceManager.init();
 		
-		inputSourceManager.setInputSource(new ImageSource("src/test_imgs/0.jpg", new Size(540, 380)));
+		inputSourceManager.setInputSource(new ImageSource("src/test_imgs/4.jpg", new Size(540, 380)));
 		
 		beginLoop();
 		
@@ -46,7 +46,7 @@ public class EOCVSim {
 		
 		Log.info("EOCVSim", "Begin EOCVSim loop");
 	
-		while(true) {
+		while(!Thread.interrupted()) {
 			
 			String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
 			
@@ -63,7 +63,7 @@ public class EOCVSim {
 			pipelineManager.update(inputSourceManager.lastMatFromSource);
 			visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
 			
-			System.gc();
+			System.gc(); //run jvm garbage collector
 			
 		}
 		
