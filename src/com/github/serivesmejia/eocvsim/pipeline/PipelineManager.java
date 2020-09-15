@@ -21,7 +21,7 @@ public class PipelineManager {
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
 
-	public Mat lastOutputMat = new Mat();
+	public volatile Mat lastOutputMat = new Mat();
 	
 	public int lastFPS = 0;
 	

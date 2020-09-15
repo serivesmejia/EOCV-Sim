@@ -1,14 +1,13 @@
 package com.github.serivesmejia.eocvsim.gui;
 
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.opencv.core.Mat;
 
@@ -19,7 +18,10 @@ import com.github.serivesmejia.eocvsim.util.Log;
 public class Visualizer {
 
 	public JFrame frame = new JFrame();
-	public JLabel img = new JLabel();
+	public volatile JLabel img = new JLabel();
+	
+	public JScrollPane imgScrollPane = null;
+	public JPanel imgScrollContainer = null;
 	
 	private EOCVSim eocvSim = null;
 	
@@ -35,16 +37,23 @@ public class Visualizer {
 	
 	public void init() {
 		
+		imgScrollContainer = new JPanel();
+		imgScrollPane = new JScrollPane(imgScrollContainer);
+		
+		imgScrollContainer.add(img);
+		
+		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		
+		frame.getContentPane().add(imgScrollPane);
+		
 		frame.setSize(640, 480);
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
-	    frame.setLayout(new GridBagLayout());
-		
+	    
 	    frame.setVisible(true);
 	    frame.setLocationRelativeTo(null);
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-	    frame.add(img, new GridBagConstraints());
 	    
 	}
 	
@@ -56,8 +65,6 @@ public class Visualizer {
 		} catch(Throwable ex) {
 			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");
 		}
-		
-		//img.setLocation((frame.getWidth() - img.getWidth()) / 2, 50);
 		
 		mat.release();
 		

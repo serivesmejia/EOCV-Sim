@@ -149,13 +149,13 @@ public class CVGripUtils {
 			config.append("<maxConvexity>" + Integer.MAX_VALUE + "</maxConvexity>\n");
 			config.append("</opencv_storage>\n");
 			
-			FileWriter writer;
-	
-			writer = new FileWriter(tempFile, false);
+			FileWriter writer = new FileWriter(tempFile, false);
 			writer.write(config.toString());
 			writer.close();
 			
 			blobDet.read(tempFile.getPath());
+			
+			tempFile.delete();
 			
 		} catch (IOException e) {
 			e.printStackTrace();

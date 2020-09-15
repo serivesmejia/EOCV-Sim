@@ -12,7 +12,7 @@ import com.github.serivesmejia.eocvsim.util.SysUtil;
 
 public class EOCVSim {
 
-	public Visualizer visualizer = new Visualizer(this);
+	public volatile Visualizer visualizer = new Visualizer(this);
 	public PipelineManager pipelineManager = null;
 	
 	public InputSourceManager inputSourceManager = new InputSourceManager();
@@ -36,7 +36,7 @@ public class EOCVSim {
 		pipelineManager.init();
 		inputSourceManager.init();
 		
-		inputSourceManager.setInputSource(new ImageSource("src/test_imgs/4.jpg", new Size(540, 380)));
+		inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(540, 380)));
 		
 		beginLoop();
 		
@@ -44,6 +44,7 @@ public class EOCVSim {
 	
 	public void beginLoop() {
 		
+		Log.white();
 		Log.info("EOCVSim", "Begin EOCVSim loop");
 	
 		while(!Thread.interrupted()) {
@@ -63,7 +64,7 @@ public class EOCVSim {
 			pipelineManager.update(inputSourceManager.lastMatFromSource);
 			visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
 			
-			System.gc(); //run jvm garbage collector
+			System.gc(); //run JVM garbage collector
 			
 		}
 		

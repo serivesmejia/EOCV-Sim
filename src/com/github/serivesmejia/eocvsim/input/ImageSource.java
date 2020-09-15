@@ -11,6 +11,7 @@ public class ImageSource implements InputSource {
 	private Size size;
 	
 	private Mat img;
+	private Mat lastClonedImg;
 	
 	private boolean initialized = false;
 
@@ -32,8 +33,14 @@ public class ImageSource implements InputSource {
 		
 		initialized = true;
 		
-		img = Imgcodecs.imread(this.imgPath);
+		readImage();
 		
+	}
+	
+	public void readImage() {
+		
+		img = Imgcodecs.imread(this.imgPath);
+				
 		if(this.size != null) {
 			
 			Mat resImg = new Mat();
@@ -42,6 +49,8 @@ public class ImageSource implements InputSource {
 			img.release();
 			img = resImg;
 			
+		} else {
+			this.size = img.size();
 		}
 		
 	}

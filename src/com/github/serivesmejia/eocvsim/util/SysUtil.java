@@ -1,5 +1,16 @@
 package com.github.serivesmejia.eocvsim.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 import org.opencv.core.Core;
 
 public class SysUtil {
@@ -32,33 +43,54 @@ public class SysUtil {
 	public static void loadCvNativeLib() {
 		
 		String os = null;
+		String fileExt = null;
 		
 		switch(OS) { //getting os prefix
 			case WINDOWS:
 				os = "win";
+				fileExt = "dll";
 				break;
 			default:
 				os = "nux";
+				fileExt = "so";
 				break;
 		}
 		
-		boolean is64bit = System.getProperty("sun.arch.data.model").contains("64");
+		boolean is64bit = System.getProperty("sun.arch.data.model").contains("64"); //Checking if JVM is 64 bits or not
 		
-		loadLib(os, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
+		try {
+			loadLib(os, fileExt, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
-	public static void loadLib(String os, boolean is64bit, String name, int attemps) {
+	public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attemps) throws IOException {
 	
 		String arch = is64bit ? "64" : "32"; //getting os arch	
 		
 		String libName = os + arch + "_" + name; //resultant lib name from those two
+		String libNameExt = libName + "." + fileExt; //resultant lib name from those two
 		
-		Log.info("SysUtil", "Loading native lib \"" + libName + "\"");
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		
+		InputStream libIs = SysUtil.class.getResourceAsStream("/" + libNameExt);
+		File tempLibFile = new File(tmpDir + libNameExt);
+		
+		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\" to \"" + tmpDir+ "\"");
+		
+		try {
+			copyInputStream(libIs, tempLibFile, false);
+		} catch (Throwable ex) {
+			ex.printStackTrace();
+		}
+		
+		Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
 		
 		try {
 			
-			System.loadLibrary(libName); //Loading OpenCV native library
+			System.load(tempLibFile.getAbsolutePath()); //Loading OpenCV native library
 			Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
 			
 		} catch (UnsatisfiedLinkError ex) {
@@ -66,14 +98,30 @@ public class SysUtil {
 			ex.printStackTrace();
 			
 			if(attemps < 4) {
+				ex.printStackTrace();
 				Log.error("SysUtil", "Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attemps + " attemps)");
-				loadLib(os, !is64bit, Core.NATIVE_LIBRARY_NAME, attemps + 1);
+				loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attemps + 1);
 			} else {
+				ex.printStackTrace();
 				Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
 				System.exit(1);
 			}
 			
 		}
+		
+	}
+	
+	public static void copyInputStream(InputStream is, File toPath, boolean replaceIfExisting) throws IOException {
+		
+		if(toPath.exists()) {
+			if(replaceIfExisting) {
+				Files.copy(is, toPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
+		} else {
+			Files.copy(is, toPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+		
+		is.close();
 		
 	}
 
