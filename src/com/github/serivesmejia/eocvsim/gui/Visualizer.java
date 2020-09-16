@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -163,9 +164,7 @@ public class Visualizer {
 	    frame.setLocationRelativeTo(null);
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    
-	    asyncPleaseWaitDialog("Scanning for pipelines...", new Dimension(300, 150), true);
-	    
+	       
 	}
 
 	public void updateVisualizedMat(Mat mat) {
@@ -181,32 +180,49 @@ public class Visualizer {
 		
 	}
 	
-	public JDialog pleaseWaitDialog(JDialog dialog, String message, Dimension size, boolean endAppOnCancel) {
+	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd) {
 	
-		dialog.setModal(true);
-		dialog.setLayout(new GridLayout(2, 1));
+		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
 		
-		dialog.setTitle("Hold on");
+		dialog.setModal(true);
+		dialog.setLayout(new GridLayout(3, 1));
+		
+		dialog.setTitle("Operation in Progress");
 		
 		JLabel msg = new JLabel(message);
 		msg.setHorizontalAlignment(JLabel.CENTER);
+		msg.setVerticalAlignment(JLabel.CENTER);
+		
 		dialog.add(msg);
+		
+		JLabel subMsg = new JLabel(subMessage);
+		subMsg.setHorizontalAlignment(JLabel.CENTER);
+		subMsg.setVerticalAlignment(JLabel.CENTER);
+		
+		dialog.add(subMsg);
 		
 		JPanel exitBttPanel = new JPanel(new FlowLayout());
 		JButton exitBtt = new JButton("Cancel");
 		
+		exitBtt.setEnabled(cancellable);
+		
 		exitBttPanel.add(exitBtt);
+		
+		boolean[] cancelled = {false};
 		
 		exitBtt.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	if(endAppOnCancel) {
-            		System.exit(0);
-            	}
+            	cancelled[0] = true;
+            	dialog.setVisible(false);
+            	dialog.dispose();
             }
         });
 
 		dialog.add(exitBttPanel);
+		
+		apwd.msg = msg;
+		apwd.subMsg = subMsg;
 		
 		if(size != null) {
 			dialog.setSize(size);
@@ -220,13 +236,21 @@ public class Visualizer {
 		
 		dialog.setVisible(true);
 		
-		return dialog;
+		return cancelled[0];
 		
 	}
 	
-	public RunnPleaseWaitDialog asyncPleaseWaitDialog(String message, Dimension size, boolean endAppOnCancel) {
+	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(dialog, message, subMessage, size, cancellable, null);
+	}
+	
+	public void pleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(null, message, subMessage, size, cancellable, null);
+	}
+	
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
 		
-		RunnPleaseWaitDialog rPWD = new RunnPleaseWaitDialog(message, size, endAppOnCancel);
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, size, cancellable);
 		
 		new Thread(rPWD).start();
 		
@@ -250,24 +274,45 @@ public class Visualizer {
 		beforeTitleMsg = titleMsg;
 	}
 	
-	class RunnPleaseWaitDialog implements Runnable {
+	public class AsyncPleaseWaitDialog implements Runnable {
 
 		String message = "";
+		String subMessage = "";
 		Dimension size = null;
-		boolean endAppOnCancel = false;
+		boolean cancellable = false;
 		
-		JDialog dialog = new JDialog(frame);
+		public volatile JDialog dialog = new JDialog(frame);
+		public volatile JLabel msg = null;
+		public volatile JLabel subMsg = null;
 		
-		public RunnPleaseWaitDialog(String message, Dimension size, boolean endAppOnCancel) {
+		public volatile boolean wasCancelled = false;
+		
+		public volatile String initialMessage = "";
+		public volatile String initialSubMessage = "";
+		
+		public AsyncPleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
+			
 			this.message = message;
+			this.subMessage = subMessage;
+			this.initialMessage = message;
+			this.initialSubMessage = subMessage;
+			
 			this.size = size;
-			this.endAppOnCancel = endAppOnCancel;
+			this.cancellable = cancellable;
+			
 		}
 		
 		@Override
 		public void run() {
 			
-			pleaseWaitDialog(dialog, message, size, endAppOnCancel);
+			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, size, cancellable, this);
+			
+		}
+		
+		public void destroyDialog() {
+			
+			dialog.setVisible(false);
+			dialog.dispose();
 			
 		}
 		

@@ -1,9 +1,12 @@
 package com.github.serivesmejia.eocvsim;
 
+import java.awt.Dimension;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
+import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.input.ImageSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
@@ -32,11 +35,15 @@ public class EOCVSim {
 		
 		pipelineManager = new PipelineManager();
 		
-		visualizer.init();
-		pipelineManager.init();
-		inputSourceManager.init();
+		visualizer.init(); inputSourceManager.init();
 		
-		inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(540, 380)));
+		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", new Dimension(300, 150), false);
+		
+		pipelineManager.init(lookForPipelineAPWD);
+		
+		lookForPipelineAPWD.destroyDialog();
+		
+		inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(580, 380)));
 		
 		beginLoop();
 		
@@ -51,15 +58,7 @@ public class EOCVSim {
 			
 			//System.out.println(visualizer.frame.getSize());
 			
-			String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
-			
-			String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
-			
-			if(pipelineManager.currentPipeline == null) {
-				visualizer.setTitleMessage("No pipeline" + fpsMsg + memoryMsg);
-			} else {
-				visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
-			}
+			updateVisualizerTitle();
 			
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 			
@@ -68,6 +67,20 @@ public class EOCVSim {
 			
 			System.gc(); //run JVM garbage collector
 			
+		}
+		
+	}
+	
+	public void updateVisualizerTitle() {
+		
+		String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
+		
+		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
+		
+		if(pipelineManager.currentPipeline == null) {
+			visualizer.setTitleMessage("No pipeline" + fpsMsg + memoryMsg);
+		} else {
+			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
 		}
 		
 	}

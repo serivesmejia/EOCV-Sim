@@ -7,6 +7,7 @@ import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.util.Log;
 
 import io.github.classgraph.AnnotationInfo;
@@ -28,19 +29,19 @@ public class PipelineManager {
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
 	
-	public void init() {
+	public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 		
 		Log.info("PipelineManager", "Initializing...");
 		Log.white();
 		
-		lookForPipelines();
+		lookForPipelines(lookForPipelineAPWD);
 		
 		nextFPSUpdateMillis = System.currentTimeMillis();
 		
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void lookForPipelines() {
+	public void lookForPipelines(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 		
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
@@ -66,7 +67,8 @@ public class PipelineManager {
 			while (superClass != null) {
 				
 				if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
-					Log.info("PipelineManager", "Found pipeline class " + routeClassInfo.getName());
+					Log.info("PipelineManager", "Found pipeline " + routeClassInfo.getName());
+					lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName());
 					addPipelineClass(foundClass);
 					break;
 				}
