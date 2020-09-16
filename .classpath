@@ -7,11 +7,11 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/OpenCV-4.4.0">
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/OpenCV-4.4.0">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="EOCV-Sim/lib/native"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ClassGraph-4.8.90"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ClassGraph-4.8.9"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

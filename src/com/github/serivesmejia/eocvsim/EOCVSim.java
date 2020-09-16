@@ -49,6 +49,8 @@ public class EOCVSim {
 	
 		while(!Thread.interrupted()) {
 			
+			//System.out.println(visualizer.frame.getSize());
+			
 			String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
 			
 			String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";

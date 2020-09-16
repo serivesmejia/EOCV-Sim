@@ -1,16 +1,29 @@
 package com.github.serivesmejia.eocvsim.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 
 import org.opencv.core.Mat;
 
@@ -24,10 +37,18 @@ public class Visualizer {
 	public volatile JLabel img = new JLabel();
 	
 	public JScrollPane imgScrollPane = null;
-	public JPanel imgScrollContainer = null;
-	public JPanel leftContainer = null;
+	public JPanel imgScrollContainer = new JPanel();
+	public JPanel rightContainer = new JPanel();
+	public JSplitPane splitPane = null;
 	
-	public GridBagLayout gridBagLayout = null;
+	public JPanel pipelineSelectorContainer = new JPanel();
+	public JList<String> pipelineSelector = new JList<>();
+	public JScrollPane pipelineSelectorScroll = new JScrollPane();
+	
+	public JPanel sourceSelectorContainer = new JPanel();
+	public JList<String> sourceSelector = new JList<>();
+	public JScrollPane sourceSelectorScroll = new JScrollPane();
+	public JButton sourceSelectorCreateBtt = new JButton("Create");
 	
 	private EOCVSim eocvSim = null;
 	
@@ -43,32 +64,99 @@ public class Visualizer {
 	
 	public void init() {
 		
-		gridBagLayout = new GridBagLayout();
+		rightContainer = new JPanel();
 		
-		GridBagConstraints gbc = new GridBagConstraints();
+		/*
+		* IMG VISUALIZER
+		*/
 		
 		imgScrollContainer = new JPanel();
-		leftContainer = new JPanel();
-
 		imgScrollPane = new JScrollPane(imgScrollContainer);
 		
-	    gbc = getGbc(0, 0, 4, 1, 0.75);
-	    gridBagLayout.setConstraints(imgScrollPane, gbc);
-
-	    gbc = getGbc(1, 0, 3, 1, 0.5);
-	    gridBagLayout.setConstraints(leftContainer, gbc);
+		imgScrollContainer.setLayout(new GridBagLayout());
 		
-		imgScrollContainer.add(img);
+		imgScrollContainer.add(img, new GridBagConstraints());
 		
 		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		
-		frame.setLayout(gridBagLayout);
+		imgScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+		imgScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		
-		frame.getContentPane().add(imgScrollPane);
-		frame.add(leftContainer);
+		rightContainer.setLayout(new GridLayout(3, 1));
+
+		/*
+		* PIPELINE SELECTOR
+		*/
 		
-		frame.setSize(640, 480);
+		pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+		//pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
+		
+		JLabel pipelineSelectorLabel = new JLabel("Select Pipeline");
+
+		pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
+		
+		pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
+		pipelineSelectorContainer.add(pipelineSelectorLabel);
+		
+		JPanel pipelineSelectorScrollContainer = new JPanel();
+		pipelineSelectorScrollContainer.setLayout(new GridLayout());
+		pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+		
+		pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
+		
+		pipelineSelectorScroll.setViewportView(pipelineSelector);
+		pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
+		
+		rightContainer.add(pipelineSelectorContainer);
+	
+		/*
+		* SOURCE SELECTOR
+		*/
+		
+		sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+		//sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
+		
+		JLabel sourceSelectorLabel = new JLabel("Select Source");
+
+		sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
+		
+		sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
+		
+		sourceSelectorContainer.add(sourceSelectorLabel);
+	
+		JPanel sourceSelectorScrollContainer = new JPanel();
+		sourceSelectorScrollContainer.setLayout(new GridLayout());
+		sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+		
+		sourceSelectorScrollContainer.add(sourceSelectorScroll);
+		
+		sourceSelectorScroll.setViewportView(sourceSelector);
+		sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		sourceSelectorContainer.add(sourceSelectorScrollContainer);
+		sourceSelectorContainer.add(sourceSelectorCreateBtt);
+		
+		rightContainer.add(sourceSelectorContainer);
+		
+		/*
+		* SPLIT
+		*/
+		
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
+		
+		splitPane.setResizeWeight(1);
+		splitPane.setOneTouchExpandable(false);
+		splitPane.setContinuousLayout(true);
+		
+		frame.add(splitPane, BorderLayout.CENTER);
+		
+		frame.setSize(780, 645);
+		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
 	    
 	    frame.setVisible(true);
@@ -76,21 +164,10 @@ public class Visualizer {
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    
+	    asyncPleaseWaitDialog("Scanning for pipelines...", new Dimension(300, 150), true);
+	    
 	}
-	
-	private GridBagConstraints getGbc(int x, int y, int height, int width, double weightY) {
-	    GridBagConstraints gbc = new GridBagConstraints();
-	    gbc.gridx = x;
-	    gbc.gridy = y;
-	    gbc.gridheight = height;
-	    gbc.gridwidth = width;
-	    gbc.fill = GridBagConstraints.BOTH;
-	    gbc.weightx = 1.0;
-	    gbc.weighty = weightY;
 
-	    return gbc;
-	}
-	
 	public void updateVisualizedMat(Mat mat) {
 		
 		try {
@@ -101,6 +178,59 @@ public class Visualizer {
 		}
 		
 		mat.release();
+		
+	}
+	
+	public JDialog pleaseWaitDialog(JDialog dialog, String message, Dimension size, boolean endAppOnCancel) {
+	
+		dialog.setModal(true);
+		dialog.setLayout(new GridLayout(2, 1));
+		
+		dialog.setTitle("Hold on");
+		
+		JLabel msg = new JLabel(message);
+		msg.setHorizontalAlignment(JLabel.CENTER);
+		dialog.add(msg);
+		
+		JPanel exitBttPanel = new JPanel(new FlowLayout());
+		JButton exitBtt = new JButton("Cancel");
+		
+		exitBttPanel.add(exitBtt);
+		
+		exitBtt.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	if(endAppOnCancel) {
+            		System.exit(0);
+            	}
+            }
+        });
+
+		dialog.add(exitBttPanel);
+		
+		if(size != null) {
+			dialog.setSize(size);
+		} else {
+			dialog.setSize(new Dimension(400, 200));
+		}
+
+		dialog.setLocationRelativeTo(null);
+		dialog.setResizable(false);
+		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		
+		dialog.setVisible(true);
+		
+		return dialog;
+		
+	}
+	
+	public RunnPleaseWaitDialog asyncPleaseWaitDialog(String message, Dimension size, boolean endAppOnCancel) {
+		
+		RunnPleaseWaitDialog rPWD = new RunnPleaseWaitDialog(message, size, endAppOnCancel);
+		
+		new Thread(rPWD).start();
+		
+		return rPWD;
 		
 	}
 	
@@ -118,6 +248,29 @@ public class Visualizer {
 		this.titleMsg = titleMsg;
 		if(beforeTitleMsg != title) setFrameTitle(title, titleMsg);
 		beforeTitleMsg = titleMsg;
+	}
+	
+	class RunnPleaseWaitDialog implements Runnable {
+
+		String message = "";
+		Dimension size = null;
+		boolean endAppOnCancel = false;
+		
+		JDialog dialog = new JDialog(frame);
+		
+		public RunnPleaseWaitDialog(String message, Dimension size, boolean endAppOnCancel) {
+			this.message = message;
+			this.size = size;
+			this.endAppOnCancel = endAppOnCancel;
+		}
+		
+		@Override
+		public void run() {
+			
+			pleaseWaitDialog(dialog, message, size, endAppOnCancel);
+			
+		}
+		
 	}
 	
 }
