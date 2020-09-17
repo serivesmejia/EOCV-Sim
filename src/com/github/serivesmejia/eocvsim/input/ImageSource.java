@@ -11,7 +11,6 @@ public class ImageSource implements InputSource {
 	private Size size;
 	
 	private Mat img;
-	private Mat lastClonedImg;
 	
 	private boolean initialized = false;
 
@@ -34,6 +33,18 @@ public class ImageSource implements InputSource {
 		initialized = true;
 		
 		readImage();
+		
+	}
+	
+	@Override
+	public void reset() {
+		
+		if(!initialized) return;
+		
+		if(img != null) img.release();
+		img = null;
+		
+		initialized = false;
 		
 	}
 	

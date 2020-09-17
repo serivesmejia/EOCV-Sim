@@ -6,6 +6,8 @@ public interface InputSource {
 
 	void init();
 	
+	void reset();
+	
 	Mat update();
 	
 }

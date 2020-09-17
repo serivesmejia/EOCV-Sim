@@ -17,7 +17,7 @@ import io.github.classgraph.ScanResult;
 
 public class PipelineManager {
 
-	public ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<Class<OpenCvPipeline>>();
+	public volatile ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<Class<OpenCvPipeline>>();
 	
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
@@ -67,10 +67,13 @@ public class PipelineManager {
 			while (superClass != null) {
 				
 				if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
+					
 					Log.info("PipelineManager", "Found pipeline " + routeClassInfo.getName());
-					lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName());
+					if(lookForPipelineAPWD != null) lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName()); 
+					
 					addPipelineClass(foundClass);
 					break;
+					
 				}
 				
 				//Didn't found a pipeline, continue searching...

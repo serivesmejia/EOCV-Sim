@@ -20,7 +20,7 @@ public class SysUtil {
 	public enum OperatingSystem {
 		WINDOWS,
 		LINUX,
-		MACOS,
+		OSX,
 		UNKNOWN
 	}
 	
@@ -63,7 +63,7 @@ public class SysUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		  
 	}
 	
 	public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attemps) throws IOException {
@@ -81,10 +81,14 @@ public class SysUtil {
 		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\" to \"" + tmpDir+ "\"");
 		
 		try {
-			copyInputStream(libIs, tempLibFile, false);
+			if(!copyFileIs(libIs, tempLibFile, false).alreadyExists) {
+				Log.info("SysUtil", "Copy of " + libName + " cancelled since file already exists");
+			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
+		
+		Log.white();
 		
 		Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
 		
@@ -111,11 +115,15 @@ public class SysUtil {
 		
 	}
 	
-	public static void copyInputStream(InputStream is, File toPath, boolean replaceIfExisting) throws IOException {
+	public static CopyFileIsData copyFileIs(InputStream is, File toPath, boolean replaceIfExisting) throws IOException {
+		
+		boolean alreadyExists = true;
 		
 		if(toPath.exists()) {
 			if(replaceIfExisting) {
 				Files.copy(is, toPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			} else {
+				alreadyExists = false;
 			}
 		} else {
 			Files.copy(is, toPath.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -123,10 +131,33 @@ public class SysUtil {
 		
 		is.close();
 		
+		CopyFileIsData data = new CopyFileIsData();
+		data.alreadyExists = alreadyExists;
+		data.file = toPath;
+		
+		return data;
+		
+	}
+	
+	public static CopyFileIsData copyFileIsTemp(InputStream is, String fileName, boolean replaceIfExisting) throws IOException {
+		
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		
+		File tempFile = new File(tmpDir + fileName);
+		
+		return copyFileIs(is, tempFile, replaceIfExisting);
+		
 	}
 
 	public static long getMemoryUsageMB() {
 		return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / MB;
+	}
+	
+	public static class CopyFileIsData {
+		
+		public File file = null;
+		public boolean alreadyExists = false;	
+
 	}
 	
 }

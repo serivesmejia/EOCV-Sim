@@ -37,13 +37,22 @@ public class EOCVSim {
 		
 		visualizer.init(); inputSourceManager.init();
 		
-		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", new Dimension(300, 150), false);
+		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
+		
+		lookForPipelineAPWD.onCancel(new Runnable() {
+			@Override
+			public void run() {
+				System.exit(0);
+			}
+		});
 		
 		pipelineManager.init(lookForPipelineAPWD);
 		
 		lookForPipelineAPWD.destroyDialog();
 		
-		inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(580, 380)));
+		//inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(580, 380)));
+		
+		visualizer.updatePipelinesList();
 		
 		beginLoop();
 		
@@ -51,7 +60,6 @@ public class EOCVSim {
 	
 	public void beginLoop() {
 		
-		Log.white();
 		Log.info("EOCVSim", "Begin EOCVSim loop");
 	
 		while(!Thread.interrupted()) {

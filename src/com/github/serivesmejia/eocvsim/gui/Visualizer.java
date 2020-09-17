@@ -12,9 +12,13 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -27,6 +31,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
 import org.opencv.core.Mat;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
@@ -47,7 +52,7 @@ public class Visualizer {
 	public JScrollPane pipelineSelectorScroll = new JScrollPane();
 	
 	public JPanel sourceSelectorContainer = new JPanel();
-	public JList<String> sourceSelector = new JList<>();
+	public volatile JList<String> sourceSelector = new JList<>();
 	public JScrollPane sourceSelectorScroll = new JScrollPane();
 	public JButton sourceSelectorCreateBtt = new JButton("Create");
 	
@@ -58,7 +63,7 @@ public class Visualizer {
 	
 	private String beforeTitle = "";
 	private String beforeTitleMsg = "";
-	
+
 	public Visualizer(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
 	}
@@ -68,7 +73,7 @@ public class Visualizer {
 		rightContainer = new JPanel();
 		
 		/*
-		* IMG VISUALIZER
+		* IMG VISUALIZER & SCROLL PANE
 		*/
 		
 		imgScrollContainer = new JPanel();
@@ -164,7 +169,7 @@ public class Visualizer {
 	    frame.setLocationRelativeTo(null);
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	       
+	    
 	}
 
 	public void updateVisualizedMat(Mat mat) {
@@ -180,14 +185,14 @@ public class Visualizer {
 		
 	}
 	
-	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd) {
+	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd) {
 	
 		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
 		
 		dialog.setModal(true);
 		dialog.setLayout(new GridLayout(3, 1));
 		
-		dialog.setTitle("Operation in Progress");
+		dialog.setTitle("Operation in progress");
 		
 		JLabel msg = new JLabel(message);
 		msg.setHorizontalAlignment(JLabel.CENTER);
@@ -202,15 +207,15 @@ public class Visualizer {
 		dialog.add(subMsg);
 		
 		JPanel exitBttPanel = new JPanel(new FlowLayout());
-		JButton exitBtt = new JButton("Cancel");
+		JButton cancelBtt = new JButton(cancelBttText);
 		
-		exitBtt.setEnabled(cancellable);
+		cancelBtt.setEnabled(cancellable);
 		
-		exitBttPanel.add(exitBtt);
+		exitBttPanel.add(cancelBtt);
 		
 		boolean[] cancelled = {false};
 		
-		exitBtt.addActionListener(new ActionListener() {
+		cancelBtt.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             	cancelled[0] = true;
@@ -221,8 +226,11 @@ public class Visualizer {
 
 		dialog.add(exitBttPanel);
 		
-		apwd.msg = msg;
-		apwd.subMsg = subMsg;
+		if(apwd != null) {
+			apwd.msg = msg;
+			apwd.subMsg = subMsg;
+			apwd.cancelBtt = cancelBtt;
+		}
 		
 		if(size != null) {
 			dialog.setSize(size);
@@ -240,21 +248,80 @@ public class Visualizer {
 		
 	}
 	
-	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(dialog, message, subMessage, size, cancellable, null);
+	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null);
 	}
 	
-	public void pleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(null, message, subMessage, size, cancellable, null);
+	public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null);
 	}
 	
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
 		
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, size, cancellable);
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable);
 		
 		new Thread(rPWD).start();
 		
 		return rPWD;
+		
+	}
+	
+	public class AsyncPleaseWaitDialog implements Runnable {
+
+		String message = "";
+		String subMessage = "";
+		String cancelBttText = "";
+		Dimension size = null;
+		boolean cancellable = false;
+		
+		public volatile JDialog dialog = new JDialog(frame);
+		public volatile JLabel msg = null;
+		public volatile JLabel subMsg = null;
+		public volatile JButton cancelBtt = null;
+		
+		public volatile boolean wasCancelled = false;
+		
+		public volatile String initialMessage = "";
+		public volatile String initialSubMessage = "";
+		
+		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
+		
+		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+			
+			this.message = message;
+			this.subMessage = subMessage;
+			this.initialMessage = message;
+			this.initialSubMessage = subMessage;
+			this.cancelBttText = cancelBttText;
+			
+			this.size = size;
+			this.cancellable = cancellable;
+			
+		}
+		
+		public void onCancel(Runnable runn) {
+			
+			onCancelRunnables.add(runn);
+			
+		}
+		
+		@Override
+		public void run() {
+			
+			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this);
+			
+			if(wasCancelled) {
+				for(Runnable runn : onCancelRunnables) {
+					runn.run();
+				}
+			}
+			
+		}
+		
+		public void destroyDialog() {
+			dialog.setVisible(false);
+			dialog.dispose();	
+		}
 		
 	}
 	
@@ -274,48 +341,36 @@ public class Visualizer {
 		beforeTitleMsg = titleMsg;
 	}
 	
-	public class AsyncPleaseWaitDialog implements Runnable {
-
-		String message = "";
-		String subMessage = "";
-		Dimension size = null;
-		boolean cancellable = false;
+	public void updatePipelinesList() {
 		
-		public volatile JDialog dialog = new JDialog(frame);
-		public volatile JLabel msg = null;
-		public volatile JLabel subMsg = null;
-		
-		public volatile boolean wasCancelled = false;
-		
-		public volatile String initialMessage = "";
-		public volatile String initialSubMessage = "";
-		
-		public AsyncPleaseWaitDialog(String message, String subMessage, Dimension size, boolean cancellable) {
-			
-			this.message = message;
-			this.subMessage = subMessage;
-			this.initialMessage = message;
-			this.initialSubMessage = subMessage;
-			
-			this.size = size;
-			this.cancellable = cancellable;
-			
+	    DefaultListModel<String> listModel = new DefaultListModel<>();  
+        
+		for(Class<OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+			listModel.addElement(pipelineClass.getSimpleName());
 		}
 		
-		@Override
-		public void run() {
-			
-			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, size, cancellable, this);
-			
-		}
+		pipelineSelector.setFixedCellWidth(240);
 		
-		public void destroyDialog() {
-			
-			dialog.setVisible(false);
-			dialog.dispose();
-			
-		}
+		pipelineSelector.setModel(listModel);
+		pipelineSelector.revalidate();
+		pipelineSelectorScroll.revalidate();
 		
 	}
 	
+	public void updateSourcesList() {
+		
+	    DefaultListModel<String> listModel = new DefaultListModel<>();  
+        
+		for(Class<OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+			listModel.addElement(pipelineClass.getSimpleName());
+		}
+		
+		pipelineSelector.setFixedCellWidth(240);
+		
+		pipelineSelector.setModel(listModel);
+		pipelineSelector.revalidate();
+		pipelineSelectorScroll.revalidate();
+		
+	}
+		
 }
