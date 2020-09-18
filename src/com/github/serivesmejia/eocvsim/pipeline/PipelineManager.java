@@ -46,7 +46,7 @@ public class PipelineManager {
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
 		//Scan for all classes in the classpath
-		ClassGraph classGraph = new ClassGraph().enableAllInfo();
+		ClassGraph classGraph = new ClassGraph().enableAllInfo().verbose();
 		
 		ScanResult scanResult = classGraph.scan();
 		

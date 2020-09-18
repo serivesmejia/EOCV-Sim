@@ -51,7 +51,7 @@ public class SysUtil {
 				fileExt = "dll";
 				break;
 			default:
-				os = "nux";
+				os = "linux";
 				fileExt = "so";
 				break;
 		}
@@ -72,16 +72,16 @@ public class SysUtil {
 		
 		String libName = os + arch + "_" + name; //resultant lib name from those two
 		String libNameExt = libName + "." + fileExt; //resultant lib name from those two
-		
-		String tmpDir = System.getProperty("java.io.tmpdir");
-		
+
 		InputStream libIs = SysUtil.class.getResourceAsStream("/" + libNameExt);
-		File tempLibFile = new File(tmpDir + libNameExt);
-		
-		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\" to \"" + tmpDir+ "\"");
-		
+
+		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\"");
+
+		CopyFileIsData copyData = null;
+
 		try {
-			if(!copyFileIs(libIs, tempLibFile, false).alreadyExists) {
+			copyData = copyFileIsTemp(libIs, libNameExt, false);
+			if(!copyData.alreadyExists) {
 				Log.info("SysUtil", "Copy of " + libName + " cancelled since file already exists");
 			}
 		} catch (Throwable ex) {
@@ -94,7 +94,7 @@ public class SysUtil {
 		
 		try {
 			
-			System.load(tempLibFile.getAbsolutePath()); //Loading OpenCV native library
+			System.load(copyData.file.getAbsolutePath()); //Loading OpenCV native library
 			Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
 			
 		} catch (UnsatisfiedLinkError ex) {
@@ -143,7 +143,7 @@ public class SysUtil {
 		
 		String tmpDir = System.getProperty("java.io.tmpdir");
 		
-		File tempFile = new File(tmpDir + fileName);
+		File tempFile = new File(tmpDir + File.separator + fileName);
 		
 		return copyFileIs(is, tempFile, replaceIfExisting);
 		
