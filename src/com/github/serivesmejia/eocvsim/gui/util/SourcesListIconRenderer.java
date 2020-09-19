@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.gui;
+package com.github.serivesmejia.eocvsim.gui.util;
 
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 

@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -117,7 +118,7 @@ public class Visualizer {
 		/*
 		* SOURCE SELECTOR
 		*/
-		
+
 		sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 		//sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
 		
@@ -143,6 +144,13 @@ public class Visualizer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		sourceSelectorCreateBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new CreateSource(frame);
+			}
+		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
 		sourceSelectorContainer.add(sourceSelectorCreateBtt);
