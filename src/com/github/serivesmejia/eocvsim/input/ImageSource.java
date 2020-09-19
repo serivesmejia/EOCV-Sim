@@ -19,10 +19,8 @@ public class ImageSource implements InputSource {
 	}
 	
 	public ImageSource(String imgPath, Size size) {
-		
 		this.imgPath = imgPath;
 		this.size = size;
-		
 	}
 	
 	@Override
@@ -47,7 +45,15 @@ public class ImageSource implements InputSource {
 		initialized = false;
 		
 	}
-	
+
+	@Override
+	public void close() {
+
+		if(img != null) img.release();
+		img = null;
+
+	}
+
 	public void readImage() {
 		
 		img = Imgcodecs.imread(this.imgPath);

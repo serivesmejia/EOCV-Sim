@@ -1,23 +1,18 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,8 +23,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 
+import com.github.serivesmejia.eocvsim.input.InputSource;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -143,7 +138,12 @@ public class Visualizer {
 		sourceSelectorScroll.setViewportView(sourceSelector);
 		sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
+		try {
+			sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
 		sourceSelectorContainer.add(sourceSelectorCreateBtt);
 		
@@ -152,7 +152,6 @@ public class Visualizer {
 		/*
 		* SPLIT
 		*/
-		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
 		
 		splitPane.setResizeWeight(1);
@@ -361,15 +360,15 @@ public class Visualizer {
 		
 	    DefaultListModel<String> listModel = new DefaultListModel<>();  
         
-		for(Class<OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
-			listModel.addElement(pipelineClass.getSimpleName());
+		for(Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
+			listModel.addElement(entry.getKey());
 		}
 		
-		pipelineSelector.setFixedCellWidth(240);
-		
-		pipelineSelector.setModel(listModel);
-		pipelineSelector.revalidate();
-		pipelineSelectorScroll.revalidate();
+		sourceSelector.setFixedCellWidth(240);
+
+		sourceSelector.setModel(listModel);
+		sourceSelector.revalidate();
+		sourceSelector.revalidate();
 		
 	}
 		

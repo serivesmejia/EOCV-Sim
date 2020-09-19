@@ -28,7 +28,9 @@ public class PipelineManager {
 	
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
-	
+
+	private volatile int nextPipelineChange = -1;
+
 	public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 		
 		Log.info("PipelineManager", "Initializing...");
@@ -46,10 +48,12 @@ public class PipelineManager {
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
 		//Scan for all classes in the classpath
-		ClassGraph classGraph = new ClassGraph().enableAllInfo().verbose();
+		ClassGraph classGraph = new ClassGraph().enableAllInfo().acceptPackages("org.firstinspires");
 		
 		ScanResult scanResult = classGraph.scan();
-		
+
+		addPipelineClass(DefaultPipeline.class);
+
 		//iterate over the results of the scan
 	    for (ClassInfo routeClassInfo : scanResult.getAllClasses()) {
 	    	
@@ -85,12 +89,10 @@ public class PipelineManager {
 	    
 	    Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
 	    Log.white();
-		
-	    changePipeline(0);
-	    
+
 	}
 	
-	private void addPipelineClass(Class<?> C) {
+	public void addPipelineClass(Class<?> C) {
 		try {
 			pipelines.add((Class<OpenCvPipeline>) C);
 		} catch (Throwable ex) {
@@ -101,11 +103,16 @@ public class PipelineManager {
 	}
 	
 	public void update(Mat inputMat) {
-		
+
+		if(nextPipelineChange != -1) {
+			changePipeline(nextPipelineChange);
+			nextPipelineChange = -1;
+		}
+
 		if(currentPipeline != null) {
 			lastOutputMat = currentPipeline.processFrame(inputMat);
 		} else {
-			lastOutputMat = inputMat;
+			lastOutputMat = inputMat.clone();
 		}
 		
 		calcFPS();
@@ -152,5 +159,9 @@ public class PipelineManager {
 		currentPipelineName = currentPipeline.getClass().getSimpleName();
 		
 	}
-	
+
+	public void changePipelineNextFrame(int index) {
+		nextPipelineChange = index;
+	}
+
 }

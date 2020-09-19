@@ -19,23 +19,26 @@ public class InputSourceManager {
 	public HashMap<String, InputSource> sources = new HashMap<>();
 
 	public String currInputSourceName = "";
-	
-	private Thread inputSourceUpdater = new Thread(new InputSourceUpdater());
-	
+
+	private volatile String nextInputSourceChange = "";
+
+	public enum SourceType {
+		IMAGE,
+		WEBCAM,
+		UNKNOWN
+	}
+
 	public void init() {
-		
-		if(inputSourceUpdater.isAlive()) return;
-		Log.info("InputSourceManager", "Starting InputSourceUpdater thread...");
+
+		Log.info("InputSourceManager", "Initializing...");
 		
 		Size size = new Size(580, 480);
 		createDefaultImgInputSource("/ug_4.jpg", "ug_ocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
 		createDefaultImgInputSource("/ug_1.jpg", "ug_ocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
 		createDefaultImgInputSource("/ug_0.jpg", "ug_ocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
-		
-		setInputSource("Ultimate Goal 4 Ring");
-		
+		addInputSource("WebCam 1", new CameraSource(0));
+
 		lastMatFromSource = new Mat();
-		inputSourceUpdater.start();
 		
 	}
 	
@@ -48,12 +51,25 @@ public class InputSourceManager {
 			e.printStackTrace();
 		}
 	}
-	
-	public void destroy() {
-		if(!inputSourceUpdater.isAlive()) return;
-		inputSourceUpdater.interrupt();
+
+	public void setInputSourceNextFrame(String name) {
+		this.nextInputSourceChange = name;
 	}
 	
+	public void destroy() { }
+
+	public void update() {
+
+		if(nextInputSourceChange != "") {
+			setInputSource(nextInputSourceChange);
+			nextInputSourceChange = "";
+		}
+
+		if(currInputSource == null) return;
+		lastMatFromSource = currInputSource.update();
+
+	}
+
 	public void addInputSource(String name, InputSource inputSource) {
 		
 		if(inputSource == null) {
@@ -68,13 +84,17 @@ public class InputSourceManager {
 	}
 	
 	public void setInputSource(String sourceName) {
-		
+
+		if(currInputSource != null) {
+			currInputSource.reset();
+		}
+
 		InputSource src = sources.get(sourceName);
-	
+
 		if(src != null) {
 			src.reset();
 		}
-		
+
 		src.init();
 		
 		currInputSource = src;
@@ -82,17 +102,20 @@ public class InputSourceManager {
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 		
 	}
-	
-	class InputSourceUpdater implements Runnable {
 
-		@Override
-		public void run() {
-			while(!Thread.interrupted()) {
-				if(currInputSource == null) return;
-				lastMatFromSource = currInputSource.update();
-			}
+	public SourceType getSourceType(String sourceName) {
+
+		InputSource source = sources.get(sourceName);
+
+		switch(source.getClass().getSimpleName()) {
+			case "ImageSource":
+				return SourceType.IMAGE;
+			case "CameraSource":
+				return SourceType.WEBCAM;
 		}
-		
+
+		return SourceType.UNKNOWN;
+
 	}
-	
+
 }

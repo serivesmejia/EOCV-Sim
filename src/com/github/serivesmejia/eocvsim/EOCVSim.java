@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
 
+import com.github.serivesmejia.eocvsim.pipeline.DefaultPipeline;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
@@ -13,13 +14,20 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
 	public PipelineManager pipelineManager = null;
 	
 	public InputSourceManager inputSourceManager = new InputSourceManager();
-	
+
+	private String beforeSelectedSource = "";
+	private int beforeSelectedPipeline = -1;
+
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.0.0-alpha";
 
@@ -35,8 +43,15 @@ public class EOCVSim {
 		
 		pipelineManager = new PipelineManager();
 		
-		visualizer.init(); inputSourceManager.init();
-		
+		visualizer.init();
+
+		setVisualizerEvts();
+
+		inputSourceManager.init();
+
+		visualizer.updateSourcesList();
+		visualizer.sourceSelector.setSelectedIndex(0);
+
 		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
 		
 		lookForPipelineAPWD.onCancel(new Runnable() {
@@ -47,15 +62,41 @@ public class EOCVSim {
 		});
 		
 		pipelineManager.init(lookForPipelineAPWD);
-		
+
 		lookForPipelineAPWD.destroyDialog();
-		
-		//inputSourceManager.setInputSource(new ImageSource("ug_images/4.jpg", new Size(580, 380)));
-		
+
 		visualizer.updatePipelinesList();
+		visualizer.pipelineSelector.setSelectedIndex(0);
 		
 		beginLoop();
 		
+	}
+
+	public void setVisualizerEvts() {
+
+		visualizer.pipelineSelector.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
+				int pipeline = visualizer.pipelineSelector.getSelectedIndex();
+				if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
+					pipelineManager.changePipelineNextFrame(pipeline);
+					beforeSelectedPipeline = pipeline;
+				}
+			}
+		});
+
+		visualizer.sourceSelector.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
+				ListModel<String> model = visualizer.sourceSelector.getModel();
+				String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
+				if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
+					inputSourceManager.setInputSourceNextFrame(source);
+					beforeSelectedSource = source;
+				}
+			}
+		});
+
 	}
 	
 	public void beginLoop() {
@@ -65,11 +106,13 @@ public class EOCVSim {
 		while(!Thread.interrupted()) {
 			
 			//System.out.println(visualizer.frame.getSize());
-			
+
 			updateVisualizerTitle();
-			
+
+			inputSourceManager.update();
+
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
-			
+
 			pipelineManager.update(inputSourceManager.lastMatFromSource);
 			visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
 			
