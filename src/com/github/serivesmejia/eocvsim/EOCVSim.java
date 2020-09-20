@@ -126,8 +126,10 @@ public class EOCVSim {
 
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 
-			pipelineManager.update(inputSourceManager.lastMatFromSource);
-			visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
+			try {
+				pipelineManager.update(inputSourceManager.lastMatFromSource);
+				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
+			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
 			
 			System.gc(); //run JVM garbage collector
 			

@@ -80,6 +80,20 @@ public class CVGripUtils {
     }
 
     /**
+     * Filters in an area of an image using a binary mask.
+     * @param input The image on which the mask filters.
+     * @param mask The binary image that is used to filter.
+     * @param output The image in which to store the output.
+     */
+    public static void cvInvertedMask(Mat input, Mat mask, Mat output) {
+        mask.convertTo(mask, CvType.CV_8UC1);
+        Core.bitwise_not(mask, mask);
+        Core.bitwise_xor(output, output, output);
+        input.copyTo(output, mask);
+    }
+
+
+    /**
      * Filter out an area of an image using a binary mask.
      * @param input The image on which the mask filters.
      * @param mask The binary image that is used to filter.
@@ -90,7 +104,6 @@ public class CVGripUtils {
         Core.bitwise_xor(output, output, output);
         input.copyTo(output, mask);
     }
-
 
     /**
      * Detects groups of pixels in an image.
