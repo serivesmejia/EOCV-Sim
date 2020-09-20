@@ -51,7 +51,7 @@ public class InputSourceManager {
 		createDefaultImgInputSource("/ug_4.jpg", "ug_ocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
 		createDefaultImgInputSource("/ug_1.jpg", "ug_ocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
 		createDefaultImgInputSource("/ug_0.jpg", "ug_ocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
-		addInputSource("WebCam 1", new CameraSource(0));
+		addInputSource("Camera 1", new CameraSource(0));
 
 		lastMatFromSource = new Mat();
 		
@@ -156,21 +156,5 @@ public class InputSourceManager {
 
 	}
 
-	public void requestInputSourceListUpdate() {
-		this.eocvSim.visualizer.inputSourceUpdateRequested = true;
-	}
-
-	public void requestToAddInputSource(String name, InputSource inputSource) {
-		this.finishedAddingRequestedSource = false;
-		this.requestedToAddInputSource = new Map.Entry<String, InputSource>() {
-			@Override
-			public String getKey() { return name; }
-			@Override
-			public InputSource getValue() { return inputSource; }
-			@Override
-			public InputSource setValue(InputSource value) { return null; }
-		};
-		this.finishedWritingToAddInputSource = true;
-	}
 
 }

@@ -113,15 +113,11 @@ public class EOCVSim {
 		while(!Thread.interrupted()) {
 
 			for(Runnable runn : runnsOnMain) {
-				runnsOnMain.get(i).run();
-				runnsOnMain.remove()
+				runn.run();
 			}
 
-			if(visualizer.inputSourceUpdateRequested) {
-				visualizer.updateSourcesList();
-				visualizer.inputSourceUpdateRequested = false;
-			}
-			
+			runnsOnMain.clear();
+
 			//System.out.println(visualizer.frame.getSize());
 
 			updateVisualizerTitle();

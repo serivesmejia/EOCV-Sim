@@ -60,8 +60,6 @@ public class Visualizer {
 	private String beforeTitle = "";
 	private String beforeTitleMsg = "";
 
-	public volatile boolean inputSourceUpdateRequested = false;
-
 	public Visualizer(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
 	}
@@ -151,7 +149,7 @@ public class Visualizer {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(CreateSource.alreadyOpened) return;
-				new CreateSource(frame, eocvSim.inputSourceManager);
+				new CreateSource(frame, eocvSim);
 			}
 		});
 
@@ -383,14 +381,13 @@ public class Visualizer {
         
 		for(Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
 			listModel.addElement(entry.getKey());
-			Log.info(entry.getKey(), entry.getValue().toString());
 		}
 		
 		sourceSelector.setFixedCellWidth(240);
 
 		sourceSelector.setModel(listModel);
 		sourceSelector.revalidate();
-		sourceSelector.revalidate();
+		sourceSelectorScroll.revalidate();
 		
 	}
 		

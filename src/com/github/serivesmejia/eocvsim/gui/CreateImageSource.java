@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.ImageSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
@@ -23,13 +24,13 @@ public class CreateImageSource {
 
     public JButton createButton = null;
 
-    InputSourceManager sourceManager = null;
+    private EOCVSim eocvSim = null;
     public boolean selectedValidImage = false;
 
-    public CreateImageSource(JFrame parent, InputSourceManager sourceManager) {
+    public CreateImageSource(JFrame parent, EOCVSim eocvSim) {
 
         createImageSource = new JDialog(parent);
-        this.sourceManager = sourceManager;
+        this.eocvSim = eocvSim;
 
         initCreateImageSource();
 
@@ -93,7 +94,7 @@ public class CreateImageSource {
         JLabel nameLabel = new JLabel("Source name: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JTextField nameTextField = new JTextField("ImageSource-" + (sourceManager.sources.size() + 1),15);
+        JTextField nameTextField = new JTextField("ImageSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
 
         namePanel.add(nameLabel);
         namePanel.add(nameTextField);
@@ -185,9 +186,13 @@ public class CreateImageSource {
     }
 
     public void createSource(String sourceName, String imgPath, Size size) {
-        sourceManager.requestToAddInputSource(sourceName, new ImageSource(imgPath, size));
-        while(!sourceManager.finishedAddingRequestedSource) {}
-        sourceManager.requestInputSourceListUpdate();
+        eocvSim.runOnMainThread(new Runnable() {
+            @Override
+            public void run() {
+                eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
+                eocvSim.visualizer.updateSourcesList();
+            }
+        });
     }
 
 }

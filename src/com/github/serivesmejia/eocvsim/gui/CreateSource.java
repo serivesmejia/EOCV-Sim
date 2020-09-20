@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager.SourceType;
 
@@ -15,9 +16,9 @@ public class CreateSource {
     private volatile JFrame parent = null;
 
     public static volatile boolean alreadyOpened = false;
-    InputSourceManager sourceManager = null;
+    EOCVSim eocvSim = null;
 
-    public CreateSource(JFrame parent, InputSourceManager sourceManager) {
+    public CreateSource(JFrame parent, EOCVSim eocvSim) {
 
         chooseSource = new JDialog(parent);
         this.parent = parent;
@@ -28,7 +29,7 @@ public class CreateSource {
             }
         }).start();
 
-        this.sourceManager = sourceManager;
+        this.eocvSim = eocvSim;
 
     }
 
@@ -83,7 +84,7 @@ public class CreateSource {
                 close();
                 switch((String)dropDown.getSelectedItem()) {
                     case "IMAGE":
-                        new CreateImageSource(parent, sourceManager);
+                        new CreateImageSource(parent, eocvSim);
                         break;
                     case "CAMERA":
                         break;
