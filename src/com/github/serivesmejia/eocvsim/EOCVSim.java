@@ -79,28 +79,47 @@ public class EOCVSim {
 	public void setVisualizerEvts() {
 
 		visualizer.pipelineSelector.addListSelectionListener(new ListSelectionListener() {
+
 			@Override
 			public void valueChanged(ListSelectionEvent evt) {
-				int pipeline = visualizer.pipelineSelector.getSelectedIndex();
-				if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-					pipelineManager.changePipelineNextFrame(pipeline);
-					beforeSelectedPipeline = pipeline;
+				if(visualizer.pipelineSelector.getSelectedIndex() != -1) {
+
+					int pipeline = visualizer.pipelineSelector.getSelectedIndex();
+					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
+						pipelineManager.changePipelineNextFrame(pipeline);
+						beforeSelectedPipeline = pipeline;
+					}
+
+				} else {
+					visualizer.pipelineSelector.setSelectedIndex(1);
 				}
 			}
+
 		});
 
 		visualizer.sourceSelector.addListSelectionListener(new ListSelectionListener() {
+
 			@Override
 			public void valueChanged(ListSelectionEvent evt) {
+
 				try {
-					ListModel<String> model = visualizer.sourceSelector.getModel();
-					String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
-					if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
-						inputSourceManager.setInputSourceNextFrame(source);
-						beforeSelectedSource = source;
+					if(visualizer.sourceSelector.getSelectedIndex() != -1) {
+
+						ListModel<String> model = visualizer.sourceSelector.getModel();
+						String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
+
+						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
+							inputSourceManager.setInputSourceNextFrame(source);
+							beforeSelectedSource = source;
+						}
+
+					} else {
+						visualizer.sourceSelector.setSelectedIndex(1);
 					}
 				} catch(ArrayIndexOutOfBoundsException ex) { }
+
 			}
+
 		});
 
 	}

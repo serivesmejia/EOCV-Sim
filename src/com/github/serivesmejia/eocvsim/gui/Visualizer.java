@@ -12,17 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.*;
 
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
@@ -100,7 +90,9 @@ public class Visualizer {
 		
 		pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
 		pipelineSelectorContainer.add(pipelineSelectorLabel);
-		
+
+		pipelineSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
 		JPanel pipelineSelectorScrollContainer = new JPanel();
 		pipelineSelectorScrollContainer.setLayout(new GridLayout());
 		pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
@@ -135,7 +127,9 @@ public class Visualizer {
 		sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
 		
 		sourceSelectorScrollContainer.add(sourceSelectorScroll);
-		
+
+		sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
 		sourceSelectorScroll.setViewportView(sourceSelector);
 		sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
