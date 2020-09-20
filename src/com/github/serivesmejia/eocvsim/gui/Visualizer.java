@@ -166,12 +166,14 @@ public class Visualizer {
 		frame.setSize(780, 645);
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
-	    
-	    frame.setVisible(true);
+
+        frame.setVisible(true);
 	    frame.setLocationRelativeTo(null);
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    
+
+	    splitPane.setDividerLocation(1070);
+
 	}
 
 	public void updateVisualizedMat(Mat mat) {
@@ -253,7 +255,7 @@ public class Visualizer {
 		dialog.setLocationRelativeTo(null);
 		dialog.setResizable(false);
 		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
+
 		dialog.setVisible(true);
 		
 		return cancelled[0];

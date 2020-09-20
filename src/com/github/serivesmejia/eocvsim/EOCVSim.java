@@ -135,6 +135,8 @@ public class EOCVSim {
 				((Runnable) runn).run();
 			}
 
+			//Log.info(String.valueOf(visualizer.splitPane.getDividerLocation()) + ", " + String.valueOf(visualizer.frame.getWidth()));
+
 			runnsOnMain.clear();
 
 			//System.out.println(visualizer.frame.getSize());
