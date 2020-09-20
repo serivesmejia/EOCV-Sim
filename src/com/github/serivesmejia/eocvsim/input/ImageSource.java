@@ -7,12 +7,12 @@ import org.opencv.imgproc.Imgproc;
 
 public class ImageSource implements InputSource {
 
-	private String imgPath;
-	private Size size;
+	private volatile String imgPath;
+	private volatile Size size;
 	
-	private Mat img;
+	private volatile Mat img;
 	
-	private boolean initialized = false;
+	private volatile boolean initialized = false;
 
 	public ImageSource(String imgPath) {
 		this(imgPath, null);

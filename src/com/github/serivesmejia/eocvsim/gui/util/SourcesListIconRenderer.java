@@ -37,7 +37,7 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
             case IMAGE:
                 label.setIcon(ICON_IMG);
                 break;
-            case WEBCAM:
+            case CAMERA:
                 label.setIcon(ICON_WEBCAM);
                 break;
         }

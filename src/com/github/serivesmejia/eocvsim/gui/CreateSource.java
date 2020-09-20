@@ -1,34 +1,51 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.InputSourceManager.SourceType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class CreateSource {
 
-    public JDialog chooseSource = null;
+    public volatile JDialog chooseSource = null;
 
-    public JDialog createCamSource = null;
+    private volatile JFrame parent = null;
 
-    public CreateSource(JFrame parent) {
+    public static volatile boolean alreadyOpened = false;
+    InputSourceManager sourceManager = null;
+
+    public CreateSource(JFrame parent, InputSourceManager sourceManager) {
 
         chooseSource = new JDialog(parent);
-        initChooseSource();
+        this.parent = parent;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initChooseSource();
+            }
+        }).start();
+
+        this.sourceManager = sourceManager;
 
     }
 
-    public void initChooseSource() {
-        
+    private void initChooseSource() {
+
+        alreadyOpened = true;
+
         chooseSource.setModal(true);
 
         chooseSource.setTitle("Select source type");
         chooseSource.setSize(300, 150);
-        chooseSource.setLayout(new GridLayout(2, 1));
 
-        JPanel dropDownPanel = new JPanel(new FlowLayout());
+        JPanel contentsPane = new JPanel(new GridLayout(2, 1));
 
-        InputSourceManager.SourceType[] sourceTypes = InputSourceManager.SourceType.values();
+        JPanel dropDownPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        SourceType[] sourceTypes = SourceType.values();
         String[] sourceTypesStr = new String[sourceTypes.length-1];
 
         for(int i = 0 ; i < sourceTypes.length-1 ; i++) {
@@ -37,18 +54,55 @@ public class CreateSource {
 
         JComboBox dropDown = new JComboBox(sourceTypesStr);
         dropDownPanel.add(dropDown);
-        chooseSource.getContentPane().add(dropDownPanel);
+        contentsPane.add(dropDownPanel);
 
-        JPanel nextButtonPanel = new JPanel(new FlowLayout());
+        JPanel buttonsPanel = new JPanel(new FlowLayout());
         JButton nextButton = new JButton("Next");
 
-        nextButtonPanel.add(nextButton);
+        buttonsPanel.add(nextButton);
 
-        chooseSource.getContentPane().add(nextButtonPanel);
+        JButton cancelButton = new JButton("Cancel");
+        buttonsPanel.add(cancelButton);
 
+        contentsPane.add(buttonsPanel);
+
+        contentsPane.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+
+        chooseSource.getContentPane().add(contentsPane, BorderLayout.CENTER);
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
+
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+                switch((String)dropDown.getSelectedItem()) {
+                    case "IMAGE":
+                        new CreateImageSource(parent, sourceManager);
+                        break;
+                    case "CAMERA":
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        chooseSource.setResizable(false);
         chooseSource.setLocationRelativeTo(null);
         chooseSource.setVisible(true);
         
+    }
+
+    public void close() {
+        alreadyOpened = false;
+        chooseSource.setVisible(false);
+        chooseSource.dispose();
     }
 
 }

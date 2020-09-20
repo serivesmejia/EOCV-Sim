@@ -1,10 +1,14 @@
 package com.github.serivesmejia.eocvsim.input;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
@@ -16,18 +20,29 @@ public class InputSourceManager {
 	public volatile Mat lastMatFromSource = null;
 	public volatile InputSource currInputSource = null;
 	
-	public HashMap<String, InputSource> sources = new HashMap<>();
+	public volatile HashMap<String, InputSource> sources = new HashMap<>();
 
 	public String currInputSourceName = "";
+
+	private EOCVSim eocvSim = null;
+
+	private volatile Map.Entry<String, InputSource> requestedToAddInputSource = null;
+	private volatile boolean finishedWritingToAddInputSource = false;
+
+	public volatile boolean finishedAddingRequestedSource = false;
 
 	private volatile String nextInputSourceChange = "";
 
 	public enum SourceType {
 		IMAGE,
-		WEBCAM,
+		CAMERA,
 		UNKNOWN
 	}
 
+	public InputSourceManager(EOCVSim eocvSim) {
+		this.eocvSim = eocvSim;
+	}
+	
 	public void init() {
 
 		Log.info("InputSourceManager", "Initializing...");
@@ -60,6 +75,13 @@ public class InputSourceManager {
 
 	public void update() {
 
+		if(requestedToAddInputSource != null && finishedWritingToAddInputSource) {
+			addInputSource(requestedToAddInputSource.getKey(), requestedToAddInputSource.getValue());
+			requestedToAddInputSource = null;
+			finishedWritingToAddInputSource = false;
+			finishedAddingRequestedSource = true;
+		}
+
 		if(nextInputSourceChange != "") {
 			setInputSource(nextInputSourceChange);
 			nextInputSourceChange = "";
@@ -80,7 +102,7 @@ public class InputSourceManager {
 		sources.put(name, inputSource);
 		
 		Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
-		
+
 	}
 	
 	public void setInputSource(String sourceName) {
@@ -95,8 +117,24 @@ public class InputSourceManager {
 			src.reset();
 		}
 
+		Visualizer.AsyncPleaseWaitDialog apwdCam = null;
+		if(getSourceType(sourceName) == SourceType.CAMERA) {
+			apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
+					                                           new Dimension(300, 150), true);
+			apwdCam.onCancel(new Runnable() {
+				@Override
+				public void run() {
+					System.exit(0);
+				}
+			});
+		}
+
 		src.init();
-		
+
+		if(apwdCam != null) {
+			apwdCam.destroyDialog();
+		}
+
 		currInputSource = src;
 		
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
@@ -111,11 +149,28 @@ public class InputSourceManager {
 			case "ImageSource":
 				return SourceType.IMAGE;
 			case "CameraSource":
-				return SourceType.WEBCAM;
+				return SourceType.CAMERA;
 		}
 
 		return SourceType.UNKNOWN;
 
+	}
+
+	public void requestInputSourceListUpdate() {
+		this.eocvSim.visualizer.inputSourceUpdateRequested = true;
+	}
+
+	public void requestToAddInputSource(String name, InputSource inputSource) {
+		this.finishedAddingRequestedSource = false;
+		this.requestedToAddInputSource = new Map.Entry<String, InputSource>() {
+			@Override
+			public String getKey() { return name; }
+			@Override
+			public InputSource getValue() { return inputSource; }
+			@Override
+			public InputSource setValue(InputSource value) { return null; }
+		};
+		this.finishedWritingToAddInputSource = true;
 	}
 
 }

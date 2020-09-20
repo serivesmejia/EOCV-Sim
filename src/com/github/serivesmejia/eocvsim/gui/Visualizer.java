@@ -60,6 +60,8 @@ public class Visualizer {
 	private String beforeTitle = "";
 	private String beforeTitleMsg = "";
 
+	public volatile boolean inputSourceUpdateRequested = false;
+
 	public Visualizer(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
 	}
@@ -148,13 +150,14 @@ public class Visualizer {
 		sourceSelectorCreateBtt.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new CreateSource(frame);
+				if(CreateSource.alreadyOpened) return;
+				new CreateSource(frame, eocvSim.inputSourceManager);
 			}
 		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
 		sourceSelectorContainer.add(sourceSelectorCreateBtt);
-		
+
 		rightContainer.add(sourceSelectorContainer);
 		
 		/*
@@ -195,9 +198,14 @@ public class Visualizer {
 	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd) {
 	
 		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
-		
+
+		boolean addSubMessage = subMessage != null;
+
+		int rows = 3;
+		if(!addSubMessage) { rows--; }
+
 		dialog.setModal(true);
-		dialog.setLayout(new GridLayout(3, 1));
+		dialog.setLayout(new GridLayout(rows, 1));
 		
 		dialog.setTitle("Operation in progress");
 		
@@ -206,13 +214,18 @@ public class Visualizer {
 		msg.setVerticalAlignment(JLabel.CENTER);
 		
 		dialog.add(msg);
-		
-		JLabel subMsg = new JLabel(subMessage);
-		subMsg.setHorizontalAlignment(JLabel.CENTER);
-		subMsg.setVerticalAlignment(JLabel.CENTER);
-		
-		dialog.add(subMsg);
-		
+
+		JLabel subMsg = null;
+		if(addSubMessage) {
+
+			subMsg = new JLabel(subMessage);
+			subMsg.setHorizontalAlignment(JLabel.CENTER);
+			subMsg.setVerticalAlignment(JLabel.CENTER);
+
+			dialog.add(subMsg);
+
+		}
+
 		JPanel exitBttPanel = new JPanel(new FlowLayout());
 		JButton cancelBtt = new JButton(cancelBttText);
 		
@@ -272,7 +285,7 @@ public class Visualizer {
 		return rPWD;
 		
 	}
-	
+
 	public class AsyncPleaseWaitDialog implements Runnable {
 
 		String message = "";
@@ -370,6 +383,7 @@ public class Visualizer {
         
 		for(Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
 			listModel.addElement(entry.getKey());
+			Log.info(entry.getKey(), entry.getValue().toString());
 		}
 		
 		sourceSelector.setFixedCellWidth(240);

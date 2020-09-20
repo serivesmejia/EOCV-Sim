@@ -1,6 +1,8 @@
 package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 import com.github.serivesmejia.eocvsim.pipeline.DefaultPipeline;
 import org.opencv.core.Mat;
@@ -23,13 +25,15 @@ public class EOCVSim {
 	public volatile Visualizer visualizer = new Visualizer(this);
 	public PipelineManager pipelineManager = null;
 	
-	public InputSourceManager inputSourceManager = new InputSourceManager();
+	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 
 	private String beforeSelectedSource = "";
 	private int beforeSelectedPipeline = -1;
 
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.0.0-alpha";
+
+	public volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
 	public void init() {
 
@@ -88,12 +92,14 @@ public class EOCVSim {
 		visualizer.sourceSelector.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent evt) {
-				ListModel<String> model = visualizer.sourceSelector.getModel();
-				String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
-				if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
-					inputSourceManager.setInputSourceNextFrame(source);
-					beforeSelectedSource = source;
-				}
+				try {
+					ListModel<String> model = visualizer.sourceSelector.getModel();
+					String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
+					if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
+						inputSourceManager.setInputSourceNextFrame(source);
+						beforeSelectedSource = source;
+					}
+				} catch(ArrayIndexOutOfBoundsException ex) { }
 			}
 		});
 
@@ -102,8 +108,19 @@ public class EOCVSim {
 	public void beginLoop() {
 		
 		Log.info("EOCVSim", "Begin EOCVSim loop");
-	
+		Log.white();
+
 		while(!Thread.interrupted()) {
+
+			for(Runnable runn : runnsOnMain) {
+				runnsOnMain.get(i).run();
+				runnsOnMain.remove()
+			}
+
+			if(visualizer.inputSourceUpdateRequested) {
+				visualizer.updateSourcesList();
+				visualizer.inputSourceUpdateRequested = false;
+			}
 			
 			//System.out.println(visualizer.frame.getSize());
 
@@ -134,6 +151,10 @@ public class EOCVSim {
 			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
 		}
 		
+	}
+
+	public void runOnMainThread(Runnable runn) {
+		runnsOnMain.add(runn);
 	}
 
 }
