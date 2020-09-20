@@ -52,8 +52,6 @@ public class InputSourceManager {
 		createDefaultImgInputSource("/ug_1.jpg", "ug_ocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
 		createDefaultImgInputSource("/ug_0.jpg", "ug_ocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
 
-		addInputSource("Camera 1", new CameraSource(0));
-
 		lastMatFromSource = new Mat();
 		
 	}

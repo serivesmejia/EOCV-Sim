@@ -131,8 +131,8 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
-			for(Runnable runn : runnsOnMain) {
-				runn.run();
+			for(Object runn : runnsOnMain.toArray()) {
+				((Runnable) runn).run();
 			}
 
 			runnsOnMain.clear();

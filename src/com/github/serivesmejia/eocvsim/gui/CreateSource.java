@@ -82,15 +82,19 @@ public class CreateSource {
             @Override
             public void actionPerformed(ActionEvent e) {
                 close();
-                switch((String)dropDown.getSelectedItem()) {
-                    case "IMAGE":
-                        new CreateImageSource(parent, eocvSim);
-                        break;
-                    case "CAMERA":
-                        break;
-                    default:
-                        break;
-                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        switch((String)dropDown.getSelectedItem()) {
+                            case "IMAGE":
+                                new CreateImageSource(parent, eocvSim);
+                                break;
+                            case "CAMERA":
+                                new CreateCameraSource(parent, eocvSim);
+                                break;
+                        }
+                    }
+                }).run();
             }
         });
 
