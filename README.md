@@ -33,7 +33,7 @@ No complicated setup is required, straight up importing the project into Intelli
             
       2) Another window will show up for cloning and importing a repository into IntelliJ<br/>
       
-         1) In the "URL" field, enter: ```https://github.com/serivesmejia/EOCV-Sim```.<br/>
+         1) In the "URL" field, enter: ```https://github.com/serivesmejia/EOCV-Sim.git```<br/>
          2) The directory can be changed, but it will be automatically filled so it's not necessary.
          3) Make sure the "Version control" is set to "Git".<br/><br/>
          <img src='images/eocvsim_screenshot_installation_3.png' width='608' height='363'><br/>
