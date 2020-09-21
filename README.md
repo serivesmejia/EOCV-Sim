@@ -24,10 +24,10 @@ No complicated setup is required, straight up importing the project into Intelli
       Here is another great [step by step video](https://www.youtube.com/watch?v=E2okEJIbUYs) for IntelliJ installation.
      
 3) **Clone and import the project:** <br/>
-      1) Open IntelliJ IDEA and in the main page click on "Get from Version Control"<br/><br/>
+      1) Open IntelliJ IDEA and in the main page click on "Get from Version Control"<br/>
       
             <img src='images/eocvsim_screenshot_installation_1.png' width='399' height='249'><br/><br/>
-         Alternatively, if you already had another project opened go to File > New > Project from Version Control...<br/><br/>
+         Alternatively, if you already had another project opened, go to File > New > Project from Version Control...<br/><br/>
             <img src='images/eocvsim_screenshot_installation_2.png' width='419' height='76'>
             
       2) Another window will show up for cloning and importing a repository into IntelliJ<br/><br/>
@@ -36,4 +36,7 @@ No complicated setup is required, straight up importing the project into Intelli
          2) The directory can be changed, but it will be automatically filled so it's not necessary.
          3) Make sure your Version Control is set to "Git".<br/><br/>
          <img src='images/eocvsim_screenshot_installation_3.png' width='608' height='363'><br/>
-         4) After that, click on the "Clone" button, located at the bottom right.
+         4) After that, click on the "Clone" button, located at the bottom right and the cloning process will begin...<br/>    
+         <img src='images/eocvsim_screenshot_installation_4.png' width='407' height='83'><br/>
+         5) After the cloning finishes, the project should automatically import and you'll have something like this:<br/><br/>
+            <img src='images/eocvsim_screenshot_installation_5.png' width='399' height='249'><br/>
