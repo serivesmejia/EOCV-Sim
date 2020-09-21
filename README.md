@@ -42,14 +42,13 @@ No complicated setup is required, straight up importing the project into Intelli
          5) After the cloning finishes, the project should automatically import and you'll have something like this:<br/><br/>
             <img src='images/eocvsim_screenshot_installation_5.png' width='500' height='267'>
             
-4) **Change to packages view** (optional):<br/><br/>
-
+4) **Change to packages view** (optional):<br/>
       In order to have a better look of your project's sources, I recommend to change the view to "project" as explained next:<br/>
       1) Go to the left where your project files are shown, and click on the "Project" drop down list
       2) Select "Packages" from the list and the view will change.<br/><br/>
       Here's a quick gif illustrating these steps:<br/><br/>
       <img src='images/eocv_installation_changeview.gif' width='512' height='288'><br/>
       
-5) **Create run configuration**:<br/><br/>
+5) **Create run configuration**:<br/>
 
       To run the sim, we need to create a
