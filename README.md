@@ -22,10 +22,5 @@ No complicated setup is required, straight up importing the project into Intelli
       You can download it from the JetBrains webpage (https://www.jetbrains.com/idea/download/)<br/><br/>
       Here is another [great step by step video](https://www.youtube.com/watch?v=E2okEJIbUYs) I found
      
-3) **Download/clone this repository:** <br/><br/>
-      *Option A*: [Click here](https://github.com/serivesmejia/EOCV-Sim/archive/master.zip) to download the source code compressed onto a zip file.<br/>
-      *Option B*: For more advanced users, clone this repository using git command line:<br/>
-      ```
-      git clone https://github.com/serivesmejia/EOCV-Sim.git
-      ```
-      
+3) **Clone and import the project:** <br/><br/>
+      Open Intellij Idea 
