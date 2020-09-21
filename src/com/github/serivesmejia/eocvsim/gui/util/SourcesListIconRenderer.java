@@ -8,6 +8,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.scaleImage;
+
 public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
     public static ImageIcon ICON_IMG = null;
@@ -16,8 +18,8 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
     public InputSourceManager sourceManager = null;
 
     public SourcesListIconRenderer(InputSourceManager sourceManager) throws IOException {
-        ICON_IMG = scaleImage(new ImageIcon(ImageIO.read(getClass().getResourceAsStream("/ico_img.png"))), 15, 15);
-        ICON_WEBCAM = scaleImage(new ImageIcon(ImageIO.read(getClass().getResourceAsStream("/ico_cam.png"))), 15, 15);
+        ICON_IMG = scaleImage(GuiUtil.loadImageIcon("/ico_img.png"), 15, 15);
+        ICON_WEBCAM = scaleImage(GuiUtil.loadImageIcon("/ico_cam.png"), 15, 15);
         this.sourceManager = sourceManager;
     }
 
@@ -43,27 +45,6 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
         }
 
         return label;
-
-    }
-
-    public static ImageIcon scaleImage(ImageIcon icon, int w, int h) {
-
-        int nw = icon.getIconWidth();
-        int nh = icon.getIconHeight();
-
-        if(icon.getIconWidth() > w)
-        {
-            nw = w;
-            nh = (nw * icon.getIconHeight()) / icon.getIconWidth();
-        }
-
-        if(nh > h)
-        {
-            nh = h;
-            nw = (icon.getIconWidth() * nh) / icon.getIconHeight();
-        }
-
-        return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_DEFAULT));
 
     }
 

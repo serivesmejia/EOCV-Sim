@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.swing.*;
 
+import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import org.opencv.core.Mat;
@@ -22,6 +23,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
+
+import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.scaleImage;
 
 public class Visualizer {
 
@@ -50,14 +53,21 @@ public class Visualizer {
 	private String beforeTitle = "";
 	private String beforeTitleMsg = "";
 
+	public static ImageIcon ICO_EOCVSIM = null;
+
 	public Visualizer(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
+		try {
+			ICO_EOCVSIM = GuiUtil.loadImageIcon("/ico_eocvsim.png");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void init() {
 		
 		rightContainer = new JPanel();
-		
+
 		/*
 		* IMG VISUALIZER & SCROLL PANE
 		*/
@@ -167,12 +177,15 @@ public class Visualizer {
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
 
-        frame.setVisible(true);
+		frame.setIconImage(ICO_EOCVSIM.getImage());
+
 	    frame.setLocationRelativeTo(null);
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	    splitPane.setDividerLocation(1070);
+		splitPane.setDividerLocation(1070);
+
+		frame.setVisible(true);
 
 	}
 
