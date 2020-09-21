@@ -31,7 +31,7 @@ public class EOCVSim {
 	private int beforeSelectedPipeline = -1;
 
 	public static Mat EMPTY_MAT = null;
-	public static String VERSION = "1.0.0-alpha";
+	public static String VERSION = "1.0.0";
 
 	public volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
