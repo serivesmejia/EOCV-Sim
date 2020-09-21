@@ -30,7 +30,7 @@ No complicated setup is required, straight up importing the project into Intelli
          Alternatively, if you already had another project opened, go to File > New > Project from Version Control...<br/><br/>
             <img src='images/eocvsim_screenshot_installation_2.png' width='419' height='76'>
             
-      2) Another window will show up for cloning and importing a repository into IntelliJ<br/><br/>
+      2) Another window will show up for cloning and importing a repository into IntelliJ<br/>
       
          1) In the "URL" field, enter: ```https://github.com/serivesmejia/EOCV-Sim```.<br/>
          2) The directory can be changed, but it will be automatically filled so it's not necessary.
@@ -39,4 +39,4 @@ No complicated setup is required, straight up importing the project into Intelli
          4) After that, click on the "Clone" button, located at the bottom right and the cloning process will begin...<br/>    
          <img src='images/eocvsim_screenshot_installation_4.png' width='407' height='83'><br/>
          5) After the cloning finishes, the project should automatically import and you'll have something like this:<br/><br/>
-            <img src='images/eocvsim_screenshot_installation_5.png' width='399' height='249'><br/>
+            <img src='images/eocvsim_screenshot_installation_5.png' width='500' height='267'><br/>
