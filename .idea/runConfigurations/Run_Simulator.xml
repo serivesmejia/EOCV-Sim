@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Simulator" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.github.serivesmejia.eocvsim.Main" />
+    <module name="EOCV-Sim" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
