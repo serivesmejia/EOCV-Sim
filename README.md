@@ -48,7 +48,7 @@ No complicated setup is required, straight up importing the project into Intelli
       2) Select "Packages" from the list and the view will change.<br/><br/>
       Here's a quick gif illustrating these steps:<br/><br/>
       <img src='images/eocv_installation_changeview.gif' width='512' height='288'><br/><br/>
-### And you're ready to go! Make sure to read the [usage documentation](https://github.com/serivesmejia/EOCV-Sim/edit/master/USAGE.md) to learn more about how to use the simulator<br/><br/>
+### And you're ready to go! Make sure to read the [usage documentation](https://github.com/serivesmejia/EOCV-Sim/edit/master/USAGE.md) to learn more about how to use the simulator<br/>
 
 # Contact information<br/>
 For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8247* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
