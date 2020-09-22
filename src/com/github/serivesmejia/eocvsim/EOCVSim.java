@@ -33,7 +33,7 @@ public class EOCVSim {
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.0.0";
 
-	public volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+	private volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
 	public void init() {
 
