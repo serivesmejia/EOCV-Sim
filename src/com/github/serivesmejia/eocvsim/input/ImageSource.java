@@ -1,18 +1,21 @@
 package com.github.serivesmejia.eocvsim.input;
 
+import com.google.gson.annotations.Expose;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-public class ImageSource implements InputSource {
+public class ImageSource extends InputSource {
 
+	@Expose
 	private volatile String imgPath;
+	@Expose
 	private volatile Size size;
 	
 	private volatile Mat img;
 	
-	private volatile boolean initialized = false;
+	private volatile transient boolean initialized = false;
 
 	public ImageSource(String imgPath) {
 		this(imgPath, null);
@@ -75,6 +78,11 @@ public class ImageSource implements InputSource {
 	@Override
 	public Mat update() {
 		return img;
+	}
+
+	@Override
+	public InputSource cloneSource() {
+		return new ImageSource(imgPath, size);
 	}
 
 	@Override

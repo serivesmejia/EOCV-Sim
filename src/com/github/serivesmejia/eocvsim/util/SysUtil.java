@@ -1,14 +1,7 @@
 package com.github.serivesmejia.eocvsim.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.opencv.core.Core;
@@ -66,7 +59,7 @@ public class SysUtil {
 		  
 	}
 	
-	public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attemps) throws IOException {
+	public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) throws IOException {
 	
 		String arch = is64bit ? "64" : "32"; //getting os arch	
 		
@@ -101,10 +94,10 @@ public class SysUtil {
 			
 			ex.printStackTrace();
 			
-			if(attemps < 4) {
+			if(attempts < 4) {
 				ex.printStackTrace();
-				Log.error("SysUtil", "Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attemps + " attemps)");
-				loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attemps + 1);
+				Log.error("SysUtil", "Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attempts + " attempts)");
+				loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attempts + 1);
 			} else {
 				ex.printStackTrace();
 				Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
@@ -159,5 +152,37 @@ public class SysUtil {
 		public boolean alreadyExists = false;	
 
 	}
-	
+
+	public static String loadFileStr(File f) {
+
+		String content = "";
+
+		try {
+			content = new String (Files.readAllBytes(f.toPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return content;
+
+	}
+
+	public static boolean saveFileStr(File f, String contents) {
+
+		try {
+			FileWriter fw = new FileWriter(f);
+			fw.append(contents);
+			fw.close();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public static File getAppData() {
+		return new File(System.getProperty("user.home") + File.separator);
+	}
+
 }

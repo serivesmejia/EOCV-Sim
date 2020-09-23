@@ -75,6 +75,52 @@ public class EOCVSim {
 		beginLoop();
 		
 	}
+	
+	public void beginLoop() {
+		
+		Log.info("EOCVSim", "Begin EOCVSim loop");
+		Log.white();
+
+		inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
+
+		while(!Thread.interrupted()) {
+
+			for(Object runn : runnsOnMain.toArray()) {
+				((Runnable) runn).run();
+			}
+
+			runnsOnMain.clear();
+
+			updateVisualizerTitle();
+
+			inputSourceManager.update();
+
+			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
+
+			try {
+				pipelineManager.update(inputSourceManager.lastMatFromSource);
+				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
+			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
+			
+			System.gc(); //run JVM garbage collector
+			
+		}
+		
+	}
+	
+	public void updateVisualizerTitle() {
+		
+		String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
+		
+		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
+		
+		if(pipelineManager.currentPipeline == null) {
+			visualizer.setTitleMessage("No pipeline" + fpsMsg + memoryMsg);
+		} else {
+			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
+		}
+		
+	}
 
 	public void setVisualizerEvts() {
 
@@ -122,54 +168,6 @@ public class EOCVSim {
 
 		});
 
-	}
-	
-	public void beginLoop() {
-		
-		Log.info("EOCVSim", "Begin EOCVSim loop");
-		Log.white();
-
-		while(!Thread.interrupted()) {
-
-			for(Object runn : runnsOnMain.toArray()) {
-				((Runnable) runn).run();
-			}
-
-			//Log.info(String.valueOf(visualizer.splitPane.getDividerLocation()) + ", " + String.valueOf(visualizer.frame.getWidth()));
-
-			runnsOnMain.clear();
-
-			//System.out.println(visualizer.frame.getSize());
-
-			updateVisualizerTitle();
-
-			inputSourceManager.update();
-
-			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
-
-			try {
-				pipelineManager.update(inputSourceManager.lastMatFromSource);
-				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
-			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
-			
-			System.gc(); //run JVM garbage collector
-			
-		}
-		
-	}
-	
-	public void updateVisualizerTitle() {
-		
-		String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
-		
-		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
-		
-		if(pipelineManager.currentPipeline == null) {
-			visualizer.setTitleMessage("No pipeline" + fpsMsg + memoryMsg);
-		} else {
-			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
-		}
-		
 	}
 
 	public void runOnMainThread(Runnable runn) {

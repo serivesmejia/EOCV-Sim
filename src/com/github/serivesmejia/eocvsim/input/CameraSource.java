@@ -1,17 +1,22 @@
 package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.google.gson.annotations.Expose;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
 
-public class CameraSource implements InputSource {
+import java.util.Objects;
+
+public class CameraSource extends InputSource {
 
     private VideoCapture camera = null;
-    public Mat lastFrame = null;
+    private Mat lastFrame = null;
 
     private boolean initialized = false;
-    private int webcamIndex = 0;
+
+    @Expose
+    private final int webcamIndex;
 
     private Size lastSize = new Size();
 
@@ -28,7 +33,7 @@ public class CameraSource implements InputSource {
         camera = new VideoCapture(webcamIndex);
 
         if(!camera.isOpened()) {
-            Log.error("CameraSource", "Unable to open camera " + String.valueOf(webcamIndex));
+            Log.error("CameraSource", "Unable to open camera " + webcamIndex);
         }
 
     }
@@ -38,7 +43,7 @@ public class CameraSource implements InputSource {
 
         if(!initialized) return;
 
-        if(camera != null || camera.isOpened()) camera.release();
+        if(camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
 
         camera = null;
         initialized = false;
@@ -48,7 +53,7 @@ public class CameraSource implements InputSource {
     @Override
     public void close() {
 
-        if(camera != null || camera.isOpened()) camera.release();
+        if(camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
 
     }
 
@@ -64,8 +69,13 @@ public class CameraSource implements InputSource {
     }
 
     @Override
+    public InputSource cloneSource() {
+        return new CameraSource(webcamIndex);
+    }
+
+    @Override
     public String toString() {
-        return "CameraSource(" + String.valueOf(webcamIndex) + ", " + lastSize.toString() + ")";
+        return "CameraSource(" + webcamIndex + ", " + lastSize.toString() + ")";
     }
 
 }

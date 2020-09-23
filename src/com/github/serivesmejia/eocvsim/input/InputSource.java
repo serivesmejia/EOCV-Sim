@@ -2,12 +2,16 @@ package com.github.serivesmejia.eocvsim.input;
 
 import org.opencv.core.Mat;
 
-public interface InputSource {
+public abstract class InputSource {
 
-	void init();
-	void reset();
-	void close();
+	transient boolean isDefault = false;
 
-	Mat update();
+	void init(){}
+	void reset(){}
+	void close(){}
+
+	Mat update() { return null; }
+
+	InputSource cloneSource() { return null; }
 
 }

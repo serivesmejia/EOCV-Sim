@@ -24,12 +24,14 @@ public class InputSourceManager {
 
 	public String currInputSourceName = "";
 
-	private EOCVSim eocvSim = null;
+	private EOCVSim eocvSim;
 
 	private volatile Map.Entry<String, InputSource> requestedToAddInputSource = null;
 	private volatile boolean finishedWritingToAddInputSource = false;
 
 	public volatile boolean finishedAddingRequestedSource = false;
+
+	public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 
 	private volatile String nextInputSourceChange = "";
 
@@ -47,6 +49,12 @@ public class InputSourceManager {
 
 		Log.info("InputSourceManager", "Initializing...");
 
+		inputSourceLoader.loadInputSourcesFromFile();
+
+		for(Map.Entry<String, InputSource> entry : inputSourceLoader.loadedInputSources.entrySet()) {
+			addInputSource(entry.getKey(), entry.getValue());
+		}
+
 		Size size = new Size(580, 480);
 		createDefaultImgInputSource("/ug_4.jpg", "ug_ocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
 		createDefaultImgInputSource("/ug_1.jpg", "ug_ocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
@@ -58,9 +66,15 @@ public class InputSourceManager {
 	
 	private void createDefaultImgInputSource(String resourcePath, String fileName, String sourceName, Size imgSize) {
 		try {
+
 			InputStream is = InputSource.class.getResourceAsStream(resourcePath);
 			File f = SysUtil.copyFileIsTemp(is, fileName, true).file;
-			addInputSource(sourceName, new ImageSource(f.getAbsolutePath(), imgSize));
+
+			ImageSource src = new ImageSource(f.getAbsolutePath(), imgSize);
+			src.isDefault = true;
+
+			addInputSource(sourceName, src);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -81,7 +95,7 @@ public class InputSourceManager {
 			finishedAddingRequestedSource = true;
 		}
 
-		if(nextInputSourceChange != "") {
+		if(!nextInputSourceChange.equals("")) {
 			setInputSource(nextInputSourceChange);
 			nextInputSourceChange = "";
 		}
@@ -99,7 +113,10 @@ public class InputSourceManager {
 		}
 		
 		sources.put(name, inputSource);
-		
+
+		inputSourceLoader.saveInputSource(name, inputSource);
+		inputSourceLoader.saveInputSourcesToFile();
+
 		Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
 
 	}
@@ -128,7 +145,7 @@ public class InputSourceManager {
 			});
 		}
 
-		src.init();
+		if(src != null) src.init();
 
 		if(apwdCam != null) {
 			apwdCam.destroyDialog();
@@ -143,6 +160,12 @@ public class InputSourceManager {
 	public SourceType getSourceType(String sourceName) {
 
 		InputSource source = sources.get(sourceName);
+
+		return getSourceType(source);
+
+	}
+
+	public static SourceType getSourceType(InputSource source) {
 
 		switch(source.getClass().getSimpleName()) {
 			case "ImageSource":
