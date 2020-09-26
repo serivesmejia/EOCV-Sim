@@ -20,14 +20,12 @@ import java.io.File;
 public class CreateCameraSource {
 
     public JDialog createCameraSource = null;
-
     public JTextField cameraIdField = null;
-
     public JButton createButton = null;
 
     public boolean wasCancelled = false;
 
-    private EOCVSim eocvSim = null;
+    private EOCVSim eocvSim;
 
     public CreateCameraSource(JFrame parent, EOCVSim eocvSim) {
 
