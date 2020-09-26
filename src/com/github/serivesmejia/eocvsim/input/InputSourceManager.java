@@ -61,6 +61,8 @@ public class InputSourceManager {
 		createDefaultImgInputSource("/resources/images/ug_0.jpg", "ug_ocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
 
 		lastMatFromSource = new Mat();
+
+		Log.white();
 		
 	}
 	

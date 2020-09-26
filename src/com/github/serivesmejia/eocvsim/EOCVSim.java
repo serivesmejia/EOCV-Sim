@@ -45,10 +45,9 @@ public class EOCVSim {
 		
 		EMPTY_MAT = new Mat();
 		
-		pipelineManager = new PipelineManager();
+		pipelineManager = new PipelineManager(this);
 		
 		visualizer.init();
-
 		setVisualizerEvents();
 
 		inputSourceManager.init();

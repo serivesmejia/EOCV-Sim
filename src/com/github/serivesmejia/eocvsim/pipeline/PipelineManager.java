@@ -23,7 +23,7 @@ public class PipelineManager {
 	public String currentPipelineName = "";
 
 	public volatile Mat lastOutputMat = new Mat();
-	
+
 	public int lastFPS = 0;
 	
 	private int fpsC = 0;
@@ -31,11 +31,16 @@ public class PipelineManager {
 
 	private volatile int nextPipelineChange = -1;
 
+	public EOCVSim eocvSim;
+
+	public PipelineManager(EOCVSim eocvSim) {
+		this.eocvSim = eocvSim;
+	}
+
 	public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 		
 		Log.info("PipelineManager", "Initializing...");
-		Log.white();
-		
+
 		lookForPipelines(lookForPipelineAPWD);
 		
 		nextFPSUpdateMillis = System.currentTimeMillis();
@@ -151,7 +156,7 @@ public class PipelineManager {
 		
 		Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
 		
-		currentPipeline.init(EOCVSim.EMPTY_MAT);
+		currentPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
 		
 		Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.getName());
 		Log.white();
