@@ -1,4 +1,4 @@
-<img src='src/ico_eocvsim_letters_transparent.png' height='128px' alt='EOCVSim'>
+<img src='src/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px' alt='EOCVSim'>
 
 # Welcome!
 
@@ -25,7 +25,7 @@ No complicated setup is required, straight up importing the project into Intelli
      
 3) **Clone and import the project:**<br/>
 
-      1) Open IntelliJ IDEA and in the main page click on "Get from Version Control"<br/>
+      1) Open IntelliJ IDEA and in the main screen click on "Get from Version Control"<br/>
       
             <img src='images/eocvsim_screenshot_installation_1.png' width='399' height='249'><br/><br/>
          Alternatively, if you already had another project opened, go to File > New > Project from Version Control...<br/><br/>
