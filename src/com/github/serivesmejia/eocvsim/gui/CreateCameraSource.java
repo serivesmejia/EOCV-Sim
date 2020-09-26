@@ -42,7 +42,7 @@ public class CreateCameraSource {
 
         createCameraSource.setModal(true);
 
-        createCameraSource.setTitle("Create image source");
+        createCameraSource.setTitle("Create camera source");
         createCameraSource.setSize(350, 200);
 
         JPanel contentsPanel = new JPanel(new GridLayout(4, 1));
