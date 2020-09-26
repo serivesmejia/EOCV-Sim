@@ -5,7 +5,6 @@ import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import java.awt.*;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.scaleImage;
@@ -18,8 +17,8 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
     public InputSourceManager sourceManager = null;
 
     public SourcesListIconRenderer(InputSourceManager sourceManager) throws IOException {
-        ICON_IMG = scaleImage(GuiUtil.loadImageIcon("/ico_img.png"), 15, 15);
-        ICON_WEBCAM = scaleImage(GuiUtil.loadImageIcon("/ico_cam.png"), 15, 15);
+        ICON_IMG = scaleImage(GuiUtil.loadImageIcon("/resources/images/icon/ico_img.png"), 15, 15);
+        ICON_WEBCAM = scaleImage(GuiUtil.loadImageIcon("/resources/images/icon/ico_cam.png"), 15, 15);
         this.sourceManager = sourceManager;
     }
 

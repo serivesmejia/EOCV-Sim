@@ -24,8 +24,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
 
-import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.scaleImage;
-
 public class Visualizer {
 
 	public JFrame frame = new JFrame();
@@ -44,7 +42,8 @@ public class Visualizer {
 	public volatile JList<String> sourceSelector = new JList<>();
 	public JScrollPane sourceSelectorScroll = new JScrollPane();
 	public JButton sourceSelectorCreateBtt = new JButton("Create");
-	
+	public JButton sourceSelectorDeleteBtt = new JButton("Delete");
+
 	private EOCVSim eocvSim = null;
 	
 	private String title = "EasyOpenCV Simulator";
@@ -58,7 +57,7 @@ public class Visualizer {
 	public Visualizer(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
 		try {
-			ICO_EOCVSIM = GuiUtil.loadImageIcon("/ico_eocvsim.png");
+			ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -143,6 +142,7 @@ public class Visualizer {
 		sourceSelectorScroll.setViewportView(sourceSelector);
 		sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
 		try {
 			sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager));
 		} catch (IOException e) {

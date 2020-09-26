@@ -1,6 +1,8 @@
 package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -164,6 +166,15 @@ public class EOCVSim {
 					}
 				} catch(ArrayIndexOutOfBoundsException ex) { }
 
+			}
+
+		});
+
+		//handling onViewportTapped evts
+		visualizer.img.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent e) {
+				pipelineManager.currentPipeline.onViewportTapped();
 			}
 
 		});

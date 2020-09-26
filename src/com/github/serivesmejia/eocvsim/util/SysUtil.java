@@ -66,7 +66,7 @@ public class SysUtil {
 		String libName = os + arch + "_" + name; //resultant lib name from those two
 		String libNameExt = libName + "." + fileExt; //resultant lib name from those two
 
-		InputStream libIs = SysUtil.class.getResourceAsStream("/" + libNameExt);
+		InputStream libIs = SysUtil.class.getResourceAsStream("/resources/libs/" + libNameExt);
 
 		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\"");
 

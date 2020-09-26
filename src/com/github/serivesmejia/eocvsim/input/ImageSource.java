@@ -77,7 +77,7 @@ public class ImageSource extends InputSource {
 
 	@Override
 	public Mat update() {
-		return img;
+		return img.clone();
 	}
 
 	@Override

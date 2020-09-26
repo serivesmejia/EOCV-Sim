@@ -86,10 +86,12 @@ public class CVGripUtils {
      * @param output The image in which to store the output.
      */
     public static void cvInvertedMask(Mat input, Mat mask, Mat output) {
-        mask.convertTo(mask, CvType.CV_8UC1);
-        Core.bitwise_not(mask, mask);
+        Mat cMask = mask.clone();
+        mask.convertTo(cMask, CvType.CV_8UC1);
+        Core.bitwise_not(cMask, cMask);
         Core.bitwise_xor(output, output, output);
-        input.copyTo(output, mask);
+        input.copyTo(output, cMask);
+        cMask.release();
     }
 
 
