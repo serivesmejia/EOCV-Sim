@@ -1,18 +1,16 @@
 package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-import com.github.serivesmejia.eocvsim.pipeline.DefaultPipeline;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
-import com.github.serivesmejia.eocvsim.input.ImageSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
@@ -51,7 +49,7 @@ public class EOCVSim {
 		
 		visualizer.init();
 
-		setVisualizerEvts();
+		setVisualizerEvents();
 
 		inputSourceManager.init();
 
@@ -87,16 +85,17 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
+			//run all pending requested runnables
 			for(Object runn : runnsOnMain.toArray()) {
 				((Runnable) runn).run();
+				runnsOnMain.remove(runn);
 			}
-
-			runnsOnMain.clear();
 
 			updateVisualizerTitle();
 
 			inputSourceManager.update();
 
+			//if we dont have a mat from the inputsource, we'll just skip this frame.
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 
 			try {
@@ -124,8 +123,9 @@ public class EOCVSim {
 		
 	}
 
-	public void setVisualizerEvts() {
+	public void setVisualizerEvents() {
 
+		//listener for changing pipeline
 		visualizer.pipelineSelector.addListSelectionListener(new ListSelectionListener() {
 
 			@Override
@@ -145,6 +145,7 @@ public class EOCVSim {
 
 		});
 
+		//listener for changing input sources
 		visualizer.sourceSelector.addListSelectionListener(new ListSelectionListener() {
 
 			@Override
@@ -177,6 +178,21 @@ public class EOCVSim {
 				pipelineManager.currentPipeline.onViewportTapped();
 			}
 
+		});
+
+		// delete input source
+		visualizer.sourceSelectorDeleteBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String source = visualizer.sourceSelector.getModel().getElementAt(visualizer.sourceSelector.getSelectedIndex());
+				runOnMainThread(new Runnable() {
+					@Override
+					public void run() {
+						inputSourceManager.deleteInputSource(source);
+						visualizer.updateSourcesList();
+					}
+				});
+			}
 		});
 
 	}

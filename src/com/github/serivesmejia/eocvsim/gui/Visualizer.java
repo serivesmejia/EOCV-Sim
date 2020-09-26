@@ -159,6 +159,7 @@ public class Visualizer {
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
 		sourceSelectorContainer.add(sourceSelectorCreateBtt);
+		sourceSelectorContainer.add(sourceSelectorDeleteBtt);
 
 		rightContainer.add(sourceSelectorContainer);
 		

@@ -111,6 +111,8 @@ public class InputSourceManager {
 			currInputSource = null;
 			return;
 		}
+
+		if(sources.containsKey(name)) return;
 		
 		sources.put(name, inputSource);
 
@@ -118,6 +120,20 @@ public class InputSourceManager {
 		inputSourceLoader.saveInputSourcesToFile();
 
 		Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
+
+	}
+
+	public void deleteInputSource(String sourceName) {
+
+		InputSource src = sources.get(sourceName);
+
+		if(src == null) return;
+		if(src.isDefault) return;
+
+		sources.remove(sourceName);
+
+		inputSourceLoader.deleteInputSource(sourceName);
+		inputSourceLoader.saveInputSourcesToFile();
 
 	}
 	
@@ -133,20 +149,12 @@ public class InputSourceManager {
 			src.reset();
 		}
 
-		Visualizer.AsyncPleaseWaitDialog apwdCam = null;
-		if(getSourceType(sourceName) == SourceType.CAMERA) {
-			apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
-					                                           new Dimension(300, 150), true);
-			apwdCam.onCancel(new Runnable() {
-				@Override
-				public void run() {
-					System.exit(0);
-				}
-			});
-		}
+		//check if source type is a camera, and if so, create a please wait dialog
+		Visualizer.AsyncPleaseWaitDialog apwdCam = checkCameraDialogPleaseWait(sourceName);
 
 		if(src != null) src.init();
 
+		//if there's a please wait dialog for a camera source, destroy it.
 		if(apwdCam != null) {
 			apwdCam.destroyDialog();
 		}
@@ -155,6 +163,25 @@ public class InputSourceManager {
 		
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 		
+	}
+
+	public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
+
+		Visualizer.AsyncPleaseWaitDialog apwdCam = null;
+
+		if(getSourceType(sourceName) == SourceType.CAMERA) {
+			apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
+																new Dimension(300, 150), true);
+			apwdCam.onCancel(new Runnable() {
+				@Override
+				public void run() {
+					System.exit(0);
+				}
+			});
+		}
+
+		return apwdCam;
+
 	}
 
 	public SourceType getSourceType(String sourceName) {

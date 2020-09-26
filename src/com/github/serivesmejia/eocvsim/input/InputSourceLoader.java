@@ -25,6 +25,14 @@ public class InputSourceLoader {
 
     }
 
+    public void deleteInputSource(String name) {
+
+        if(loadedInputSources.containsKey(name)) {
+            loadedInputSources.remove(name);
+        }
+
+    }
+
     public void saveInputSourcesToFile() {
 
         InputSourcesContainer sourcesContainer = new InputSourcesContainer();
