@@ -12,7 +12,7 @@ automatically detected by the simulator and will be selectionable from the GUI.
 
 *(Also, the simulator already comes by default with some EasyOpenCV samples)*<br/>
 
-The pipeline class **should also** extend the EOCV's OpenCvPipeline abstract class, here's a quick sample:
+The pipeline class **should also** extend the EOCV's OpenCvPipeline abstract class, here's a quick, empty sample:
 
 ```java
 package org.firstinspires.ftc.teamcode;
