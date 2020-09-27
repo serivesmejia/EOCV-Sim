@@ -12,7 +12,7 @@ automatically detected by the simulator and will be selectionable from the GUI.
 
 *(Also, the simulator already comes by default with some EasyOpenCV samples)*<br/>
 
-<img src="images/eocv_usage_createclass.gif" width='512' height='288'><br/>
+<img src='images/eocvsim_usage_createclass.gif' width='512' height='288'><br/>
 
 The pipeline class **should also** extend the EOCV's OpenCvPipeline abstract class and override the processFrame() method.<br/><br/>
 Here's a quick, empty pipeline sample:
