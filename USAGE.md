@@ -12,7 +12,8 @@ automatically detected by the simulator and will be selectionable from the GUI.
 
 *(Also, the simulator already comes by default with some EasyOpenCV samples)*<br/>
 
-The pipeline class **should also** extend the EOCV's OpenCvPipeline abstract class, here's a quick, empty sample:
+The pipeline class **should also** extend the EOCV's OpenCvPipeline abstract class.<br/><br/>
+Here's a quick, empty pipeline sample:
 
 ```java
 package org.firstinspires.ftc.teamcode;
@@ -24,24 +25,23 @@ public class SamplePipeline extends OpenCvPipeline {
 
     @Override
     public void init(Mat input) {
-        //Executed once when the pipeline is selected
+        /* Executed once, when the pipeline is selected */
     }
 
     @Override
     public Mat processFrame(Mat input) {
-        /** Processing and detection stuff **/
-        return input; // return the input mat
-                      // (or a new, processed mat)
+        /* Processing and detection stuff */
+        return input; // Return the input mat
+                      // (Or a new, processed mat)
     }
 
     @Override
     public void onViewportTapped() {
-        /**
+        /*
          * Executed everytime when the pipeline view is tapped/clicked.
          * This is executed from the UI thread, so whatever we do here
          * we must do it quickly.
          */
     }
-    
-}
-```
+
+}```
