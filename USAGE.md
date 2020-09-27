@@ -30,7 +30,7 @@ public class SamplePipeline extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input) {
-        /^ Executed each frame, the returned mat will be the one displayed */
+        /* Executed each frame, the returned mat will be the one displayed */
         /* Processing and detection stuff */
         return input; // Return the input mat
                       // (Or a new, processed mat)
