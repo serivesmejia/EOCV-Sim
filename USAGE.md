@@ -44,4 +44,5 @@ public class SamplePipeline extends OpenCvPipeline {
          */
     }
 
-}```
+}
+```
