@@ -3,7 +3,7 @@
 # Welcome!
 
 EOCV-Sim (EasyOpenCV Simulator) is a straightforward way to test your pipelines in a 
-simple user interface directly in your computer, simulating entirely the EasyOpenCV library & the 
+simple user interface directly in your computer, simulating the EasyOpenCV library & 
 FTC SDK structure, allowing you to simply copy paste directly your pipeline code once you want to 
 transfer it onto your robot!
 
