@@ -61,5 +61,5 @@ No complicated setup is required, straight up importing the project into Intelli
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
 
 # Contact
-For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8247* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
+For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8237* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
 For bug reporting or feature requesting, use the [issues tab](https://github.com/serivesmejia/EOCV-Sim/issues) in this repository.
