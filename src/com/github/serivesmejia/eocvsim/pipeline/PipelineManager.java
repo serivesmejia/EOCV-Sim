@@ -29,8 +29,6 @@ public class PipelineManager {
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
 
-	private volatile int nextPipelineChange = -1;
-
 	public EOCVSim eocvSim;
 
 	public PipelineManager(EOCVSim eocvSim) {
@@ -109,11 +107,6 @@ public class PipelineManager {
 	
 	public void update(Mat inputMat) {
 
-		if(nextPipelineChange != -1) {
-			changePipeline(nextPipelineChange);
-			nextPipelineChange = -1;
-		}
-
 		if(currentPipeline != null) {
 			lastOutputMat = currentPipeline.processFrame(inputMat);
 		} else {
@@ -166,7 +159,12 @@ public class PipelineManager {
 	}
 
 	public void changePipelineNextFrame(int index) {
-		nextPipelineChange = index;
+		eocvSim.runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				changePipeline(index);
+			}
+		});
 	}
 
 }
