@@ -1,9 +1,9 @@
 package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.util.SysUtil;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
 
 import java.io.File;
 import java.util.HashMap;
