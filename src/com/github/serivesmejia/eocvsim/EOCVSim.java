@@ -24,7 +24,7 @@ public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
 	public PipelineManager pipelineManager = null;
-	
+
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 
 	private String beforeSelectedSource = "";
@@ -33,7 +33,7 @@ public class EOCVSim {
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.0.0";
 
-	private volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
 	public void init() {
 
@@ -41,6 +41,7 @@ public class EOCVSim {
 		Log.white();
 		
 		SysUtil.loadCvNativeLib();
+
 		Log.white();
 		
 		EMPTY_MAT = new Mat();

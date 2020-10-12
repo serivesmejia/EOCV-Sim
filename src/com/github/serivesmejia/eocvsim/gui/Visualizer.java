@@ -41,6 +41,7 @@ public class Visualizer {
 	public JPanel sourceSelectorContainer = new JPanel();
 	public volatile JList<String> sourceSelector = new JList<>();
 	public JScrollPane sourceSelectorScroll = new JScrollPane();
+	public JPanel sourceSelectorButtonsContainer = new JPanel();
 	public JButton sourceSelectorCreateBtt = new JButton("Create");
 	public JButton sourceSelectorDeleteBtt = new JButton("Delete");
 
@@ -158,8 +159,13 @@ public class Visualizer {
 		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
-		sourceSelectorContainer.add(sourceSelectorCreateBtt);
-		sourceSelectorContainer.add(sourceSelectorDeleteBtt);
+
+		sourceSelectorButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+		sourceSelectorButtonsContainer.add(sourceSelectorCreateBtt);
+		sourceSelectorButtonsContainer.add(sourceSelectorDeleteBtt);
+
+		sourceSelectorContainer.add(sourceSelectorButtonsContainer);
 
 		rightContainer.add(sourceSelectorContainer);
 		
