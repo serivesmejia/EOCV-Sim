@@ -15,7 +15,7 @@ public class SysUtil {
 	public enum OperatingSystem {
 		WINDOWS,
 		LINUX,
-		OSX,
+		MACOS,
 		UNKNOWN
 	}
 	
@@ -31,6 +31,8 @@ public class SysUtil {
 			return OperatingSystem.WINDOWS;
 		} else if(osName.contains("nux")) {
 			return OperatingSystem.LINUX;
+		} else if(osName.contains("mac") || osName.contains("darwin")) {
+			return OperatingSystem.MACOS;
 		}
 		
 		return OperatingSystem.UNKNOWN;
@@ -47,9 +49,13 @@ public class SysUtil {
 				os = "win";
 				fileExt = "dll";
 				break;
-			default:
+			case LINUX:
 				os = "linux";
 				fileExt = "so";
+				break;
+			case MACOS:
+				os = "mac";
+				fileExt = "dylib";
 				break;
 		}
 		
