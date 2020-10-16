@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim.pipeline;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -22,10 +23,11 @@ public class PipelineManager {
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
 
+	public Telemetry currTelemetry = null;
+
 	public volatile Mat lastOutputMat = new Mat();
 
 	public int lastFPS = 0;
-	
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
 
@@ -50,7 +52,7 @@ public class PipelineManager {
 		
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
-		//Scan for all classes in the classpath
+		//Scan for all classes in the org.firstinspires package
 		ClassGraph classGraph = new ClassGraph().enableAllInfo().acceptPackages("org.firstinspires");
 		
 		ScanResult scanResult = classGraph.scan();
@@ -112,7 +114,7 @@ public class PipelineManager {
 		} else {
 			lastOutputMat = inputMat.clone();
 		}
-		
+
 		calcFPS();
 		
 	}
@@ -146,7 +148,11 @@ public class PipelineManager {
 			e.printStackTrace();
 			Log.error("PipelineManager", "Unable to instantiate class " + pipelineClass.getName());
 		}
-		
+
+		currTelemetry = new Telemetry();
+
+		currentPipeline.telemetry = currTelemetry;
+
 		Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
 		
 		currentPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);

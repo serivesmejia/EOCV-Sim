@@ -1,11 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -45,6 +40,10 @@ public class Visualizer {
 	public JButton sourceSelectorCreateBtt = new JButton("Create");
 	public JButton sourceSelectorDeleteBtt = new JButton("Delete");
 
+	public JPanel telemetryContainer = new JPanel();
+    public JScrollPane telemetryScroll = new JScrollPane();
+    public volatile JList<String> telemetryList = new JList<>();
+
 	private EOCVSim eocvSim = null;
 	
 	private String title = "EasyOpenCV Simulator";
@@ -71,33 +70,33 @@ public class Visualizer {
 		/*
 		* IMG VISUALIZER & SCROLL PANE
 		*/
-		
+
 		imgScrollContainer = new JPanel();
 		imgScrollPane = new JScrollPane(imgScrollContainer);
-		
+
 		imgScrollContainer.setLayout(new GridBagLayout());
-		
+
 		imgScrollContainer.add(img, new GridBagConstraints());
-		
+
 		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		
+
 		imgScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 		imgScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		
+
 		rightContainer.setLayout(new GridLayout(3, 1));
 
 		/*
 		* PIPELINE SELECTOR
 		*/
-		
+
 		pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 		//pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-		
-		JLabel pipelineSelectorLabel = new JLabel("Select Pipeline");
+
+		JLabel pipelineSelectorLabel = new JLabel("Pipelines");
 
 		pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
-		
+
 		pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
 		pipelineSelectorContainer.add(pipelineSelectorLabel);
 
@@ -106,36 +105,36 @@ public class Visualizer {
 		JPanel pipelineSelectorScrollContainer = new JPanel();
 		pipelineSelectorScrollContainer.setLayout(new GridLayout());
 		pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-		
+
 		pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
-		
+
 		pipelineSelectorScroll.setViewportView(pipelineSelector);
 		pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
+
 		pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
-		
+
 		rightContainer.add(pipelineSelectorContainer);
-	
+
 		/*
 		* SOURCE SELECTOR
 		*/
 
 		sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 		//sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-		
-		JLabel sourceSelectorLabel = new JLabel("Select Source");
+
+		JLabel sourceSelectorLabel = new JLabel("Sources");
 
 		sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
-		
+
 		sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
-		
+
 		sourceSelectorContainer.add(sourceSelectorLabel);
-	
+
 		JPanel sourceSelectorScrollContainer = new JPanel();
 		sourceSelectorScrollContainer.setLayout(new GridLayout());
 		sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-		
+
 		sourceSelectorScrollContainer.add(sourceSelectorScroll);
 
 		sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -168,18 +167,48 @@ public class Visualizer {
 		sourceSelectorContainer.add(sourceSelectorButtonsContainer);
 
 		rightContainer.add(sourceSelectorContainer);
-		
+
 		/*
-		* SPLIT
-		*/
+		 * TELEMETRY
+		 */
+
+		telemetryContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+		JLabel telemetryLabel = new JLabel("Telemetry");
+
+		telemetryLabel.setFont(telemetryLabel.getFont().deriveFont(20.0f));
+		telemetryLabel.setHorizontalAlignment(JLabel.CENTER);
+
+		telemetryContainer.add(telemetryLabel);
+
+        telemetryScroll.setViewportView(telemetryList);
+        telemetryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        telemetryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        telemetryList.setEnabled(false);
+
+        JPanel telemetryScrollContainer = new JPanel();
+        telemetryScrollContainer.setLayout(new GridLayout());
+        telemetryScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+
+        telemetryScrollContainer.add(telemetryScroll);
+
+        telemetryContainer.add(telemetryScrollContainer);
+
+		rightContainer.add(telemetryContainer);
+
+		/*
+		 * SPLIT
+		 */
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
-		
+
 		splitPane.setResizeWeight(1);
 		splitPane.setOneTouchExpandable(false);
 		splitPane.setContinuousLayout(true);
-		
+
 		frame.add(splitPane, BorderLayout.CENTER);
-		
+
 		frame.setSize(780, 645);
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
