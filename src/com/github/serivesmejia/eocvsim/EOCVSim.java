@@ -7,7 +7,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
@@ -103,7 +102,7 @@ public class EOCVSim {
 				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
 			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
 
-			updateTelemetry();
+			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
 			System.gc(); //run JVM garbage collector
 			
@@ -123,24 +122,6 @@ public class EOCVSim {
 			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
 		}
 		
-	}
-
-	public void updateTelemetry() {
-
-		Telemetry telemetry = pipelineManager.currTelemetry;
-
-		if(telemetry != null && telemetry.hasChanged()) {
-
-			DefaultListModel<String> listModel = new DefaultListModel<>();
-
-			for(String line : telemetry.toString().split("\n")) {
-				listModel.addElement(line);
-			}
-
-			visualizer.telemetryList.setModel(listModel);
-
-		}
-
 	}
 
 	public void setVisualizerEvents() {

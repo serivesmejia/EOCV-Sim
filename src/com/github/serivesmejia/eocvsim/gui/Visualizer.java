@@ -12,6 +12,7 @@ import javax.swing.*;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -186,7 +187,6 @@ public class Visualizer {
         telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         telemetryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        telemetryList.setEnabled(false);
 
         JPanel telemetryScrollContainer = new JPanel();
         telemetryScrollContainer.setLayout(new GridLayout());
@@ -434,6 +434,26 @@ public class Visualizer {
 		sourceSelector.revalidate();
 		sourceSelectorScroll.revalidate();
 		
+	}
+
+	public void updateTelemetry(Telemetry telemetry) {
+
+		if(telemetry != null && telemetry.hasChanged()) {
+
+			DefaultListModel<String> listModel = new DefaultListModel<>();
+
+			for(String line : telemetry.toString().split("\n")) {
+				listModel.addElement(line);
+			}
+
+			telemetryList.setModel(listModel);
+
+			telemetryList.setFixedCellWidth(240);
+			telemetryList.revalidate();
+			telemetryScroll.revalidate();
+
+		}
+
 	}
 		
 }

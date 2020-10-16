@@ -6,6 +6,8 @@ public class Telemetry {
 
     private ArrayList<Item> telem = new ArrayList<>();
 
+    private ArrayList<Item> lastTelem = new ArrayList<>();
+
     private volatile String lastTelemUpdate = "";
 
     private volatile String beforeTelemUpdate = "mai";
@@ -19,9 +21,7 @@ public class Telemetry {
     }
 
     public Item addData(String caption, Object value) {
-        Item i = new Item(caption, value.toString());
-        telem.add(i);
-        return i;
+        return addData(caption, value.toString());
     }
 
     public Item addData(String caption, String value, Object... args) {
@@ -32,18 +32,29 @@ public class Telemetry {
 
         lastTelemUpdate = "";
 
+        lastTelem = (ArrayList<Item>)telem.clone();
+
+        evalLastTelemItems();
+
+        if(autoClear) telem.clear();
+
+    }
+
+    private void evalLastTelemItems() {
+
+        if(lastTelem == null) return;
+
         StringBuilder inTelemUpdate = new StringBuilder();
 
         int i = 0;
-        for(Item item : telem) {
+
+        for(Item item : lastTelem) {
             inTelemUpdate.append(item.toString()); //to avoid volatile issues we write into a stringbuilder
             if(i < telem.size()-1) inTelemUpdate.append("\n"); //append new line if this is not the lastest item
             i++;
         }
 
         lastTelemUpdate = inTelemUpdate.toString(); //and then we write to the volatile, public one
-
-        if(autoClear) telem.clear();
 
     }
 
@@ -68,7 +79,11 @@ public class Telemetry {
 
     @Override
     public String toString() {
+
+        evalLastTelemItems();
+
         return lastTelemUpdate;
+
     }
 
     public static class Item {
@@ -87,6 +102,10 @@ public class Telemetry {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value.toString();
         }
 
         public void setValue(String value, Object... args) {

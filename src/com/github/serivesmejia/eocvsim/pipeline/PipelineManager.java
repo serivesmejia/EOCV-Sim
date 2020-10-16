@@ -11,7 +11,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.util.Log;
 
-import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
@@ -23,7 +22,7 @@ public class PipelineManager {
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
 
-	public Telemetry currTelemetry = null;
+	public Telemetry currentTelemetry = null;
 
 	public volatile Mat lastOutputMat = new Mat();
 
@@ -149,9 +148,9 @@ public class PipelineManager {
 			Log.error("PipelineManager", "Unable to instantiate class " + pipelineClass.getName());
 		}
 
-		currTelemetry = new Telemetry();
+		currentTelemetry = new Telemetry();
 
-		currentPipeline.telemetry = currTelemetry;
+		currentPipeline.telemetry = currentTelemetry;
 
 		Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
 		

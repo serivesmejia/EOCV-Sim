@@ -10,6 +10,12 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class DefaultPipeline extends OpenCvPipeline {
 
     @Override
+    public void init(Mat input) {
+        telemetry.addData("[>]", "Default pipeline selected.");
+        telemetry.update();
+    }
+
+    @Override
     public Mat processFrame(Mat input) {
         Mat matTxt = input.clone();
         // Outline
