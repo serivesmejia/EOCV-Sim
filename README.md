@@ -13,11 +13,10 @@ transfer it onto your robot!
 
 Because OpenCV in Java uses a native shared lib, which are platform specific, the simulator is currently limited to the following platforms:
 
-* Windows 64 bits (tested)
-* Windows 32 bits (untested)
-* Linux 64 bits (tested)<br/>
-
-Unfortunately, macOS is not supported at the moment. I'll look forward to get a virtual machine working to compile OpenCV in this platform, or if anyone could contribute with the macOS shared libs, it'd be greatly appreciated. Same for Linux 32 bits binaries.
+* Windows x64 (tested)
+* Windows x32 (untested)
+* MacOS x64 (tested)
+* Linux x64 (tested)<br/>
 
 # Installation
 
