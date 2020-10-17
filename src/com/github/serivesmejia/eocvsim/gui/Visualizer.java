@@ -204,6 +204,7 @@ public class Visualizer {
 					l.setToolTipText(m.getElementAt(index).toString());
 				}
 			}
+
 		});
 
         telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -462,10 +463,8 @@ public class Visualizer {
 
 			DefaultListModel<String> listModel = new DefaultListModel<>();
 
-			final String html = "<html><body style='width: %1spx'>%1s";
-
 			for(String line : telemetry.toString().split("\n")) {
-				listModel.addElement(String.format(html, 200, line));
+				listModel.addElement("<html>" + line + "</html>");
 			}
 
 			telemetryList.setModel(listModel);

@@ -5,8 +5,9 @@ import java.util.ArrayList;
 public class Telemetry {
 
     private ArrayList<Item> telem = new ArrayList<>();
-
     private ArrayList<Item> lastTelem = new ArrayList<>();
+
+    public Item errItem = new Item("", "");
 
     private volatile String lastTelemUpdate = "";
 
@@ -54,6 +55,11 @@ public class Telemetry {
             i++;
         }
 
+        if(!errItem.caption.trim().equals("")) {
+            inTelemUpdate.append("\n");
+            inTelemUpdate.append(errItem.toString());
+        }
+
         lastTelemUpdate = inTelemUpdate.toString(); //and then we write to the volatile, public one
 
     }
@@ -95,6 +101,21 @@ public class Telemetry {
             this.caption = caption;
             this.value = value;
         }
+        
+        public void set(String caption, String value) {
+            setCaption(caption);
+            setValue(value);
+        }
+
+        public void set(String caption, Object value) {
+            setCaption(caption);
+            setValue(value);
+        }
+
+        public void set(String caption, String value, Object... args) {
+            setCaption(caption);
+            setValue(value, args);
+        }
 
         public void setCaption(String caption) {
             this.caption = caption;
@@ -105,7 +126,7 @@ public class Telemetry {
         }
 
         public void setValue(Object value) {
-            this.value = value.toString();
+            setValue(value.toString());
         }
 
         public void setValue(String value, Object... args) {

@@ -101,13 +101,21 @@ public class EOCVSim {
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 
 			try {
+
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
 				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
+
+				if(telemetry != null) telemetry.errItem.set("", "");
+
 			} catch(Throwable ex) {
+
 				Log.error("Error while processing pipeline", ex);
-				telemetry.clear();
-				telemetry.addData("[/!\\]", "Error while processing current pipeline\nCheck console for details.");
-				telemetry.update();
+
+				if(telemetry != null) {
+					telemetry.errItem.set("[/!\\]", "Error while processing pipeline\nCheck console for details.");
+					telemetry.update();
+				}
+
 			}
 
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
