@@ -2,8 +2,7 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.input.ImageSource;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import org.opencv.core.Size;
 

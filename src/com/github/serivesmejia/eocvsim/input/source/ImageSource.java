@@ -1,6 +1,9 @@
-package com.github.serivesmejia.eocvsim.input;
+package com.github.serivesmejia.eocvsim.input.source;
+
+import com.github.serivesmejia.eocvsim.input.InputSource;
 
 import com.google.gson.annotations.Expose;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -25,7 +28,8 @@ public class ImageSource extends InputSource {
 		this.imgPath = imgPath;
 		this.size = size;
 	}
-	
+
+
 	@Override
 	public void init() {
 		
@@ -36,8 +40,7 @@ public class ImageSource extends InputSource {
 		readImage();
 		
 	}
-	
-	@Override
+
 	public void reset() {
 		
 		if(!initialized) return;
@@ -49,7 +52,6 @@ public class ImageSource extends InputSource {
 		
 	}
 
-	@Override
 	public void close() {
 
 		if(img != null) img.release();

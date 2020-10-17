@@ -1,5 +1,7 @@
 package com.github.serivesmejia.eocvsim.input;
 
+import com.github.serivesmejia.eocvsim.input.source.CameraSource;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 
 import com.google.gson.Gson;

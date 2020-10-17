@@ -2,8 +2,8 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.input.CameraSource;
-import com.github.serivesmejia.eocvsim.input.ImageSource;
+import com.github.serivesmejia.eocvsim.input.source.CameraSource;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
 
@@ -13,9 +13,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.File;
 
 public class CreateCameraSource {
 

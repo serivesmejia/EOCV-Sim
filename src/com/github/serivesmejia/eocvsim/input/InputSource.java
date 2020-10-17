@@ -4,14 +4,14 @@ import org.opencv.core.Mat;
 
 public abstract class InputSource {
 
-	transient boolean isDefault = false;
+	public transient boolean isDefault = false;
 
-	void init(){}
-	void reset(){}
-	void close(){}
+	public void init(){}
+	public void reset(){}
+	public void close(){}
 
-	Mat update() { return null; }
+	public Mat update() { return null; }
 
-	InputSource cloneSource() { return null; }
+	public InputSource cloneSource() { return null; }
 
 }

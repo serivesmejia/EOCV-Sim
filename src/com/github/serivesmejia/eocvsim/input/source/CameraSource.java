@@ -1,7 +1,10 @@
-package com.github.serivesmejia.eocvsim.input;
+package com.github.serivesmejia.eocvsim.input.source;
 
+import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.util.Log;
+
 import com.google.gson.annotations.Expose;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;

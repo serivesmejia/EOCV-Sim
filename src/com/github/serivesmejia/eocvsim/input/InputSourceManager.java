@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 

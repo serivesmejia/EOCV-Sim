@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
@@ -31,7 +32,7 @@ public class EOCVSim {
 	private int beforeSelectedPipeline = -1;
 
 	public static Mat EMPTY_MAT = null;
-	public static String VERSION = "1.0.0";
+	public static String VERSION = "1.1.0";
 
 	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
@@ -85,6 +86,8 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
+			Telemetry telemetry = pipelineManager.currentTelemetry;
+
 			//run all pending requested runnables
 			for(Object runn : runnsOnMain.toArray()) {
 				((Runnable) runn).run();
@@ -100,7 +103,12 @@ public class EOCVSim {
 			try {
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
 				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
-			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
+			} catch(Throwable ex) {
+				Log.error("Error while processing pipeline", ex);
+				telemetry.clear();
+				telemetry.addData("[/!\\]", "Error while processing current pipeline\nCheck console for details.");
+				telemetry.update();
+			}
 
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 

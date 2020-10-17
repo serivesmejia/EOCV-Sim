@@ -3,6 +3,8 @@ package com.github.serivesmejia.eocvsim.gui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -10,6 +12,7 @@ import java.util.Map;
 import javax.swing.*;
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
+import com.github.serivesmejia.eocvsim.gui.util.LineWrapRenderer;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -184,13 +187,30 @@ public class Visualizer {
 
         telemetryScroll.setViewportView(telemetryList);
         telemetryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-        telemetryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //tooltips for the telemetry list items (thnx stackoverflow)
+		telemetryList.addMouseMotionListener(new MouseMotionListener() {
+
+			@Override
+			public void mouseDragged(MouseEvent e) {}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				JList l = (JList) e.getSource();
+				ListModel m = l.getModel();
+				int index = l.locationToIndex(e.getPoint());
+				if (index > -1) {
+					l.setToolTipText(m.getElementAt(index).toString());
+				}
+			}
+		});
+
+        telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         JPanel telemetryScrollContainer = new JPanel();
         telemetryScrollContainer.setLayout(new GridLayout());
-        telemetryScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        telemetryScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
 
         telemetryScrollContainer.add(telemetryScroll);
 
@@ -442,8 +462,10 @@ public class Visualizer {
 
 			DefaultListModel<String> listModel = new DefaultListModel<>();
 
+			final String html = "<html><body style='width: %1spx'>%1s";
+
 			for(String line : telemetry.toString().split("\n")) {
-				listModel.addElement(line);
+				listModel.addElement(String.format(html, 200, line));
 			}
 
 			telemetryList.setModel(listModel);

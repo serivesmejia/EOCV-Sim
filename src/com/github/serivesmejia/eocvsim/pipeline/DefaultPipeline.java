@@ -1,10 +1,10 @@
 package com.github.serivesmejia.eocvsim.pipeline;
 
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+
 import org.openftc.easyopencv.OpenCvPipeline;
 
 public class DefaultPipeline extends OpenCvPipeline {
