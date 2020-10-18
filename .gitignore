@@ -115,3 +115,5 @@ fabric.properties
 !/TeamCode/src/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
 !/TeamCode/src/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
 !/TeamCode/src/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
+
+/.idea/libraries/KotlinJavaRuntime.xml
