@@ -1,6 +1,3 @@
-/TeamCode/src/org/firstinspires/ftc/teamcode/RingPipeline.java
-/TeamCode/src/org/firstinspires/ftc/teamcode/CVGripUtils.java
-
 # Created by https://www.toptal.com/developers/gitignore/api/intellij
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij
 
@@ -107,3 +104,14 @@ fabric.properties
 .idea/codestream.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
+
+/lib/*
+
+!/lib/classgraph-4.8.90.jar
+!/lib/gson-2.8.6.jar
+!/lib/opencv-440.jar
+
+/TeamCode/src/org/firstinspires/ftc/teamcode/*
+!/TeamCode/src/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
+!/TeamCode/src/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
+!/TeamCode/src/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
