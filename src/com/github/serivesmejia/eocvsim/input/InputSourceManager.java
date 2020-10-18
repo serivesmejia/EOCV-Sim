@@ -24,7 +24,7 @@ public class InputSourceManager {
 	
 	public volatile HashMap<String, InputSource> sources = new HashMap<>();
 
-	private EOCVSim eocvSim;
+	private final EOCVSim eocvSim;
 
 	public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 

@@ -7,6 +7,7 @@ import com.google.gson.annotations.Expose;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import java.util.Objects;
@@ -20,11 +21,12 @@ public class CameraSource extends InputSource {
 
     @Expose
     private final int webcamIndex;
+    @Expose
+    private volatile Size size;
 
-    private Size lastSize = new Size();
-
-    public CameraSource(int webcamIndex) {
+    public CameraSource(int webcamIndex, Size size) {
         this.webcamIndex = webcamIndex;
+        this.size = size;
     }
 
     @Override
@@ -66,22 +68,30 @@ public class CameraSource extends InputSource {
     @Override
     public Mat update() {
 
-        lastFrame = new Mat();
+        if(lastFrame != null) lastFrame.release();
 
-        camera.read(lastFrame);
-        lastSize = lastFrame.size();
+        lastFrame = new Mat();
+        Mat newFrame = new Mat();
+
+        camera.read(newFrame);
+
+        if(newFrame.empty()) throw new NullPointerException();
+
+        Imgproc.resize(newFrame,lastFrame, size);
+        newFrame.release();
+
         return lastFrame;
 
     }
 
     @Override
     public InputSource cloneSource() {
-        return new CameraSource(webcamIndex);
+        return new CameraSource(webcamIndex, size);
     }
 
     @Override
     public String toString() {
-        return "CameraSource(" + webcamIndex + ", " + lastSize.toString() + ")";
+        return "CameraSource(" + webcamIndex + ", " + size.toString() + ")";
     }
 
 }
