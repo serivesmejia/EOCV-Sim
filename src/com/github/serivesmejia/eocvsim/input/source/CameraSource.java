@@ -28,16 +28,19 @@ public class CameraSource extends InputSource {
     }
 
     @Override
-    public void init() {
+    public boolean init() {
 
-        if(initialized) return;
+        if(initialized) return false;
         initialized = true;
 
         camera = new VideoCapture(webcamIndex);
 
         if(!camera.isOpened()) {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex);
+            return false;
         }
+
+        return true;
 
     }
 

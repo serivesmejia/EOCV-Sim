@@ -151,7 +151,7 @@ public class EOCVSim {
 
 					int pipeline = visualizer.pipelineSelector.getSelectedIndex();
 					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-						pipelineManager.changePipelineNextFrame(pipeline);
+						pipelineManager.requestChangePipeline(pipeline);
 						beforeSelectedPipeline = pipeline;
 					}
 
@@ -175,7 +175,7 @@ public class EOCVSim {
 						String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
 
 						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
-							inputSourceManager.setInputSourceNextFrame(source);
+							inputSourceManager.requestSetInputSource(source);
 							beforeSelectedSource = source;
 						}
 

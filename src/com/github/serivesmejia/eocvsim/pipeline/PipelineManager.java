@@ -133,7 +133,7 @@ public class PipelineManager {
 		
 	}
 	
-	public void changePipeline(int index) {
+	public void setPipeline(int index) {
 	
 		Class<OpenCvPipeline> pipelineClass = pipelines.get(index);
 	
@@ -163,11 +163,11 @@ public class PipelineManager {
 		
 	}
 
-	public void changePipelineNextFrame(int index) {
+	public void requestChangePipeline(int index) {
 		eocvSim.runOnMainThread(new Runnable() {
 			@Override
 			public void run() {
-				changePipeline(index);
+				setPipeline(index);
 			}
 		});
 	}

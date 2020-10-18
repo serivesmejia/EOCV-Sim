@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.input.InputSource;
 
 import com.google.gson.annotations.Expose;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -29,16 +30,19 @@ public class ImageSource extends InputSource {
 		this.size = size;
 	}
 
-
 	@Override
-	public void init() {
+	public boolean init() {
 		
-		if(initialized) return;
+		if(initialized) return false;
 		
 		initialized = true;
 		
 		readImage();
-		
+
+		if(img == null || img.empty()) return false;
+
+		return true;
+
 	}
 
 	public void reset() {
@@ -60,9 +64,13 @@ public class ImageSource extends InputSource {
 	}
 
 	public void readImage() {
-		
+
 		img = Imgcodecs.imread(this.imgPath);
-				
+
+		if(img == null || img.empty()) {
+			return;
+		}
+
 		if(this.size != null) {
 			
 			Mat resImg = new Mat();
@@ -79,6 +87,7 @@ public class ImageSource extends InputSource {
 
 	@Override
 	public Mat update() {
+		if(img == null) return null;
 		return img.clone();
 	}
 
