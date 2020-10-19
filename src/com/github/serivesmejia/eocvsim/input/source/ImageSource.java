@@ -82,7 +82,9 @@ public class ImageSource extends InputSource {
 		} else {
 			this.size = img.size();
 		}
-		
+
+		Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2RGB);
+
 	}
 
 	@Override

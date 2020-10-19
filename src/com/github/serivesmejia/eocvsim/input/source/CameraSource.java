@@ -42,6 +42,14 @@ public class CameraSource extends InputSource {
             return false;
         }
 
+        Mat newFrame = new Mat();
+        camera.read(newFrame);
+
+        if(newFrame.empty()) {
+            Log.error("CameraSource", "Unable to open camera " + webcamIndex + ", the returned first Mat was empty.");
+            return false;
+        }
+
         return true;
 
     }
@@ -77,7 +85,9 @@ public class CameraSource extends InputSource {
 
         if(newFrame.empty()) throw new NullPointerException();
 
-        Imgproc.resize(newFrame,lastFrame, size);
+        Imgproc.cvtColor(newFrame, newFrame, Imgproc.COLOR_BGR2RGB);
+
+        Imgproc.resize(newFrame, lastFrame, size);
         newFrame.release();
 
         return lastFrame;

@@ -80,7 +80,14 @@ public class InputSourceManager {
 	public void update() {
 
 		if(currInputSource == null) return;
-		lastMatFromSource = currInputSource.update();
+
+		try {
+			lastMatFromSource = currInputSource.update();
+		} catch(Throwable ex) {
+
+			Log.error("InputSourceManager", "Error while processing current source", ex);
+
+		}
 
 	}
 
