@@ -38,7 +38,7 @@ public class EOCVSim {
 
 	public void init() {
 
-		Log.info("EOCVSim", "Initializing EOCV Sim v" + VERSION);
+		Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
 		Log.white();
 		
 		SysUtil.loadCvNativeLib();
@@ -98,7 +98,7 @@ public class EOCVSim {
 			inputSourceManager.update();
 
 			//if we dont have a mat from the inputsource, we'll just skip this frame.
-			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
+			if(inputSourceManager.lastMatFromSource == null ||  inputSourceManager.lastMatFromSource.empty()) continue;
 
 			try {
 

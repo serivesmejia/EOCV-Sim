@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.input.source.CameraSource;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
+import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 
 import com.google.gson.Gson;
@@ -60,10 +61,21 @@ public class InputSourceLoader {
 
     public void loadInputSourcesFromFile(File f) {
 
+        if(!f.exists()) return;
+
         String jsonSources = SysUtil.loadFileStr(f);
         if(jsonSources.trim().equals("")) return;
 
-        InputSourcesContainer sources = gson.fromJson(jsonSources, InputSourcesContainer.class);
+        InputSourcesContainer sources;
+
+        try {
+            sources = gson.fromJson(jsonSources, InputSourcesContainer.class);
+        } catch(Throwable ex) {
+            Log.error("InputSourceLoader", "Error while parsing sources file, it will be replaced and fixed later on, but the user created sources will be deleted.", ex);
+            Log.white();
+            return;
+        }
+
         sources.updateAllSources();
 
         loadedInputSources = sources.allSources;

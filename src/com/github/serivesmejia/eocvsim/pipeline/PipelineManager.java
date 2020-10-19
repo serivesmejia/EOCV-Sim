@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.pipeline;
 
+import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ public class PipelineManager {
 	
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
+	public int currentPipelineIndex = 0;
 
 	public Telemetry currentTelemetry = null;
 
@@ -29,6 +31,8 @@ public class PipelineManager {
 	public int lastFPS = 0;
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
+
+	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
 
 	public EOCVSim eocvSim;
 
@@ -43,7 +47,9 @@ public class PipelineManager {
 		lookForPipelines(lookForPipelineAPWD);
 		
 		nextFPSUpdateMillis = System.currentTimeMillis();
-		
+
+		setPipeline(0);
+
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -108,6 +114,12 @@ public class PipelineManager {
 	
 	public void update(Mat inputMat) {
 
+		//run all pending requested runnables
+		for(Object runn : runnsOnUpdate.toArray()) {
+			((Runnable) runn).run();
+			runnsOnUpdate.remove(runn);
+		}
+
 		if(currentPipeline != null) {
 			lastOutputMat = currentPipeline.processFrame(inputMat);
 		} else {
@@ -115,7 +127,7 @@ public class PipelineManager {
 		}
 
 		calcFPS();
-		
+
 	}
 	
 	private void calcFPS() {
@@ -134,42 +146,67 @@ public class PipelineManager {
 	}
 	
 	public void setPipeline(int index) {
-	
+
+		if(index == currentPipelineIndex) return;
+
+		OpenCvPipeline nextPipeline = null;
+		Telemetry nextTelemetry;
+		
 		Class<OpenCvPipeline> pipelineClass = pipelines.get(index);
 	
 		Log.info("PipelineManager", "Changing to pipeline " + pipelineClass.getName());
 		
 		Constructor<?> constructor;
 		try {
+
 			constructor = pipelineClass.getConstructor();
-			currentPipeline = (OpenCvPipeline) constructor.newInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.error("PipelineManager", "Unable to instantiate class " + pipelineClass.getName());
+			nextPipeline = (OpenCvPipeline) constructor.newInstance();
+
+			nextTelemetry = new Telemetry();
+			nextPipeline.telemetry = nextTelemetry;
+
+			Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
+
+			nextPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
+
+		} catch(Throwable ex) {
+
+			eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
+													 "Close", new Dimension(300, 150), true, true);
+
+			Log.error("InputSourceManager", "Error while initializing requested pipeline ("+ pipelineClass.getSimpleName() + ")", ex);
+
+			Log.white();
+
+			eocvSim.visualizer.pipelineSelector.setSelectedIndex(currentPipelineIndex);
+
+			return;
+
 		}
 
-		currentTelemetry = new Telemetry();
-
-		currentPipeline.telemetry = currentTelemetry;
-
-		Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
-		
-		currentPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
-		
 		Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.getName());
 		Log.white();
-		
+
+		currentPipeline = nextPipeline;
+		currentTelemetry = nextTelemetry;
+
+		currentPipelineIndex = index;
+
 		currentPipelineName = currentPipeline.getClass().getSimpleName();
-		
+
 	}
 
 	public void requestChangePipeline(int index) {
-		eocvSim.runOnMainThread(new Runnable() {
+		runOnUpdate(new Runnable() {
 			@Override
 			public void run() {
 				setPipeline(index);
 			}
 		});
+	}
+
+	public void runOnUpdate(Runnable runn) {
+		runnsOnUpdate.add(runn);
 	}
 
 }

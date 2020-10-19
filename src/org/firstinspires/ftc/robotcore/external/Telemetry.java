@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.robotcore.external;
 
+import com.github.serivesmejia.eocvsim.util.Log;
+
 import java.util.ArrayList;
 
 public class Telemetry {
 
-    private ArrayList<ItemOrLine> telem = new ArrayList<>();
+    private final ArrayList<ItemOrLine> telem = new ArrayList<>();
     private ArrayList<ItemOrLine> lastTelem = new ArrayList<>();
 
     private String captionValueSeparator = " : ";
@@ -17,18 +19,64 @@ public class Telemetry {
     private boolean autoClear = true;
 
     public Item addData(String caption, String value) {
-        Item i = new Item(caption, value);
-        i.valueSeparator = captionValueSeparator;
-        telem.add(i);
-        return i;
+
+        Item item = new Item(caption, value);
+        item.valueSeparator = captionValueSeparator;
+
+        telem.add(item);
+
+        return item;
+
+    }
+
+    public Item addData(String caption, Func valueProducer) {
+
+        Item item = new Item(caption, valueProducer);
+        item.valueSeparator = captionValueSeparator;
+
+        telem.add(item);
+
+        return item;
+
     }
 
     public Item addData(String caption, Object value) {
-        return addData(caption, value.toString());
+
+        Item item = new Item(caption, "");
+        item.valueSeparator = captionValueSeparator;
+
+        item.setValue(value);
+
+        telem.add(item);
+
+        return item;
+
     }
 
     public Item addData(String caption, String value, Object... args) {
-        return addData(caption, String.format(value, args));
+
+        Item item = new Item(caption, "");
+        item.valueSeparator = captionValueSeparator;
+
+        item.setValue(value, args);
+
+        telem.add(item);
+
+        return item;
+
+    }
+
+    public Item addData(String caption, Func valueProducer, Object... args) {
+
+        Item item = new Item(caption, "");
+        item.valueSeparator = captionValueSeparator;
+
+        item.setValue(valueProducer, args);
+
+        telem.add(item);
+
+        return item;
+
     }
 
     public Line addLine() {
@@ -140,15 +188,20 @@ public class Telemetry {
     public static class Item extends ItemOrLine {
 
         protected String caption = "";
-        protected String value = "";
+
+        protected Func valueProducer = null;
 
         protected String valueSeparator = " : ";
 
         protected boolean isRetained = false;
 
         public Item(String caption, String value) {
+            setCaption(caption); setValue(value);
+        }
+
+        public Item(String caption, Func valueProducer) {
             this.caption = caption;
-            this.value = value;
+            this.valueProducer = valueProducer;
         }
 
         public void setCaption(String caption) {
@@ -156,7 +209,16 @@ public class Telemetry {
         }
 
         public void setValue(String value) {
-            this.value = value;
+            setValue(new Func<String>() {
+                @Override
+                public String value() {
+                    return value;
+                }
+            });
+        }
+
+        public void setValue(Func func) {
+            this.valueProducer = func;
         }
 
         public void setValue(Object value) {
@@ -167,6 +229,15 @@ public class Telemetry {
             setValue(String.format(value, args));
         }
 
+        public void setValue(Func func, Object... args) {
+            setValue(new Func<String>() {
+                @Override
+                public String value() {
+                    return String.format(func.value().toString(), args);
+                }
+            });
+        }
+
         public void setRetained(boolean retained) { this.isRetained = retained; }
 
         public String getCaption() { return caption; }
@@ -175,7 +246,7 @@ public class Telemetry {
 
         @Override
         public String toString() {
-            return caption + " " + valueSeparator + " " + value;
+            return caption + " " + valueSeparator + " " + valueProducer.value().toString();
         }
 
     }
@@ -201,8 +272,6 @@ public class Telemetry {
 
     }
 
-    private static class ItemOrLine {
-
-    }
+    private static class ItemOrLine { }
 
 }

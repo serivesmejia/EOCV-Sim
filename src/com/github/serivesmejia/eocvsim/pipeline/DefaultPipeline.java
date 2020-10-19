@@ -10,13 +10,15 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class DefaultPipeline extends OpenCvPipeline {
 
     @Override
-    public void init(Mat input) {
-        telemetry.addData("[>]", "Default pipeline selected.");
-        telemetry.update();
-    }
+    public void init(Mat input) { }
 
     @Override
     public Mat processFrame(Mat input) {
+
+
+        telemetry.addData("[>]", "Default pipeline selected.");
+        telemetry.update();
+
         Mat matTxt = input.clone();
         // Outline
         Imgproc.putText (
@@ -28,6 +30,7 @@ public class DefaultPipeline extends OpenCvPipeline {
                 new Scalar(255, 255, 255),
                 5
         );
+
         //Text
         Imgproc.putText (
                 matTxt,
@@ -38,6 +41,8 @@ public class DefaultPipeline extends OpenCvPipeline {
                 new Scalar(0, 0, 0),
                 2
         );
+
         return matTxt;
+
     }
 }
