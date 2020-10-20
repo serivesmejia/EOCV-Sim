@@ -18,11 +18,11 @@ import io.github.classgraph.ScanResult;
 
 public class PipelineManager {
 
-	public volatile ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<Class<OpenCvPipeline>>();
+	public volatile ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<>();
 	
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
-	public int currentPipelineIndex = 0;
+	public int currentPipelineIndex = -1;
 
 	public Telemetry currentTelemetry = null;
 
@@ -48,7 +48,7 @@ public class PipelineManager {
 		
 		nextFPSUpdateMillis = System.currentTimeMillis();
 
-		setPipeline(0);
+		requestChangePipeline(0);
 
 	}
 	
@@ -81,7 +81,7 @@ public class PipelineManager {
 			while (superClass != null) {
 				
 				if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
-					
+
 					Log.info("PipelineManager", "Found pipeline " + routeClassInfo.getName());
 					if(lookForPipelineAPWD != null) lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName()); 
 					
@@ -123,7 +123,7 @@ public class PipelineManager {
 		if(currentPipeline != null) {
 			lastOutputMat = currentPipeline.processFrame(inputMat);
 		} else {
-			lastOutputMat = inputMat.clone();
+			lastOutputMat = inputMat;
 		}
 
 		calcFPS();

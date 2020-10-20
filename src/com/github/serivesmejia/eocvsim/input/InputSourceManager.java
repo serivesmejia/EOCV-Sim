@@ -84,9 +84,7 @@ public class InputSourceManager {
 		try {
 			lastMatFromSource = currInputSource.update();
 		} catch(Throwable ex) {
-
 			Log.error("InputSourceManager", "Error while processing current source", ex);
-
 		}
 
 	}
