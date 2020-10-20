@@ -79,7 +79,7 @@ public class CreateCameraSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField("580",4);
+        widthTextField = new JTextField("320",4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);
@@ -87,7 +87,7 @@ public class CreateCameraSource {
         JLabel xSizeLabel = new JLabel(" x ");
         xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        heightTextField = new JTextField("480", 4);
+        heightTextField = new JTextField("240", 4);
 
         sizePanel.add(xSizeLabel);
         sizePanel.add(heightTextField);
