@@ -10,5 +10,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="src" level="project" />
     <orderEntry type="module" module-name="TeamCode" />
+    <orderEntry type="library" name="classgraph-4.8.90" level="project" />
+    <orderEntry type="library" name="opencv-440" level="project" />
+    <orderEntry type="library" name="gson-2.8.6" level="project" />
   </component>
 </module>

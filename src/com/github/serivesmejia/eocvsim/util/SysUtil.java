@@ -1,7 +1,9 @@
 package com.github.serivesmejia.eocvsim.util;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.opencv.core.Core;
@@ -13,12 +15,14 @@ public class SysUtil {
 	public enum OperatingSystem {
 		WINDOWS,
 		LINUX,
-		OSX,
+		MACOS,
 		UNKNOWN
 	}
 	
 	public static int MB = 1024 * 1024;
-	
+
+	public static String GH_NATIVE_LIBS_URL = "https://github.com/serivesmejia/OpenCVNativeLibs/raw/master/";
+
 	public static OperatingSystem getOS() {
 		
 		String osName = System.getProperty("os.name").toLowerCase();
@@ -27,6 +31,8 @@ public class SysUtil {
 			return OperatingSystem.WINDOWS;
 		} else if(osName.contains("nux")) {
 			return OperatingSystem.LINUX;
+		} else if(osName.contains("mac") || osName.contains("darwin")) {
+			return OperatingSystem.MACOS;
 		}
 		
 		return OperatingSystem.UNKNOWN;
@@ -43,9 +49,13 @@ public class SysUtil {
 				os = "win";
 				fileExt = "dll";
 				break;
-			default:
+			case LINUX:
 				os = "linux";
 				fileExt = "so";
+				break;
+			case MACOS:
+				os = "mac";
+				fileExt = "dylib";
 				break;
 		}
 		
@@ -66,28 +76,23 @@ public class SysUtil {
 		String libName = os + arch + "_" + name; //resultant lib name from those two
 		String libNameExt = libName + "." + fileExt; //resultant lib name from those two
 
-		InputStream libIs = SysUtil.class.getResourceAsStream("/resources/libs/" + libNameExt);
+		File nativeLibFile = new File(getAppData() + File.separator + libNameExt);
 
-		Log.info("SysUtil", "Copying native lib \"" + libNameExt + "\"");
-
-		CopyFileIsData copyData = null;
-
-		try {
-			copyData = copyFileIsTemp(libIs, libNameExt, false);
-			if(!copyData.alreadyExists) {
-				Log.info("SysUtil", "Copy of " + libName + " cancelled since file already exists");
+		if(!nativeLibFile.exists()) {
+			Log.info("SysUtil", "Downloading native lib from " + GH_NATIVE_LIBS_URL + libNameExt);
+			try {
+				download(GH_NATIVE_LIBS_URL + libNameExt, nativeLibFile.getAbsolutePath());
+			} catch (Throwable ex) {
+				ex.printStackTrace();
 			}
-		} catch (Throwable ex) {
-			ex.printStackTrace();
+			Log.white();
 		}
-		
-		Log.white();
-		
+
 		Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
 		
 		try {
 			
-			System.load(copyData.file.getAbsolutePath()); //Loading OpenCV native library
+			System.load(nativeLibFile.getAbsolutePath()); //Loading OpenCV native library
 			Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
 			
 		} catch (UnsatisfiedLinkError ex) {
@@ -145,13 +150,6 @@ public class SysUtil {
 	public static long getMemoryUsageMB() {
 		return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / MB;
 	}
-	
-	public static class CopyFileIsData {
-		
-		public File file = null;
-		public boolean alreadyExists = false;	
-
-	}
 
 	public static String loadFileStr(File f) {
 
@@ -181,8 +179,21 @@ public class SysUtil {
 
 	}
 
+	public static void download(String url, String fileName) throws Exception {
+		try (InputStream in = URI.create(url).toURL().openStream()) {
+			Files.copy(in, Paths.get(fileName));
+		}
+	}
+
 	public static File getAppData() {
 		return new File(System.getProperty("user.home") + File.separator);
+	}
+
+	public static class CopyFileIsData {
+
+		public File file = null;
+		public boolean alreadyExists = false;
+
 	}
 
 }

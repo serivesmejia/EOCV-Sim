@@ -2,12 +2,13 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.input.ImageSource;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import org.opencv.core.Size;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -17,6 +18,8 @@ import java.io.File;
 public class CreateImageSource {
 
     public JDialog createImageSource = null;
+
+    public JTextField nameTextField = null;
 
     public JTextField imgDirTextField = null;
     public JTextField widthTextField = null;
@@ -63,7 +66,7 @@ public class CreateImageSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField("580",4);
+        widthTextField = new JTextField("320",4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);
@@ -71,7 +74,7 @@ public class CreateImageSource {
         JLabel xSizeLabel = new JLabel(" x ");
         xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        heightTextField = new JTextField("480", 4);
+        heightTextField = new JTextField("240", 4);
 
         sizePanel.add(xSizeLabel);
         sizePanel.add(heightTextField);
@@ -94,7 +97,7 @@ public class CreateImageSource {
         JLabel nameLabel = new JLabel("Source name: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        JTextField nameTextField = new JTextField("ImageSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
+        nameTextField = new JTextField("ImageSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
 
         namePanel.add(nameLabel);
         namePanel.add(nameTextField);
@@ -141,6 +144,16 @@ public class CreateImageSource {
         GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, 580);
         GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, 480);
 
+
+        nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) { changed(); }
+            public void removeUpdate(DocumentEvent e) { changed(); }
+            public void insertUpdate(DocumentEvent e) { changed(); }
+            public void changed() {
+                createButton.setEnabled(!nameTextField.getText().trim().equals("") && selectedValidImage);
+            }
+        });
+
         createButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,7 +189,7 @@ public class CreateImageSource {
             selectedValidImage = false;
         }
 
-        createButton.setEnabled(selectedValidImage);
+        createButton.setEnabled(selectedValidImage && !nameTextField.getText().trim().equals(""));
 
     }
 

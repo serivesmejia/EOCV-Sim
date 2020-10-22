@@ -9,6 +9,8 @@ import java.util.Map;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
+import com.github.serivesmejia.eocvsim.input.source.ImageSource;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
@@ -22,18 +24,9 @@ public class InputSourceManager {
 	
 	public volatile HashMap<String, InputSource> sources = new HashMap<>();
 
-	public String currInputSourceName = "";
-
-	private EOCVSim eocvSim;
-
-	private volatile Map.Entry<String, InputSource> requestedToAddInputSource = null;
-	private volatile boolean finishedWritingToAddInputSource = false;
-
-	public volatile boolean finishedAddingRequestedSource = false;
+	private final EOCVSim eocvSim;
 
 	public InputSourceLoader inputSourceLoader = new InputSourceLoader();
-
-	private volatile String nextInputSourceChange = "";
 
 	public enum SourceType {
 		IMAGE,
@@ -55,10 +48,10 @@ public class InputSourceManager {
 			addInputSource(entry.getKey(), entry.getValue());
 		}
 
-		Size size = new Size(580, 480);
-		createDefaultImgInputSource("/resources/images/ug_4.jpg", "ug_ocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
-		createDefaultImgInputSource("/resources/images/ug_1.jpg", "ug_ocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
-		createDefaultImgInputSource("/resources/images/ug_0.jpg", "ug_ocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
+		Size size = new Size(320, 240);
+		createDefaultImgInputSource("/resources/images/ug_4.jpg", "ug_eocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
+		createDefaultImgInputSource("/resources/images/ug_1.jpg", "ug_eocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
+		createDefaultImgInputSource("/resources/images/ug_0.jpg", "ug_eocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
 
 		lastMatFromSource = new Mat();
 
@@ -82,28 +75,17 @@ public class InputSourceManager {
 		}
 	}
 
-	public void setInputSourceNextFrame(String name) {
-		this.nextInputSourceChange = name;
-	}
-	
 	public void destroy() { }
 
 	public void update() {
 
-		if(requestedToAddInputSource != null && finishedWritingToAddInputSource) {
-			addInputSource(requestedToAddInputSource.getKey(), requestedToAddInputSource.getValue());
-			requestedToAddInputSource = null;
-			finishedWritingToAddInputSource = false;
-			finishedAddingRequestedSource = true;
-		}
-
-		if(!nextInputSourceChange.equals("")) {
-			setInputSource(nextInputSourceChange);
-			nextInputSourceChange = "";
-		}
-
 		if(currInputSource == null) return;
-		lastMatFromSource = currInputSource.update();
+
+		try {
+			lastMatFromSource = currInputSource.update();
+		} catch(Throwable ex) {
+			Log.error("InputSourceManager", "Error while processing current source", ex);
+		}
 
 	}
 
@@ -139,32 +121,59 @@ public class InputSourceManager {
 
 	}
 	
-	public void setInputSource(String sourceName) {
-
-		if(currInputSource != null) {
-			currInputSource.reset();
-		}
+	public boolean setInputSource(String sourceName) {
 
 		InputSource src = sources.get(sourceName);
 
 		if(src != null) {
 			src.reset();
+			src.eocvSim = eocvSim;
 		}
 
 		//check if source type is a camera, and if so, create a please wait dialog
 		Visualizer.AsyncPleaseWaitDialog apwdCam = checkCameraDialogPleaseWait(sourceName);
 
-		if(src != null) src.init();
+		if(src != null) {
+			if(!src.init()) {
+
+				if(apwdCam != null) {
+					apwdCam.destroyDialog();
+				}
+
+				eocvSim.visualizer.asyncPleaseWaitDialog("Error while loading requested source", "Falling back to previous source",
+												 "Close", new Dimension(300, 150), true, true);
+
+				Log.error("InputSourceManager", "Error while loading requested source ("+ sourceName +") reported by itself (init method returned false)");
+
+				return false;
+
+			}
+		}
 
 		//if there's a please wait dialog for a camera source, destroy it.
 		if(apwdCam != null) {
 			apwdCam.destroyDialog();
 		}
 
+		if(currInputSource != null) {
+			currInputSource.reset();
+		}
+
 		currInputSource = src;
 		
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
-		
+
+		return true;
+
+	}
+
+	public void requestSetInputSource(String name) {
+		eocvSim.runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				setInputSource(name);
+			}
+		});
 	}
 
 	public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
@@ -206,6 +215,5 @@ public class InputSourceManager {
 		return SourceType.UNKNOWN;
 
 	}
-
 
 }

@@ -280,6 +280,9 @@ public class SkystoneDeterminationPipeline extends OpenCvPipeline {
                     -1); // Negative thickness means solid fill
         }
 
+        telemetry.addData("[Pattern]", position);
+        telemetry.update();
+
         /*
          * Render the 'input' buffer to the viewport. But note this is not
          * simply rendering the raw camera feed, because we called functions

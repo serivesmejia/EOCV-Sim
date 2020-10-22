@@ -7,11 +7,14 @@ import java.io.File;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 public class CvUtil {
 
 	 public static BufferedImage matToBufferedImage(Mat m) {
-		 
+
+		 Imgproc.cvtColor(m, m, Imgproc.COLOR_RGB2BGR);
+
 		 // Fastest code
 		 // output can be assigned either to a BufferedImage or to an Image
 		 int type = BufferedImage.TYPE_BYTE_GRAY;

@@ -1,13 +1,10 @@
 package com.github.serivesmejia.eocvsim.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -15,8 +12,10 @@ import java.util.Map;
 import javax.swing.*;
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
+import com.github.serivesmejia.eocvsim.gui.util.LineWrapRenderer;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -41,8 +40,13 @@ public class Visualizer {
 	public JPanel sourceSelectorContainer = new JPanel();
 	public volatile JList<String> sourceSelector = new JList<>();
 	public JScrollPane sourceSelectorScroll = new JScrollPane();
+	public JPanel sourceSelectorButtonsContainer = new JPanel();
 	public JButton sourceSelectorCreateBtt = new JButton("Create");
 	public JButton sourceSelectorDeleteBtt = new JButton("Delete");
+
+	public JPanel telemetryContainer = new JPanel();
+    public JScrollPane telemetryScroll = new JScrollPane();
+    public volatile JList<String> telemetryList = new JList<>();
 
 	private EOCVSim eocvSim = null;
 	
@@ -70,33 +74,33 @@ public class Visualizer {
 		/*
 		* IMG VISUALIZER & SCROLL PANE
 		*/
-		
+
 		imgScrollContainer = new JPanel();
 		imgScrollPane = new JScrollPane(imgScrollContainer);
-		
+
 		imgScrollContainer.setLayout(new GridBagLayout());
-		
+
 		imgScrollContainer.add(img, new GridBagConstraints());
-		
+
 		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		
+
 		imgScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 		imgScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		
+
 		rightContainer.setLayout(new GridLayout(3, 1));
 
 		/*
 		* PIPELINE SELECTOR
 		*/
-		
+
 		pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 		//pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-		
-		JLabel pipelineSelectorLabel = new JLabel("Select Pipeline");
+
+		JLabel pipelineSelectorLabel = new JLabel("Pipelines");
 
 		pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
-		
+
 		pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
 		pipelineSelectorContainer.add(pipelineSelectorLabel);
 
@@ -105,36 +109,36 @@ public class Visualizer {
 		JPanel pipelineSelectorScrollContainer = new JPanel();
 		pipelineSelectorScrollContainer.setLayout(new GridLayout());
 		pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-		
+
 		pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
-		
+
 		pipelineSelectorScroll.setViewportView(pipelineSelector);
 		pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
+
 		pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
-		
+
 		rightContainer.add(pipelineSelectorContainer);
-	
+
 		/*
 		* SOURCE SELECTOR
 		*/
 
 		sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 		//sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-		
-		JLabel sourceSelectorLabel = new JLabel("Select Source");
+
+		JLabel sourceSelectorLabel = new JLabel("Sources");
 
 		sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
-		
+
 		sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
-		
+
 		sourceSelectorContainer.add(sourceSelectorLabel);
-	
+
 		JPanel sourceSelectorScrollContainer = new JPanel();
 		sourceSelectorScrollContainer.setLayout(new GridLayout());
 		sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-		
+
 		sourceSelectorScrollContainer.add(sourceSelectorScroll);
 
 		sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -158,22 +162,74 @@ public class Visualizer {
 		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
-		sourceSelectorContainer.add(sourceSelectorCreateBtt);
-		sourceSelectorContainer.add(sourceSelectorDeleteBtt);
+
+		sourceSelectorButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+		sourceSelectorButtonsContainer.add(sourceSelectorCreateBtt);
+		sourceSelectorButtonsContainer.add(sourceSelectorDeleteBtt);
+
+		sourceSelectorContainer.add(sourceSelectorButtonsContainer);
 
 		rightContainer.add(sourceSelectorContainer);
-		
+
 		/*
-		* SPLIT
-		*/
+		 * TELEMETRY
+		 */
+
+		telemetryContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+		JLabel telemetryLabel = new JLabel("Telemetry");
+
+		telemetryLabel.setFont(telemetryLabel.getFont().deriveFont(20.0f));
+		telemetryLabel.setHorizontalAlignment(JLabel.CENTER);
+
+		telemetryContainer.add(telemetryLabel);
+
+        telemetryScroll.setViewportView(telemetryList);
+        telemetryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        //tooltips for the telemetry list items (thnx stackoverflow)
+		telemetryList.addMouseMotionListener(new MouseMotionListener() {
+
+			@Override
+			public void mouseDragged(MouseEvent e) {}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				JList l = (JList) e.getSource();
+				ListModel m = l.getModel();
+				int index = l.locationToIndex(e.getPoint());
+				if (index > -1) {
+					l.setToolTipText(m.getElementAt(index).toString());
+				}
+			}
+
+		});
+
+        telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        JPanel telemetryScrollContainer = new JPanel();
+        telemetryScrollContainer.setLayout(new GridLayout());
+        telemetryScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+
+        telemetryScrollContainer.add(telemetryScroll);
+
+        telemetryContainer.add(telemetryScrollContainer);
+
+		rightContainer.add(telemetryContainer);
+
+		/*
+		 * SPLIT
+		 */
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
-		
+
 		splitPane.setResizeWeight(1);
 		splitPane.setOneTouchExpandable(false);
 		splitPane.setContinuousLayout(true);
-		
+
 		frame.add(splitPane, BorderLayout.CENTER);
-		
+
 		frame.setSize(780, 645);
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
@@ -203,7 +259,7 @@ public class Visualizer {
 		
 	}
 	
-	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd) {
+	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
 	
 		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
 
@@ -214,9 +270,13 @@ public class Visualizer {
 
 		dialog.setModal(true);
 		dialog.setLayout(new GridLayout(rows, 1));
-		
-		dialog.setTitle("Operation in progress");
-		
+
+		if(isError) {
+			dialog.setTitle("Operation failed");
+		} else {
+			dialog.setTitle("Operation in progress");
+		}
+
 		JLabel msg = new JLabel(message);
 		msg.setHorizontalAlignment(JLabel.CENTER);
 		msg.setVerticalAlignment(JLabel.CENTER);
@@ -277,21 +337,32 @@ public class Visualizer {
 	}
 	
 	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null);
+		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null, false);
 	}
 	
 	public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null);
+		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null, false);
 	}
 	
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
 		
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable);
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError);
 		
 		new Thread(rPWD).start();
 		
 		return rPWD;
 		
+	}
+
+
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false);
+
+		new Thread(rPWD).start();
+
+		return rPWD;
+
 	}
 
 	public class AsyncPleaseWaitDialog implements Runnable {
@@ -308,13 +379,15 @@ public class Visualizer {
 		public volatile JButton cancelBtt = null;
 		
 		public volatile boolean wasCancelled = false;
-		
+
+		public volatile boolean isError = false;
+
 		public volatile String initialMessage = "";
 		public volatile String initialSubMessage = "";
 		
 		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
 		
-		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
 			
 			this.message = message;
 			this.subMessage = subMessage;
@@ -324,7 +397,9 @@ public class Visualizer {
 			
 			this.size = size;
 			this.cancellable = cancellable;
-			
+
+			this.isError = isError;
+
 		}
 		
 		public void onCancel(Runnable runn) {
@@ -336,8 +411,8 @@ public class Visualizer {
 		@Override
 		public void run() {
 			
-			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this);
-			
+			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
+
 			if(wasCancelled) {
 				for(Runnable runn : onCancelRunnables) {
 					runn.run();
@@ -399,6 +474,26 @@ public class Visualizer {
 		sourceSelector.revalidate();
 		sourceSelectorScroll.revalidate();
 		
+	}
+
+	public void updateTelemetry(Telemetry telemetry) {
+
+		if(telemetry != null && telemetry.hasChanged()) {
+
+			DefaultListModel<String> listModel = new DefaultListModel<>();
+
+			for(String line : telemetry.toString().split("\n")) {
+				listModel.addElement("<html>" + line + "</html>");
+			}
+
+			telemetryList.setModel(listModel);
+
+			telemetryList.setFixedCellWidth(240);
+			telemetryList.revalidate();
+			telemetryScroll.revalidate();
+
+		}
+
 	}
 		
 }

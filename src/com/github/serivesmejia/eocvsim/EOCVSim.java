@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
@@ -24,23 +25,24 @@ public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
 	public PipelineManager pipelineManager = null;
-	
+
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 
 	private String beforeSelectedSource = "";
 	private int beforeSelectedPipeline = -1;
 
 	public static Mat EMPTY_MAT = null;
-	public static String VERSION = "1.0.0";
+	public static String VERSION = "1.1.0";
 
-	private volatile ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
 	public void init() {
 
-		Log.info("EOCVSim", "Initializing EOCV Sim v" + VERSION);
+		Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
 		Log.white();
 		
 		SysUtil.loadCvNativeLib();
+
 		Log.white();
 		
 		EMPTY_MAT = new Mat();
@@ -84,6 +86,8 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
+			Telemetry telemetry = pipelineManager.currentTelemetry;
+
 			//run all pending requested runnables
 			for(Object runn : runnsOnMain.toArray()) {
 				((Runnable) runn).run();
@@ -91,17 +95,35 @@ public class EOCVSim {
 			}
 
 			updateVisualizerTitle();
-
 			inputSourceManager.update();
 
 			//if we dont have a mat from the inputsource, we'll just skip this frame.
-			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
+			if(inputSourceManager.lastMatFromSource == null ||  inputSourceManager.lastMatFromSource.empty()) continue;
 
 			try {
+
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
 				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
-			} catch(Throwable ex) { Log.error("Error while processing pipeline", ex); }
-			
+
+				if(telemetry != null) {
+					telemetry.errItem.setCaption("");
+					telemetry.errItem.setValue("");
+				}
+
+			} catch(Throwable ex) {
+
+				Log.error("Error while processing pipeline", ex);
+
+				if(telemetry != null) {
+					telemetry.errItem.setCaption("[/!\\]");
+					telemetry.errItem.setValue("Error while processing pipeline\nCheck console for details.");
+					telemetry.update();
+				}
+
+			}
+
+			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
+
 			System.gc(); //run JVM garbage collector
 			
 		}
@@ -133,7 +155,7 @@ public class EOCVSim {
 
 					int pipeline = visualizer.pipelineSelector.getSelectedIndex();
 					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-						pipelineManager.changePipelineNextFrame(pipeline);
+						pipelineManager.requestChangePipeline(pipeline);
 						beforeSelectedPipeline = pipeline;
 					}
 
@@ -157,7 +179,7 @@ public class EOCVSim {
 						String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
 
 						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
-							inputSourceManager.setInputSourceNextFrame(source);
+							inputSourceManager.requestSetInputSource(source);
 							beforeSelectedSource = source;
 						}
 
