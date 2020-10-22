@@ -102,7 +102,8 @@ public class CameraSource extends InputSource {
 
     @Override
     public String toString() {
-        return "CameraSource(" + webcamIndex + ", " + size.toString() + ")";
+        if(size == null) size = new Size();
+        return "CameraSource(" + webcamIndex + ", " + (size != null ? size.toString() : "null") + ")";
     }
 
 }
