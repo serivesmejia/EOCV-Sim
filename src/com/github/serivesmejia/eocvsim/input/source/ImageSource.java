@@ -100,7 +100,8 @@ public class ImageSource extends InputSource {
 
 	@Override
 	public String toString() {
-		return "ImageSource(\"" + imgPath + "\", " + this.size.toString() + ")";
+		if(size == null) size = new Size();
+		return "ImageSource(\"" + imgPath + "\", " + (size != null ? size.toString() : "null") + ")";
 	}
 	
 }
