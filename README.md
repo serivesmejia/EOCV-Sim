@@ -16,7 +16,7 @@ Because OpenCV in Java uses a native shared lib, which are platform specific, th
 * Windows x64 (tested)
 * Windows x32 (untested)
 * MacOS x64 (tested)
-* Linux x64 (tested)<br/>
+* Linux x64 (tested for Ubuntu 20.04)<br/>
 
 # Installation
 
