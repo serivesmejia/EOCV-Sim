@@ -52,7 +52,7 @@ No complicated setup is required, straight up importing the project into Intelli
             <img src='images/eocvsim_screenshot_installation_5.png' width='500' height='267'><br/>
             
 4) **Change to packages view** (optional):<br/><br/>
-      In order to have a better look of your project's sources, I recommend to change the view to "project" as explained next:<br/>
+      In order to have a better look of your project's sources, I recommend to change the view to "package" as explained next:<br/>
       1) Go to the left where your project files are shown, and click on the "Project" drop down list
       2) Select "Packages" from the list and the view will change.<br/><br/>
       Here's a quick gif illustrating these steps:<br/><br/>
