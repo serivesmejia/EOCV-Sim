@@ -147,7 +147,7 @@ public class Telemetry {
 
     public void clear() {
 
-        for(ItemOrLine i : telem.toArray(new ItemOrLine[telem.size()-1])) {
+        for(ItemOrLine i : telem.toArray(new ItemOrLine[0])) {
             if(i instanceof Item) {
                 if(!((Item) i).isRetained) telem.remove(i);
             } else {

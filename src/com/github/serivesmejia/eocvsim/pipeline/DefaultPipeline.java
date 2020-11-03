@@ -20,12 +20,12 @@ public class DefaultPipeline extends OpenCvPipeline {
         double aspectRatioPercentage = aspectRatio / (580.0/480.0);
 
         telemetry.addData("[>]", "Default pipeline selected.");
+        telemetry.addData("[Aspect Ratio]", aspectRatio + " (" + String.format("%.2f", aspectRatioPercentage * 100) + "%)");
         telemetry.update();
 
-        Mat matTxt = input.clone();
         // Outline
         Imgproc.putText (
-                matTxt,
+                input,
                 "Default pipeline selected",
                 new Point(0, 22 * aspectRatioPercentage),
                 Imgproc.FONT_HERSHEY_PLAIN,
@@ -36,7 +36,7 @@ public class DefaultPipeline extends OpenCvPipeline {
 
         //Text
         Imgproc.putText (
-                matTxt,
+                input,
                 "Default pipeline selected",
                 new Point(0, 22 * aspectRatioPercentage),
                 Imgproc.FONT_HERSHEY_PLAIN,
@@ -45,7 +45,7 @@ public class DefaultPipeline extends OpenCvPipeline {
                 (int) Math.round(2 * aspectRatioPercentage)
         );
 
-        return matTxt;
+        return input;
 
     }
 }

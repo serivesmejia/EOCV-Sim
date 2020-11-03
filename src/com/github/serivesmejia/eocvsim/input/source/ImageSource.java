@@ -65,20 +65,17 @@ public class ImageSource extends InputSource {
 
 	public void readImage() {
 
-		img = Imgcodecs.imread(this.imgPath);
+		Mat readMat = Imgcodecs.imread(this.imgPath);
 
-		if(img == null || img.empty()) {
-			return;
-		}
+		if(img == null) img = new Mat(readMat.rows(), readMat.cols(), readMat.type());
+
+		if(readMat.empty()) { return; }
+
+		readMat.copyTo(img);
+		readMat.release();
 
 		if(this.size != null) {
-			
-			Mat resImg = new Mat();
-			Imgproc.resize(img, resImg, this.size, 0.0, 0.0, Imgproc.INTER_LINEAR);
-			
-			img.release();
-			img = resImg;
-			
+			Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_LINEAR);
 		} else {
 			this.size = img.size();
 		}

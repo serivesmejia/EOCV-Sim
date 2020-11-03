@@ -36,7 +36,9 @@ public class Visualizer {
 	public JPanel pipelineSelectorContainer = new JPanel();
 	public JList<String> pipelineSelector = new JList<>();
 	public JScrollPane pipelineSelectorScroll = new JScrollPane();
-	
+	public JPanel pipelineButtonsContainer = new JPanel();
+	public JToggleButton pipelinePauseBtt =  new JToggleButton("Pause");
+
 	public JPanel sourceSelectorContainer = new JPanel();
 	public volatile JList<String> sourceSelector = new JList<>();
 	public JScrollPane sourceSelectorScroll = new JScrollPane();
@@ -58,13 +60,16 @@ public class Visualizer {
 
 	public static ImageIcon ICO_EOCVSIM = null;
 
-	public Visualizer(EOCVSim eocvSim) {
-		this.eocvSim = eocvSim;
+	static {
 		try {
 			ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public Visualizer(EOCVSim eocvSim) {
+		this.eocvSim = eocvSim;
 	}
 	
 	public void init() {
@@ -117,6 +122,24 @@ public class Visualizer {
 		pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
 		pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
+
+		pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+		pipelineButtonsContainer.add(pipelinePauseBtt);
+
+		pipelinePauseBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				eocvSim.runOnMainThread(new Runnable() {
+					@Override
+					public void run() {
+						eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected());
+					}
+				});
+			}
+		});
+
+		pipelineSelectorContainer.add(pipelineButtonsContainer);
 
 		rightContainer.add(pipelineSelectorContainer);
 

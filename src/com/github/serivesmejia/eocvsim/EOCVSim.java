@@ -34,6 +34,9 @@ public class EOCVSim {
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.1.0";
 
+	public static int DEFAULT_EOCV_WIDTH = 320;
+	public static int DEFAULT_EOCV_HEIGHT = 240;
+
 	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
 	public void init() {
@@ -42,7 +45,6 @@ public class EOCVSim {
 		Log.white();
 		
 		SysUtil.loadCvNativeLib();
-
 		Log.white();
 		
 		EMPTY_MAT = new Mat();
@@ -89,21 +91,24 @@ public class EOCVSim {
 			Telemetry telemetry = pipelineManager.currentTelemetry;
 
 			//run all pending requested runnables
-			for(Object runn : runnsOnMain.toArray()) {
-				((Runnable) runn).run();
+			for(Runnable runn : runnsOnMain.toArray(new Runnable[0])) {
+				runn.run();
 				runnsOnMain.remove(runn);
 			}
 
 			updateVisualizerTitle();
-			inputSourceManager.update();
+
+			if(!pipelineManager.isPaused()) inputSourceManager.update();
 
 			//if we dont have a mat from the inputsource, we'll just skip this frame.
-			if(inputSourceManager.lastMatFromSource == null ||  inputSourceManager.lastMatFromSource.empty()) continue;
+			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 
 			try {
 
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
-				visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
+
+				if(!pipelineManager.isPaused())
+					visualizer.updateVisualizedMat(pipelineManager.lastOutputMat);
 
 				if(telemetry != null) {
 					telemetry.errItem.setCaption("");
@@ -133,13 +138,15 @@ public class EOCVSim {
 	public void updateVisualizerTitle() {
 		
 		String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
-		
+
+		String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
+
 		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
-		
+
 		if(pipelineManager.currentPipeline == null) {
-			visualizer.setTitleMessage("No pipeline" + fpsMsg + memoryMsg);
+			visualizer.setTitleMessage("No pipeline" + fpsMsg + isPaused + memoryMsg);
 		} else {
-			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + memoryMsg);
+			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
 		}
 		
 	}

@@ -32,6 +32,8 @@ public class PipelineManager {
 	private int fpsC = 0;
 	private long nextFPSUpdateMillis = 0;
 
+	private volatile boolean isPaused = false;
+
 	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
 
 	public EOCVSim eocvSim;
@@ -120,6 +122,12 @@ public class PipelineManager {
 			runnsOnUpdate.remove(runn);
 		}
 
+		if(isPaused) {
+			if(lastOutputMat == null || lastOutputMat.empty())
+				lastOutputMat = inputMat;
+			return;
+		}
+
 		if(currentPipeline != null) {
 			lastOutputMat = currentPipeline.processFrame(inputMat);
 		} else {
@@ -194,6 +202,10 @@ public class PipelineManager {
 
 		currentPipelineName = currentPipeline.getClass().getSimpleName();
 
+		if(isPaused) {
+			runThenPause();
+		}
+
 	}
 
 	public void requestChangePipeline(int index) {
@@ -205,8 +217,37 @@ public class PipelineManager {
 		});
 	}
 
+	public void runThenPause() {
+
+		setPaused(false);
+
+		eocvSim.runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				eocvSim.runOnMainThread(new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("aaaa");
+						setPaused(true);
+					}
+				});
+			}
+		});
+
+	}
+
 	public void runOnUpdate(Runnable runn) {
 		runnsOnUpdate.add(runn);
 	}
+
+	public void setPaused(boolean paused) {
+		isPaused = paused;
+	}
+
+	public void togglePause() {
+		isPaused = !isPaused;
+	}
+
+	public boolean isPaused() { return isPaused; }
 
 }
