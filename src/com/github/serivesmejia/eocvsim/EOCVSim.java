@@ -98,7 +98,7 @@ public class EOCVSim {
 
 			updateVisualizerTitle();
 
-			if(!pipelineManager.isPaused()) inputSourceManager.update();
+			inputSourceManager.update(pipelineManager.isPaused());
 
 			//if we dont have a mat from the inputsource, we'll just skip this frame.
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;

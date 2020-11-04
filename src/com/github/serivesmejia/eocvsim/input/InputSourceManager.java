@@ -77,7 +77,7 @@ public class InputSourceManager {
 
 	public void destroy() { }
 
-	public void update() {
+	public void update(boolean isPaused) {
 
 		if(currInputSource == null) return;
 

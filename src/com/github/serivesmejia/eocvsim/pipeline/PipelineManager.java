@@ -35,6 +35,8 @@ public class PipelineManager {
 	private volatile boolean isPaused = false;
 
 	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
+	private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
+	private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
 
 	public EOCVSim eocvSim;
 
@@ -117,8 +119,8 @@ public class PipelineManager {
 	public void update(Mat inputMat) {
 
 		//run all pending requested runnables
-		for(Object runn : runnsOnUpdate.toArray()) {
-			((Runnable) runn).run();
+		for(Runnable runn : runnsOnUpdate.toArray(new Runnable[0])) {
+			runn.run();
 			runnsOnUpdate.remove(runn);
 		}
 
@@ -227,7 +229,6 @@ public class PipelineManager {
 				eocvSim.runOnMainThread(new Runnable() {
 					@Override
 					public void run() {
-						System.out.println("aaaa");
 						setPaused(true);
 					}
 				});
@@ -236,18 +237,52 @@ public class PipelineManager {
 
 	}
 
+	public void runOnPause(Runnable runn) {
+		runnsOnPause.add(runn);
+	}
+
+	public void runOnResume(Runnable runn) {
+		runnsOnResume.add(runn);
+	}
+
 	public void runOnUpdate(Runnable runn) {
 		runnsOnUpdate.add(runn);
 	}
 
 	public void setPaused(boolean paused) {
 		isPaused = paused;
+		executeRunnsOnPauseOrResume();
 	}
 
 	public void togglePause() {
 		isPaused = !isPaused;
+		executeRunnsOnPauseOrResume();
 	}
 
 	public boolean isPaused() { return isPaused; }
+
+	private void executeRunnsOnPauseOrResume() {
+		if(isPaused) {
+			executeRunnsOnPause();
+		} else {
+			executeRunnsOnResume();
+		}
+	}
+
+	private void executeRunnsOnPause() {
+		//run all pending requested runnables
+		for(Runnable runn : runnsOnPause.toArray(new Runnable[0])) {
+			runn.run();
+			runnsOnPause.remove(runn);
+		}
+	}
+
+	private void executeRunnsOnResume() {
+		//run all pending requested runnables
+		for(Runnable runn : runnsOnResume.toArray(new Runnable[0])) {
+			runn.run();
+			runnsOnResume.remove(runn);
+		}
+	}
 
 }

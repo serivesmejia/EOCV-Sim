@@ -133,7 +133,7 @@ public class Visualizer {
 				eocvSim.runOnMainThread(new Runnable() {
 					@Override
 					public void run() {
-						eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected());
+						eocvSim.pipelineManager.togglePause();
 					}
 				});
 			}
