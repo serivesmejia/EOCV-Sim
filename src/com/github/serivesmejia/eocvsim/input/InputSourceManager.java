@@ -10,6 +10,7 @@ import java.util.Map;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
+import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -163,11 +164,37 @@ public class InputSourceManager {
 		}
 
 		currInputSource = src;
+
+		pauseIfImage();
 		
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 
 		return true;
 
+	}
+
+	public void pauseIfImage() {
+		//if the new input source is an image, we will pause the next frame
+		//to execute one shot analysis on images and save resources.
+		if(getSourceType(currInputSource) == SourceType.IMAGE) {
+			eocvSim.runOnMainThread(new Runnable() {
+				@Override
+				public void run() {
+					eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS);
+				}
+			});
+		}
+	}
+
+	public void pauseIfImageTwoFrames() {
+		//if the new input source is an image, we will pause the next frame
+		//to execute one shot analysis on images and save resources.
+		eocvSim.runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				pauseIfImage();
+			}
+		});
 	}
 
 	public void requestSetInputSource(String name) {

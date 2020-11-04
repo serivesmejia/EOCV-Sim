@@ -1,10 +1,6 @@
 package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,10 +13,6 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
@@ -29,7 +21,7 @@ public class EOCVSim {
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 
 	public static Mat EMPTY_MAT = null;
-	public static String VERSION = "1.1.0";
+	public static String VERSION = "1.2.0";
 
 	public static int DEFAULT_EOCV_WIDTH = 320;
 	public static int DEFAULT_EOCV_HEIGHT = 240;

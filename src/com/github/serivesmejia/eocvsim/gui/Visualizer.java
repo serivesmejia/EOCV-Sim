@@ -14,6 +14,7 @@ import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.LineWrapRenderer;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
+import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -58,6 +59,8 @@ public class Visualizer {
 	private String beforeTitleMsg = "";
 
 	private String beforeSelectedSource = "";
+	private int beforeSelectedSourceIndex = 0;
+
 	private int beforeSelectedPipeline = -1;
 
 	public static ImageIcon ICO_EOCVSIM = null;
@@ -272,15 +275,6 @@ public class Visualizer {
 
 				boolean selected = pipelinePauseBtt.isSelected();
 
-				pipelineSelector.setEnabled(!selected);
-				sourceSelector.setEnabled(!selected);
-
-				pipelineSelector.revalidate();
-				pipelineSelectorScroll.revalidate();
-
-				sourceSelector.revalidate();
-				sourceSelectorScroll.revalidate();
-
 				eocvSim.runOnMainThread(new Runnable() {
 					@Override
 					public void run() {
@@ -300,9 +294,20 @@ public class Visualizer {
 				if(pipelineSelector.getSelectedIndex() != -1) {
 
 					int pipeline = pipelineSelector.getSelectedIndex();
-					if (!evt.getValueIsAdjusting() && !eocvSim.pipelineManager.isPaused() && pipeline != beforeSelectedPipeline) {
-						eocvSim.pipelineManager.requestChangePipeline(pipeline);
-						beforeSelectedPipeline = pipeline;
+
+					if (!evt.getValueIsAdjusting() &&  pipeline != beforeSelectedPipeline) {
+						if(!eocvSim.pipelineManager.isPaused()) {
+							eocvSim.pipelineManager.requestChangePipeline(pipeline);
+							beforeSelectedPipeline = pipeline;
+						} else {
+							if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+								pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
+							} else {
+								eocvSim.pipelineManager.requestSetPaused(false);
+								eocvSim.pipelineManager.requestChangePipeline(pipeline);
+								beforeSelectedPipeline = pipeline;
+							}
+						}
 					}
 
 				} else {
@@ -324,9 +329,21 @@ public class Visualizer {
 						ListModel<String> model = sourceSelector.getModel();
 						String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
-						if (!evt.getValueIsAdjusting() && !eocvSim.pipelineManager.isPaused() && !source.equals(beforeSelectedSource)) {
-							eocvSim.inputSourceManager.requestSetInputSource(source);
-							beforeSelectedSource = source;
+						if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
+							if(!eocvSim.pipelineManager.isPaused()) {
+								eocvSim.inputSourceManager.requestSetInputSource(source);
+								beforeSelectedSource = source;
+								beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
+							} else {
+								if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+									sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
+								} else {
+									eocvSim.pipelineManager.requestSetPaused(false);
+									eocvSim.inputSourceManager.requestSetInputSource(source);
+									beforeSelectedSource = source;
+									beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
+								}
+							}
 						}
 
 					} else {

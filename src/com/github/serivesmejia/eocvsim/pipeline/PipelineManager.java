@@ -33,12 +33,15 @@ public class PipelineManager {
 	private long nextFPSUpdateMillis = 0;
 
 	private volatile boolean isPaused = false;
+	private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
 
 	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
 	private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
 	private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
 
 	public EOCVSim eocvSim;
+
+	public enum PauseReason { USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED }
 
 	public PipelineManager(EOCVSim eocvSim) {
 		this.eocvSim = eocvSim;
@@ -155,7 +158,7 @@ public class PipelineManager {
 		
 	}
 	
-	public void setPipeline(int index) {
+	public void changePipeline(int index) {
 
 		if(index == currentPipelineIndex) return;
 
@@ -200,12 +203,9 @@ public class PipelineManager {
 		currentTelemetry = nextTelemetry;
 
 		currentPipelineIndex = index;
-
 		currentPipelineName = currentPipeline.getClass().getSimpleName();
 
-		if(isPaused) {
-			runThenPause();
-		}
+		eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
 
 	}
 
@@ -213,7 +213,7 @@ public class PipelineManager {
 		runOnUpdate(new Runnable() {
 			@Override
 			public void run() {
-				setPipeline(index);
+				changePipeline(index);
 			}
 		});
 	}
@@ -244,9 +244,22 @@ public class PipelineManager {
 	}
 
 	public void setPaused(boolean paused) {
+		setPaused(paused, PauseReason.USER_REQUESTED);
+	}
+
+	public void setPaused(boolean paused, PauseReason pauseReason) {
+
 		isPaused = paused;
+
+		if(isPaused) {
+			lastPauseReason = pauseReason;
+		} else {
+			lastPauseReason = PauseReason.NOT_PAUSED;
+		}
+
 		eocvSim.visualizer.pipelinePauseBtt.setSelected(isPaused);
 		executeRunnsOnPauseOrResume();
+
 	}
 
 	public void togglePause() {
@@ -254,7 +267,28 @@ public class PipelineManager {
 		executeRunnsOnPauseOrResume();
 	}
 
-	public boolean isPaused() { return isPaused; }
+	public void requestSetPaused(boolean paused, PauseReason pauseReason) {
+		eocvSim.runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				setPaused(paused, pauseReason);
+			}
+		});
+	}
+
+	public void requestSetPaused(boolean paused) {
+		requestSetPaused(paused, PauseReason.USER_REQUESTED);
+	}
+
+	public boolean isPaused() {
+		if(!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
+		return isPaused;
+	}
+
+	public PauseReason getPauseReason() {
+		if(!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
+		return lastPauseReason;
+	}
 
 	private void executeRunnsOnPauseOrResume() {
 		if(isPaused) {
