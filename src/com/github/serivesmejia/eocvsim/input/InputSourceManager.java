@@ -80,6 +80,9 @@ public class InputSourceManager {
 	public void update(boolean isPaused) {
 
 		if(currInputSource == null) return;
+		currInputSource.setPaused(isPaused);
+
+		if(isPaused) return;
 
 		try {
 			lastMatFromSource = currInputSource.update();
@@ -97,7 +100,9 @@ public class InputSourceManager {
 		}
 
 		if(sources.containsKey(name)) return;
-		
+
+		inputSource.name = name;
+
 		sources.put(name, inputSource);
 
 		inputSourceLoader.saveInputSource(name, inputSource);

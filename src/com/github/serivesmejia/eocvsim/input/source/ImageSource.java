@@ -4,7 +4,6 @@ import com.github.serivesmejia.eocvsim.input.InputSource;
 
 import com.google.gson.annotations.Expose;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -34,7 +33,6 @@ public class ImageSource extends InputSource {
 	public boolean init() {
 		
 		if(initialized) return false;
-		
 		initialized = true;
 		
 		readImage();
@@ -87,6 +85,7 @@ public class ImageSource extends InputSource {
 	@Override
 	public Mat update() {
 		if(img == null) return null;
+		if(isPaused) return img;
 		return img.clone();
 	}
 

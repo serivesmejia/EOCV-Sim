@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.input.source;
 
+import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.util.Log;
 
@@ -14,10 +15,11 @@ import java.util.Objects;
 
 public class CameraSource extends InputSource {
 
-    private VideoCapture camera = null;
-    private Mat lastFrame = null;
+    private transient VideoCapture camera = null;
+    private transient Mat lastFramePaused = null;
+    private transient Mat lastFrame = null;
 
-    private boolean initialized = false;
+    private transient boolean initialized = false;
 
     @Expose
     private final int webcamIndex;
@@ -72,18 +74,26 @@ public class CameraSource extends InputSource {
 
     @Override
     public void close() {
-
         if(camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
-
     }
 
     @Override
     public Mat update() {
 
+        if(isPaused) {
+            return lastFramePaused;
+        } else if(lastFramePaused != null){
+            lastFramePaused.release();
+            lastFramePaused = null;
+        }
+
         if(lastFrame == null) lastFrame = new Mat();
+        if(camera == null) return lastFrame;
+
         camera.read(lastFrame);
 
         if(lastFrame.empty()) return lastFrame;
+
         if(size == null) size = lastFrame.size();
 
         Imgproc.cvtColor(lastFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
@@ -91,6 +101,32 @@ public class CameraSource extends InputSource {
 
         return lastFrame;
 
+    }
+
+    @Override
+    public void onPause() {
+
+        if(lastFrame != null) lastFrame.release();
+        if(lastFramePaused == null) lastFramePaused = new Mat();
+
+        camera.read(lastFramePaused);
+
+        Imgproc.cvtColor(lastFramePaused, lastFramePaused, Imgproc.COLOR_BGR2RGB);
+        Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+
+        update();
+
+        camera.release();
+        camera = null;
+
+    }
+
+    @Override
+    public void onResume() {
+        Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.checkCameraDialogPleaseWait(name);
+        camera = new VideoCapture(webcamIndex);
+        camera.open(webcamIndex);
+        apwdCam.destroyDialog();
     }
 
     @Override
