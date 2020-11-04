@@ -251,11 +251,12 @@ public class PipelineManager {
 
 	public void setPaused(boolean paused) {
 		isPaused = paused;
+		eocvSim.visualizer.pipelinePauseBtt.setSelected(isPaused);
 		executeRunnsOnPauseOrResume();
 	}
 
 	public void togglePause() {
-		isPaused = !isPaused;
+		setPaused(!isPaused);
 		executeRunnsOnPauseOrResume();
 	}
 

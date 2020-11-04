@@ -66,7 +66,7 @@ public class CreateImageSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField("320",4);
+        widthTextField = new JTextField("320", 4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);

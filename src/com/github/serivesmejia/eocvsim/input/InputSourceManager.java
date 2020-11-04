@@ -82,8 +82,6 @@ public class InputSourceManager {
 		if(currInputSource == null) return;
 		currInputSource.setPaused(isPaused);
 
-		if(isPaused) return;
-
 		try {
 			lastMatFromSource = currInputSource.update();
 		} catch(Throwable ex) {

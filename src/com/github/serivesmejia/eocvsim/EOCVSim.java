@@ -28,9 +28,6 @@ public class EOCVSim {
 
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 
-	private String beforeSelectedSource = "";
-	private int beforeSelectedPipeline = -1;
-
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.1.0";
 
@@ -52,7 +49,6 @@ public class EOCVSim {
 		pipelineManager = new PipelineManager(this);
 		
 		visualizer.init();
-		setVisualizerEvents();
 
 		inputSourceManager.init();
 
@@ -149,80 +145,6 @@ public class EOCVSim {
 			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
 		}
 		
-	}
-
-	public void setVisualizerEvents() {
-
-		//listener for changing pipeline
-		visualizer.pipelineSelector.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				if(visualizer.pipelineSelector.getSelectedIndex() != -1) {
-
-					int pipeline = visualizer.pipelineSelector.getSelectedIndex();
-					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-						pipelineManager.requestChangePipeline(pipeline);
-						beforeSelectedPipeline = pipeline;
-					}
-
-				} else {
-					visualizer.pipelineSelector.setSelectedIndex(1);
-				}
-			}
-
-		});
-
-		//listener for changing input sources
-		visualizer.sourceSelector.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-
-				try {
-					if(visualizer.sourceSelector.getSelectedIndex() != -1) {
-
-						ListModel<String> model = visualizer.sourceSelector.getModel();
-						String source = model.getElementAt(visualizer.sourceSelector.getSelectedIndex());
-
-						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
-							inputSourceManager.requestSetInputSource(source);
-							beforeSelectedSource = source;
-						}
-
-					} else {
-						visualizer.sourceSelector.setSelectedIndex(1);
-					}
-				} catch(ArrayIndexOutOfBoundsException ex) { }
-
-			}
-
-		});
-
-		//handling onViewportTapped evts
-		visualizer.img.addMouseListener(new MouseAdapter() {
-
-			public void mouseClicked(MouseEvent e) {
-				pipelineManager.currentPipeline.onViewportTapped();
-			}
-
-		});
-
-		// delete input source
-		visualizer.sourceSelectorDeleteBtt.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String source = visualizer.sourceSelector.getModel().getElementAt(visualizer.sourceSelector.getSelectedIndex());
-				runOnMainThread(new Runnable() {
-					@Override
-					public void run() {
-						inputSourceManager.deleteInputSource(source);
-						visualizer.updateSourcesList();
-					}
-				});
-			}
-		});
-
 	}
 
 	public void runOnMainThread(Runnable runn) {

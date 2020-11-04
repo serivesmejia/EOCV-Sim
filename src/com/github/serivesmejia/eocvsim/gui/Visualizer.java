@@ -1,15 +1,14 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.LineWrapRenderer;
@@ -57,6 +56,9 @@ public class Visualizer {
 	
 	private String beforeTitle = "";
 	private String beforeTitleMsg = "";
+
+	private String beforeSelectedSource = "";
+	private int beforeSelectedPipeline = -1;
 
 	public static ImageIcon ICO_EOCVSIM = null;
 
@@ -126,18 +128,6 @@ public class Visualizer {
 		pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
 		pipelineButtonsContainer.add(pipelinePauseBtt);
-
-		pipelinePauseBtt.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				eocvSim.runOnMainThread(new Runnable() {
-					@Override
-					public void run() {
-						eocvSim.pipelineManager.togglePause();
-					}
-				});
-			}
-		});
 
 		pipelineSelectorContainer.add(pipelineButtonsContainer);
 
@@ -266,6 +256,96 @@ public class Visualizer {
 		splitPane.setDividerLocation(1070);
 
 		frame.setVisible(true);
+
+		registerListeners();
+
+	}
+
+
+	private void registerListeners() {
+
+		//listener for changing pause state
+		pipelinePauseBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				eocvSim.runOnMainThread(new Runnable() {
+					@Override
+					public void run() {
+						eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected());
+					}
+				});
+			}
+		});
+
+		//listener for changing pipeline
+		pipelineSelector.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
+				if(pipelineSelector.getSelectedIndex() != -1) {
+
+					int pipeline = pipelineSelector.getSelectedIndex();
+					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
+						eocvSim.pipelineManager.requestChangePipeline(pipeline);
+						beforeSelectedPipeline = pipeline;
+					}
+
+				} else {
+					pipelineSelector.setSelectedIndex(1);
+				}
+			}
+
+		});
+
+		//listener for changing input sources
+		sourceSelector.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent evt) {
+
+				try {
+					if(sourceSelector.getSelectedIndex() != -1) {
+
+						ListModel<String> model = sourceSelector.getModel();
+						String source = model.getElementAt(sourceSelector.getSelectedIndex());
+
+						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
+							eocvSim.inputSourceManager.requestSetInputSource(source);
+							beforeSelectedSource = source;
+						}
+
+					} else {
+						sourceSelector.setSelectedIndex(1);
+					}
+				} catch(ArrayIndexOutOfBoundsException ex) { }
+
+			}
+
+		});
+
+		//handling onViewportTapped evts
+		img.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent e) {
+				eocvSim.pipelineManager.currentPipeline.onViewportTapped();
+			}
+
+		});
+
+		// delete input source
+		sourceSelectorDeleteBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
+				eocvSim.runOnMainThread(new Runnable() {
+					@Override
+					public void run() {
+						eocvSim.inputSourceManager.deleteInputSource(source);
+						updateSourcesList();
+					}
+				});
+			}
+		});
 
 	}
 
