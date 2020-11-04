@@ -5,6 +5,13 @@ while also providing OpenCV functionality and a simple GUI. By simulating the af
 to be the same as they would if you were using the FTC SDK with EasyOpenCV, allowing you to simply copy paste your vision code
 onto your Android Studio project once you want to transfer it to a robot.<br/>
 
+## Table of Contents
+- Pipelines
+    - Sample Pipeline
+- Input Sources
+
+## Pipelines
+
 All of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
 automatically detected by the simulator and will be selectionable from the GUI.
 
@@ -58,3 +65,13 @@ public class SamplePipeline extends OpenCvPipeline {
 
 }
 ```
+## Input Sources
+
+To allow multiple ways to test your pipeline, the simulator comes with so called *Input Sources*, which are the ones that will give your pipeline the input mats, As of right now, the sim has two types of Input Sources:
+
+- Image Source:</br></br>
+    These will feed your pipeline with a static Mat from an image loaded in your computer hard drive.</br></br>
+    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the "Pause" button         under the pipeline selector.</br></br>
+- Camera Source:</br></br>
+    These will feed your pipeline with a constantly changing Mat from a specified camera plugged in your computer.</br></br>
+    Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.
