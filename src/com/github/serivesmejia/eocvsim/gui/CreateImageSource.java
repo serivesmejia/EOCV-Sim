@@ -28,7 +28,10 @@ public class CreateImageSource {
     public JButton createButton = null;
 
     private EOCVSim eocvSim = null;
+
     public boolean selectedValidImage = false;
+
+    private boolean validCameraSizeNumbers = true;
 
     public CreateImageSource(JFrame parent, EOCVSim eocvSim) {
 
@@ -66,7 +69,7 @@ public class CreateImageSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField("320", 4);
+        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH), 4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);
@@ -74,7 +77,7 @@ public class CreateImageSource {
         JLabel xSizeLabel = new JLabel(" x ");
         xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        heightTextField = new JTextField("240", 4);
+        heightTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_HEIGHT), 4);
 
         sizePanel.add(xSizeLabel);
         sizePanel.add(heightTextField);
@@ -123,13 +126,35 @@ public class CreateImageSource {
 
         // Additional stuff & events
 
+        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, EOCVSim.DEFAULT_EOCV_WIDTH);
+        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, EOCVSim.DEFAULT_EOCV_HEIGHT);
+
+        DocumentListener validSizeNumberListener = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) { changed(e); }
+            public void removeUpdate(DocumentEvent e) { changed(e); }
+            public void insertUpdate(DocumentEvent e) { changed(e); }
+            public void changed(DocumentEvent e) {
+                try {
+                    Integer.parseInt(widthTextField.getText());
+                    Integer.parseInt(heightTextField.getText());
+                    validCameraSizeNumbers = true;
+                } catch(Throwable ex) {
+                    validCameraSizeNumbers = false;
+                }
+                updateCreateBtt();
+            }
+        };
+
+        widthTextField.getDocument().addDocumentListener(validSizeNumberListener);
+        heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
+
         selectDirButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
                 JFileChooser chooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Images", "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
+                        "Images", "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
                 chooser.setFileFilter(filter);
 
                 int returnVal = chooser.showOpenDialog(createImageSource);
@@ -141,16 +166,12 @@ public class CreateImageSource {
             }
         });
 
-        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, 580);
-        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, 480);
-
-
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) { changed(); }
             public void removeUpdate(DocumentEvent e) { changed(); }
             public void insertUpdate(DocumentEvent e) { changed(); }
             public void changed() {
-                createButton.setEnabled(!nameTextField.getText().trim().equals("") && selectedValidImage);
+                updateCreateBtt();
             }
         });
 
@@ -189,7 +210,7 @@ public class CreateImageSource {
             selectedValidImage = false;
         }
 
-        createButton.setEnabled(selectedValidImage && !nameTextField.getText().trim().equals(""));
+        updateCreateBtt();
 
     }
 
@@ -206,6 +227,12 @@ public class CreateImageSource {
                 eocvSim.visualizer.updateSourcesList();
             }
         });
+    }
+
+    public void updateCreateBtt() {
+        createButton.setEnabled(!nameTextField.getText().trim().equals("")
+                                && validCameraSizeNumbers
+                                && selectedValidImage);
     }
 
 }

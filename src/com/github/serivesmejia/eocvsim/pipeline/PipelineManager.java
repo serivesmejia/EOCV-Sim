@@ -57,7 +57,7 @@ public class PipelineManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void lookForPipelines(AsyncPleaseWaitDialog lookForPipelineAPWD) {
+	private void lookForPipelines(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 		
 		Log.info("PipelineManager", "Scanning for pipelines...");
 		
@@ -185,7 +185,6 @@ public class PipelineManager {
 													 "Close", new Dimension(300, 150), true, true);
 
 			Log.error("InputSourceManager", "Error while initializing requested pipeline ("+ pipelineClass.getSimpleName() + ")", ex);
-
 			Log.white();
 
 			eocvSim.visualizer.pipelineSelector.setSelectedIndex(currentPipelineIndex);
@@ -226,12 +225,7 @@ public class PipelineManager {
 		eocvSim.runOnMainThread(new Runnable() {
 			@Override
 			public void run() {
-				eocvSim.runOnMainThread(new Runnable() {
-					@Override
-					public void run() {
-						setPaused(true);
-					}
-				});
+				setPaused(true);
 			}
 		});
 
@@ -274,7 +268,6 @@ public class PipelineManager {
 		//run all pending requested runnables
 		for(Runnable runn : runnsOnPause.toArray(new Runnable[0])) {
 			runn.run();
-			runnsOnPause.remove(runn);
 		}
 	}
 
@@ -282,7 +275,6 @@ public class PipelineManager {
 		//run all pending requested runnables
 		for(Runnable runn : runnsOnResume.toArray(new Runnable[0])) {
 			runn.run();
-			runnsOnResume.remove(runn);
 		}
 	}
 

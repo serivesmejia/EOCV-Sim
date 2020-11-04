@@ -33,7 +33,7 @@ public class Visualizer {
 	public JSplitPane splitPane = null;
 	
 	public JPanel pipelineSelectorContainer = new JPanel();
-	public JList<String> pipelineSelector = new JList<>();
+	public volatile JList<String> pipelineSelector = new JList<>();
 	public JScrollPane pipelineSelectorScroll = new JScrollPane();
 	public JPanel pipelineButtonsContainer = new JPanel();
 	public JToggleButton pipelinePauseBtt =  new JToggleButton("Pause");
@@ -266,15 +266,30 @@ public class Visualizer {
 
 		//listener for changing pause state
 		pipelinePauseBtt.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
+
+				boolean selected = pipelinePauseBtt.isSelected();
+
+				pipelineSelector.setEnabled(!selected);
+				sourceSelector.setEnabled(!selected);
+
+				pipelineSelector.revalidate();
+				pipelineSelectorScroll.revalidate();
+
+				sourceSelector.revalidate();
+				sourceSelectorScroll.revalidate();
+
 				eocvSim.runOnMainThread(new Runnable() {
 					@Override
 					public void run() {
-						eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected());
+						eocvSim.pipelineManager.setPaused(selected);
 					}
 				});
+
 			}
+
 		});
 
 		//listener for changing pipeline
@@ -285,7 +300,7 @@ public class Visualizer {
 				if(pipelineSelector.getSelectedIndex() != -1) {
 
 					int pipeline = pipelineSelector.getSelectedIndex();
-					if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
+					if (!evt.getValueIsAdjusting() && !eocvSim.pipelineManager.isPaused() && pipeline != beforeSelectedPipeline) {
 						eocvSim.pipelineManager.requestChangePipeline(pipeline);
 						beforeSelectedPipeline = pipeline;
 					}
@@ -309,7 +324,7 @@ public class Visualizer {
 						ListModel<String> model = sourceSelector.getModel();
 						String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
-						if (!evt.getValueIsAdjusting() && source != beforeSelectedSource) {
+						if (!evt.getValueIsAdjusting() && !eocvSim.pipelineManager.isPaused() && !source.equals(beforeSelectedSource)) {
 							eocvSim.inputSourceManager.requestSetInputSource(source);
 							beforeSelectedSource = source;
 						}
@@ -359,175 +374,6 @@ public class Visualizer {
 		}
 		
 		mat.release();
-		
-	}
-	
-	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
-	
-		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
-
-		boolean addSubMessage = subMessage != null;
-
-		int rows = 3;
-		if(!addSubMessage) { rows--; }
-
-		dialog.setModal(true);
-		dialog.setLayout(new GridLayout(rows, 1));
-
-		if(isError) {
-			dialog.setTitle("Operation failed");
-		} else {
-			dialog.setTitle("Operation in progress");
-		}
-
-		JLabel msg = new JLabel(message);
-		msg.setHorizontalAlignment(JLabel.CENTER);
-		msg.setVerticalAlignment(JLabel.CENTER);
-		
-		dialog.add(msg);
-
-		JLabel subMsg = null;
-		if(addSubMessage) {
-
-			subMsg = new JLabel(subMessage);
-			subMsg.setHorizontalAlignment(JLabel.CENTER);
-			subMsg.setVerticalAlignment(JLabel.CENTER);
-
-			dialog.add(subMsg);
-
-		}
-
-		JPanel exitBttPanel = new JPanel(new FlowLayout());
-		JButton cancelBtt = new JButton(cancelBttText);
-		
-		cancelBtt.setEnabled(cancellable);
-		
-		exitBttPanel.add(cancelBtt);
-		
-		boolean[] cancelled = {false};
-		
-		cancelBtt.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	cancelled[0] = true;
-            	dialog.setVisible(false);
-            	dialog.dispose();
-            }
-        });
-
-		dialog.add(exitBttPanel);
-		
-		if(apwd != null) {
-			apwd.msg = msg;
-			apwd.subMsg = subMsg;
-			apwd.cancelBtt = cancelBtt;
-		}
-		
-		if(size != null) {
-			dialog.setSize(size);
-		} else {
-			dialog.setSize(new Dimension(400, 200));
-		}
-
-		dialog.setLocationRelativeTo(null);
-		dialog.setResizable(false);
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-
-		dialog.setVisible(true);
-		
-		return cancelled[0];
-		
-	}
-	
-	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null, false);
-	}
-	
-	public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null, false);
-	}
-	
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
-		
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError);
-		
-		new Thread(rPWD).start();
-		
-		return rPWD;
-		
-	}
-
-
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false);
-
-		new Thread(rPWD).start();
-
-		return rPWD;
-
-	}
-
-	public class AsyncPleaseWaitDialog implements Runnable {
-
-		String message = "";
-		String subMessage = "";
-		String cancelBttText = "";
-		Dimension size = null;
-		boolean cancellable = false;
-		
-		public volatile JDialog dialog = new JDialog(frame);
-		public volatile JLabel msg = null;
-		public volatile JLabel subMsg = null;
-		public volatile JButton cancelBtt = null;
-		
-		public volatile boolean wasCancelled = false;
-
-		public volatile boolean isError = false;
-
-		public volatile String initialMessage = "";
-		public volatile String initialSubMessage = "";
-		
-		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
-		
-		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
-			
-			this.message = message;
-			this.subMessage = subMessage;
-			this.initialMessage = message;
-			this.initialSubMessage = subMessage;
-			this.cancelBttText = cancelBttText;
-			
-			this.size = size;
-			this.cancellable = cancellable;
-
-			this.isError = isError;
-
-		}
-		
-		public void onCancel(Runnable runn) {
-			
-			onCancelRunnables.add(runn);
-			
-		}
-		
-		@Override
-		public void run() {
-			
-			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
-
-			if(wasCancelled) {
-				for(Runnable runn : onCancelRunnables) {
-					runn.run();
-				}
-			}
-			
-		}
-		
-		public void destroyDialog() {
-			dialog.setVisible(false);
-			dialog.dispose();	
-		}
 		
 	}
 	
@@ -595,6 +441,178 @@ public class Visualizer {
 			telemetryList.revalidate();
 			telemetryScroll.revalidate();
 
+		}
+
+	}
+
+	// PLEASE WAIT DIALOGS
+
+
+	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
+
+		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
+
+		boolean addSubMessage = subMessage != null;
+
+		int rows = 3;
+		if(!addSubMessage) { rows--; }
+
+		dialog.setModal(true);
+		dialog.setLayout(new GridLayout(rows, 1));
+
+		if(isError) {
+			dialog.setTitle("Operation failed");
+		} else {
+			dialog.setTitle("Operation in progress");
+		}
+
+		JLabel msg = new JLabel(message);
+		msg.setHorizontalAlignment(JLabel.CENTER);
+		msg.setVerticalAlignment(JLabel.CENTER);
+
+		dialog.add(msg);
+
+		JLabel subMsg = null;
+		if(addSubMessage) {
+
+			subMsg = new JLabel(subMessage);
+			subMsg.setHorizontalAlignment(JLabel.CENTER);
+			subMsg.setVerticalAlignment(JLabel.CENTER);
+
+			dialog.add(subMsg);
+
+		}
+
+		JPanel exitBttPanel = new JPanel(new FlowLayout());
+		JButton cancelBtt = new JButton(cancelBttText);
+
+		cancelBtt.setEnabled(cancellable);
+
+		exitBttPanel.add(cancelBtt);
+
+		boolean[] cancelled = {false};
+
+		cancelBtt.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cancelled[0] = true;
+				dialog.setVisible(false);
+				dialog.dispose();
+			}
+		});
+
+		dialog.add(exitBttPanel);
+
+		if(apwd != null) {
+			apwd.msg = msg;
+			apwd.subMsg = subMsg;
+			apwd.cancelBtt = cancelBtt;
+		}
+
+		if(size != null) {
+			dialog.setSize(size);
+		} else {
+			dialog.setSize(new Dimension(400, 200));
+		}
+
+		dialog.setLocationRelativeTo(null);
+		dialog.setResizable(false);
+		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+		dialog.setVisible(true);
+
+		return cancelled[0];
+
+	}
+
+	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null, false);
+	}
+
+	public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null, false);
+	}
+
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
+
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError);
+
+		new Thread(rPWD).start();
+
+		return rPWD;
+
+	}
+
+
+	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false);
+
+		new Thread(rPWD).start();
+
+		return rPWD;
+
+	}
+
+	public class AsyncPleaseWaitDialog implements Runnable {
+
+		String message = "";
+		String subMessage = "";
+		String cancelBttText = "";
+		Dimension size = null;
+		boolean cancellable = false;
+
+		public volatile JDialog dialog = new JDialog(frame);
+		public volatile JLabel msg = null;
+		public volatile JLabel subMsg = null;
+		public volatile JButton cancelBtt = null;
+
+		public volatile boolean wasCancelled = false;
+
+		public volatile boolean isError = false;
+
+		public volatile String initialMessage = "";
+		public volatile String initialSubMessage = "";
+
+		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
+
+		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
+
+			this.message = message;
+			this.subMessage = subMessage;
+			this.initialMessage = message;
+			this.initialSubMessage = subMessage;
+			this.cancelBttText = cancelBttText;
+
+			this.size = size;
+			this.cancellable = cancellable;
+
+			this.isError = isError;
+
+		}
+
+		public void onCancel(Runnable runn) {
+
+			onCancelRunnables.add(runn);
+
+		}
+
+		@Override
+		public void run() {
+
+			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
+
+			if(wasCancelled) {
+				for(Runnable runn : onCancelRunnables) {
+					runn.run();
+				}
+			}
+
+		}
+
+		public void destroyDialog() {
+			dialog.setVisible(false);
+			dialog.dispose();
 		}
 
 	}

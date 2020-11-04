@@ -10,6 +10,7 @@ import org.opencv.videoio.VideoCapture;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,11 @@ public class CreateCameraSource {
 
     public JTextField widthTextField = null;
     public JTextField heightTextField = null;
+
+    public JTextField nameTextField = null;
+
+    private boolean validCameraIdNumber = true;
+    private boolean validCameraSizeNumbers = true;
 
     public boolean wasCancelled = false;
 
@@ -65,7 +71,7 @@ public class CreateCameraSource {
 
         JLabel nameLabel = new JLabel("Source name: ");
 
-        JTextField nameTextField = new JTextField("CameraSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
+        nameTextField = new JTextField("CameraSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
 
         namePanel.add(nameLabel);
         namePanel.add(nameTextField);
@@ -79,7 +85,7 @@ public class CreateCameraSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField("320",4);
+        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH),4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);
@@ -87,7 +93,7 @@ public class CreateCameraSource {
         JLabel xSizeLabel = new JLabel(" x ");
         xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        heightTextField = new JTextField("240", 4);
+        heightTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_HEIGHT), 4);
 
         sizePanel.add(xSizeLabel);
         sizePanel.add(heightTextField);
@@ -131,9 +137,27 @@ public class CreateCameraSource {
         // Additional stuff & events
 
         GuiUtil.jTextFieldOnlyNumbers(cameraIdField, -100, 0);
+        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, EOCVSim.DEFAULT_EOCV_WIDTH);
+        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, EOCVSim.DEFAULT_EOCV_HEIGHT);
 
-        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, 540);
-        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, 480);
+        DocumentListener validSizeNumberListener = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) { changed(e); }
+            public void removeUpdate(DocumentEvent e) { changed(e); }
+            public void insertUpdate(DocumentEvent e) { changed(e); }
+            public void changed(DocumentEvent e) {
+                try {
+                    Integer.parseInt(widthTextField.getText());
+                    Integer.parseInt(heightTextField.getText());
+                    validCameraSizeNumbers = true;
+                } catch(Throwable ex) {
+                    validCameraSizeNumbers = false;
+                }
+                updateCreateBtt();
+            }
+        };
+
+        widthTextField.getDocument().addDocumentListener(validSizeNumberListener);
+        heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
 
         createButton.addActionListener(new ActionListener() {
             @Override
@@ -166,8 +190,6 @@ public class CreateCameraSource {
             }
         });
 
-        final boolean[] validCameraIdNumber = {true};
-
         cameraIdField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) { changed(); }
             public void removeUpdate(DocumentEvent e) { changed(); }
@@ -175,12 +197,11 @@ public class CreateCameraSource {
             public void changed() {
                 try {
                     Integer.parseInt(cameraIdField.getText());
-                    if(!nameTextField.getText().equals("")) createButton.setEnabled(true);
-                    validCameraIdNumber[0] = true;
+                    validCameraIdNumber = true;
                 } catch(Throwable ex) {
-                    createButton.setEnabled(false);
-                    validCameraIdNumber[0] = false;
+                    validCameraIdNumber = false;
                 }
+                updateCreateBtt();
             }
         });
 
@@ -189,7 +210,7 @@ public class CreateCameraSource {
             public void removeUpdate(DocumentEvent e) { changed(); }
             public void insertUpdate(DocumentEvent e) { changed(); }
             public void changed() {
-                createButton.setEnabled(!nameTextField.getText().equals("") && validCameraIdNumber[0]);
+                updateCreateBtt();
             }
         });
 
@@ -231,6 +252,12 @@ public class CreateCameraSource {
                 eocvSim.visualizer.updateSourcesList();
             }
         });
+    }
+
+    public void updateCreateBtt() {
+        createButton.setEnabled(!nameTextField.getText().trim().equals("")
+                                && validCameraIdNumber
+                                && validCameraSizeNumbers);
     }
 
 }
