@@ -65,13 +65,17 @@ public class SamplePipeline extends OpenCvPipeline {
 
 }
 ```
+
 ## Input Sources
 
 To allow multiple ways to test your pipeline, the simulator comes with so called *Input Sources*, which are the ones that will give your pipeline the input mats, As of right now, the sim has two types of Input Sources:
 
 - Image Source:</br></br>
     These will feed your pipeline with a static Mat from an image loaded in your computer hard drive.</br></br>
-    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the "Pause" button         under the pipeline selector.</br></br>
+    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the           "Pause" button under the pipeline selector.</br></br>
 - Camera Source:</br></br>
     These will feed your pipeline with a constantly changing Mat from a specified camera plugged in your computer.</br></br>
     Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.
+    
+### Creating an Input Source
+
