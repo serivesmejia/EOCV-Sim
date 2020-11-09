@@ -15,8 +15,10 @@ Because OpenCV in Java uses a native shared lib, which are platform specific, th
 
 * Windows x64 (tested)
 * Windows x32 (untested)
-* MacOS x64 (tested)
+* MacOS x64 (tested)*
 * Linux x64 (tested for Ubuntu 20.04)<br/>
+
+*\*For Mac support, you will also need to follow [these steps](https://opencv-java-tutorials.readthedocs.io/en/latest/01-installing-opencv-for-java.html#install-opencv-3-x-under-macos) to download some other required native libraries, except for the last step since EOCV Sim already loads automatically the core dylib file.*
 
 # Installation
 
