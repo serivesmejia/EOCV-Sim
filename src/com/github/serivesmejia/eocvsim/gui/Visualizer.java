@@ -388,16 +388,18 @@ public class Visualizer {
 			}
 		});
 
+		//RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 eocvSim.runOnMainThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(isCtrlPressed) {
+                        if(isCtrlPressed) { //check if control key is pressed
                             lastMousePosition = mousePosition;
-                            scale -= 1 * e.getPreciseWheelRotation();
-                            zoomIn(lastMousePosition);
+                            scale -= 0.5 * e.getPreciseWheelRotation();
+							if(scale <= 0) scale = 0.5;
+							scaleAndZoom(lastMousePosition);
                         }
                     }
                 });
@@ -414,6 +416,7 @@ public class Visualizer {
             }
         });
 
+        //listening for keyboard presses and releases, to check if ctrl key was pressed or released
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
             @Override
             public boolean dispatchKeyEvent(KeyEvent ke) {
@@ -421,35 +424,32 @@ public class Visualizer {
                     case KeyEvent.KEY_PRESSED:
                         if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
                             isCtrlPressed = true;
-                            imgScrollPane.setWheelScrollingEnabled(false);
+                            imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctr is pressed
                         }
                         break;
                     case KeyEvent.KEY_RELEASED:
                         if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
                             isCtrlPressed = false;
-                            imgScrollPane.setWheelScrollingEnabled(true);
+                            imgScrollPane.setWheelScrollingEnabled(true); //unlock
                         }
                         break;
                 }
-                return true;
+                return true; //idk let's just return true
             }
         });
 
     }
 
-    public void zoomOut(Point point) {
-        if(scale <= 0) scale = 1;
-        scaleAndZoom(point, scale);
-    }
+    //scale img
+    private void scaleAndZoom(Point point) {
 
-    public void zoomIn(Point point) {
-        if(scale <= 0) scale = 1;
-        scaleAndZoom(point, scale);
-    }
+		double multiplier = (320f/240f) / ((double)lastMatBI.getHeight() / (double)lastMatBI.getHeight());
+		Math.abs(multiplier);
 
-    private void scaleAndZoom(Point point, double scale) {
+		if(scale >= 1.5 * multiplier) scale = 1.5 * multiplier;
+		if(scale <= 0) scale = 0.5;
 
-        if(scale <= 0) scale = 1;
+		System.out.println(scale);
 
         Rectangle view = imgScrollPane.getViewport().getViewRect();
 
@@ -458,38 +458,20 @@ public class Visualizer {
 
         view.setBounds(view.x+moveX,view.y+moveY, view.width, view.height);
 
-        ImageIcon icon = new ImageIcon(getScaledImage(lastMatBI, scale));
+        ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBI, scale));
         img.setIcon(icon);
-
-    }
-
-    private BufferedImage getScaledImage(BufferedImage image, double scale) {
-
-        if(scale <= 0) scale = 1;
-
-        int w = (int)(scale*image.getWidth());
-        int h = (int)(scale*image.getHeight());
-        
-        BufferedImage bi = new BufferedImage(w, h, image.getType());
-        Graphics2D g2 = bi.createGraphics();
-
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-        AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
-
-        g2.drawRenderedImage(image, at);
-        g2.dispose();
-
-        return bi;
 
     }
 
 	public void updateVisualizedMat(Mat mat) {
 		
 		try {
+
+			if(lastMatBI != null) lastMatBI.flush();
 		    lastMatBI = CvUtil.matToBufferedImage(mat);
-            scaleAndZoom(lastMousePosition, scale);
+
+            scaleAndZoom(lastMousePosition);
+
 		} catch(Throwable ex) {
 			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");
 		}
@@ -567,7 +549,6 @@ public class Visualizer {
 	}
 
 	// PLEASE WAIT DIALOGS
-
 
 	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
 

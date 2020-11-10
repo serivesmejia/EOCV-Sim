@@ -9,11 +9,13 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GuiUtil {
+public final class GuiUtil {
 
     public static void jTextFieldOnlyNumbers(JTextField field, int minNumber, int onMinNumberChangeTo) {
 
@@ -48,19 +50,42 @@ public class GuiUtil {
         int nw = icon.getIconWidth();
         int nh = icon.getIconHeight();
 
-        if(icon.getIconWidth() > w)
-        {
+        if(icon.getIconWidth() > w) {
             nw = w;
             nh = (nw * icon.getIconHeight()) / icon.getIconWidth();
         }
 
-        if(nh > h)
-        {
+        if(nh > h) {
             nh = h;
             nw = (icon.getIconWidth() * nh) / icon.getIconHeight();
         }
 
         return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_DEFAULT));
+
+    }
+
+    public static BufferedImage scaleImage(BufferedImage image, double scale) {
+
+        if(scale <= 0) scale = 1;
+
+        int w = (int)Math.round(scale*(double)image.getWidth());
+        int h = (int)Math.round(scale*(double)image.getHeight());
+
+        if(w <= 0) w = image.getWidth();
+        if(h <= 0) h = image.getHeight();
+
+        BufferedImage bi = new BufferedImage(w, h, image.getType());
+        Graphics2D g2 = bi.createGraphics();
+
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+        AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
+
+        g2.drawRenderedImage(image, at);
+        g2.dispose();
+
+        return bi;
 
     }
 
