@@ -2,6 +2,8 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -62,6 +64,14 @@ public class Visualizer {
 	private int beforeSelectedSourceIndex = 0;
 
 	private int beforeSelectedPipeline = -1;
+
+	private volatile double scale = 1f;
+
+	private volatile BufferedImage lastMatBI = null;
+    private volatile Point mousePosition = new Point(0, 0);
+    private volatile Point lastMousePosition = new Point(0, 0);
+
+    private volatile boolean isCtrlPressed = false;
 
 	public static ImageIcon ICO_EOCVSIM = null;
 
@@ -220,7 +230,6 @@ public class Visualizer {
 					l.setToolTipText(m.getElementAt(index).toString());
 				}
 			}
-
 		});
 
         telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -302,7 +311,7 @@ public class Visualizer {
 						} else {
 							if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
 								pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
-							} else {
+							} else { //handling pausing
 								eocvSim.pipelineManager.requestSetPaused(false);
 								eocvSim.pipelineManager.requestChangePipeline(pipeline);
 								beforeSelectedPipeline = pipeline;
@@ -337,7 +346,7 @@ public class Visualizer {
 							} else {
 								if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
 									sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
-								} else {
+								} else { //handling pausing
 									eocvSim.pipelineManager.requestSetPaused(false);
 									eocvSim.inputSourceManager.requestSetInputSource(source);
 									beforeSelectedSource = source;
@@ -379,13 +388,108 @@ public class Visualizer {
 			}
 		});
 
-	}
+        imgScrollPane.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                eocvSim.runOnMainThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(isCtrlPressed) {
+                            lastMousePosition = mousePosition;
+                            scale -= 1 * e.getPreciseWheelRotation();
+                            zoomIn(lastMousePosition);
+                        }
+                    }
+                });
+            }
+        });
+
+        imgScrollPane.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) { }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                PointerInfo info = MouseInfo.getPointerInfo();
+                mousePosition = info.getLocation();
+            }
+        });
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                switch (ke.getID()) {
+                    case KeyEvent.KEY_PRESSED:
+                        if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+                            isCtrlPressed = true;
+                            imgScrollPane.setWheelScrollingEnabled(false);
+                        }
+                        break;
+                    case KeyEvent.KEY_RELEASED:
+                        if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+                            isCtrlPressed = false;
+                            imgScrollPane.setWheelScrollingEnabled(true);
+                        }
+                        break;
+                }
+                return true;
+            }
+        });
+
+    }
+
+    public void zoomOut(Point point) {
+        if(scale <= 0) scale = 1;
+        scaleAndZoom(point, scale);
+    }
+
+    public void zoomIn(Point point) {
+        if(scale <= 0) scale = 1;
+        scaleAndZoom(point, scale);
+    }
+
+    private void scaleAndZoom(Point point, double scale) {
+
+        if(scale <= 0) scale = 1;
+
+        Rectangle view = imgScrollPane.getViewport().getViewRect();
+
+        int moveX = point.x;
+        int moveY = point.y;
+
+        view.setBounds(view.x+moveX,view.y+moveY, view.width, view.height);
+
+        ImageIcon icon = new ImageIcon(getScaledImage(lastMatBI, scale));
+        img.setIcon(icon);
+
+    }
+
+    private BufferedImage getScaledImage(BufferedImage image, double scale) {
+
+        if(scale <= 0) scale = 1;
+
+        int w = (int)(scale*image.getWidth());
+        int h = (int)(scale*image.getHeight());
+        
+        BufferedImage bi = new BufferedImage(w, h, image.getType());
+        Graphics2D g2 = bi.createGraphics();
+
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+        AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
+
+        g2.drawRenderedImage(image, at);
+        g2.dispose();
+
+        return bi;
+
+    }
 
 	public void updateVisualizedMat(Mat mat) {
 		
 		try {
-			ImageIcon icon = new ImageIcon(CvUtil.matToBufferedImage(mat));
-			img.setIcon(icon);
+		    lastMatBI = CvUtil.matToBufferedImage(mat);
+            scaleAndZoom(lastMousePosition, scale);
 		} catch(Throwable ex) {
 			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");
 		}
@@ -400,7 +504,7 @@ public class Visualizer {
 	
 	public void setTitle(String title) {
 		this.title = title;
-		if(beforeTitle != title) setFrameTitle(title, titleMsg);
+		if(!beforeTitle.equals(title)) setFrameTitle(title, titleMsg);
 		beforeTitle = title;
 	}
 	
@@ -449,12 +553,12 @@ public class Visualizer {
 			DefaultListModel<String> listModel = new DefaultListModel<>();
 
 			for(String line : telemetry.toString().split("\n")) {
-				listModel.addElement("<html>" + line + "</html>");
+				listModel.addElement(line);
 			}
 
-			telemetryList.setModel(listModel);
-
 			telemetryList.setFixedCellWidth(240);
+
+			telemetryList.setModel(listModel);
 			telemetryList.revalidate();
 			telemetryScroll.revalidate();
 
@@ -559,7 +663,6 @@ public class Visualizer {
 		return rPWD;
 
 	}
-
 
 	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
 

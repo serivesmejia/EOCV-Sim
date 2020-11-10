@@ -12,10 +12,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.util.Log;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ScanResult;
-
 public class PipelineManager {
 
 	public volatile ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<>();
@@ -29,7 +25,7 @@ public class PipelineManager {
 	public volatile Mat lastOutputMat = new Mat();
 
 	public int lastFPS = 0;
-	private int fpsC = 0;
+	private int fpsCount = 0;
 	private long nextFPSUpdateMillis = 0;
 
 	private volatile boolean isPaused = false;
@@ -51,61 +47,17 @@ public class PipelineManager {
 		
 		Log.info("PipelineManager", "Initializing...");
 
-		lookForPipelines(lookForPipelineAPWD);
-		
-		nextFPSUpdateMillis = System.currentTimeMillis();
-
-		requestChangePipeline(0);
-
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void lookForPipelines(AsyncPleaseWaitDialog lookForPipelineAPWD) {
-		
-		Log.info("PipelineManager", "Scanning for pipelines...");
-		
-		//Scan for all classes in the org.firstinspires package
-		ClassGraph classGraph = new ClassGraph().enableAllInfo().acceptPackages("org.firstinspires");
-		
-		ScanResult scanResult = classGraph.scan();
-
+		//add default pipeline
 		addPipelineClass(DefaultPipeline.class);
 
-		//iterate over the results of the scan
-	    for (ClassInfo routeClassInfo : scanResult.getAllClasses()) {
-	    	
-	    	Class<?> foundClass = null;
-	    	
-			try {
-				foundClass = Class.forName(routeClassInfo.getName());
-			} catch (ClassNotFoundException e1) {
-				e1.printStackTrace();
-				continue; //continue because we couldn't get the class...
-			}
+		//scan for pipelines
+		new PipelineScanner(this).lookForPipelines(lookForPipelineAPWD);
 
-			//Scan recursively until we find a OpenCvPipeline superclass or we hit the Object superclass
-			Class<?> superClass = foundClass.getSuperclass();
-			while (superClass != null) {
-				
-				if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
+		Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
+		Log.white();
 
-					Log.info("PipelineManager", "Found pipeline " + routeClassInfo.getName());
-					if(lookForPipelineAPWD != null) lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName()); 
-					
-					addPipelineClass(foundClass);
-					break;
-					
-				}
-				
-				//Didn't found a pipeline, continue searching...
-				superClass = superClass.getSuperclass();
-				
-			}
-		
-	    }
-	    
-	    Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
-	    Log.white();
+		nextFPSUpdateMillis = System.currentTimeMillis(); //the next time the FPS counter will be updated, in milliseconds
+		requestChangePipeline(0); //change to the default pipeline
 
 	}
 	
@@ -145,15 +97,13 @@ public class PipelineManager {
 	
 	private void calcFPS() {
 		
-		fpsC++;
-		
+		fpsCount++;
+
+		//update and reset the fps count if a second has passed since the last update
 		if(System.currentTimeMillis() >= nextFPSUpdateMillis) {
-			
 			nextFPSUpdateMillis = System.currentTimeMillis() + 1000;
-			
-			lastFPS = fpsC;
-			fpsC = 0;
-		
+			lastFPS = fpsCount;
+			fpsCount = 0;
 		}
 		
 	}
