@@ -171,19 +171,16 @@ public class CreateCameraSource {
                 cameraIdField.setEditable(false);
                 createButton.setEnabled(false);
 
-                eocvSim.runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(testCamera(camId)) {
-                            close();
-                            if(wasCancelled) return;
-                            createSource(nameTextField.getText(), camId, new Size(width, height));
-                            eocvSim.visualizer.updateSourcesList();
-                        } else {
-                            cameraIdField.setEditable(true);
-                            createButton.setEnabled(true);
-                            statusLabel.setText("Failed to open camera, try with another index.");
-                        }
+                eocvSim.runOnMainThread(() -> {
+                    if(testCamera(camId)) {
+                        close();
+                        if(wasCancelled) return;
+                        createSource(nameTextField.getText(), camId, new Size(width, height));
+                        eocvSim.visualizer.updateSourcesList();
+                    } else {
+                        cameraIdField.setEditable(true);
+                        createButton.setEnabled(true);
+                        statusLabel.setText("Failed to open camera, try with another index.");
                     }
                 });
 
@@ -245,12 +242,9 @@ public class CreateCameraSource {
     }
 
     public void createSource(String sourceName, int index, Size size) {
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                eocvSim.inputSourceManager.addInputSource(sourceName, new CameraSource(index, size));
-                eocvSim.visualizer.updateSourcesList();
-            }
+        eocvSim.runOnMainThread(() -> {
+            eocvSim.inputSourceManager.addInputSource(sourceName, new CameraSource(index, size));
+            eocvSim.visualizer.updateSourcesList();
         });
     }
 

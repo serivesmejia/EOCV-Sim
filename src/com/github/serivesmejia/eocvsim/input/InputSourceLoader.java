@@ -23,17 +23,11 @@ public class InputSourceLoader {
     public static File SOURCES_SAVEFILE = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
 
     public void saveInputSource(String name, InputSource source) {
-
         loadedInputSources.put(name, source);
-
     }
 
     public void deleteInputSource(String name) {
-
-        if(loadedInputSources.containsKey(name)) {
-            loadedInputSources.remove(name);
-        }
-
+        loadedInputSources.remove(name);
     }
 
     public void saveInputSourcesToFile() {

@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 
 public class CreateSource {
 
@@ -22,12 +23,7 @@ public class CreateSource {
 
         chooseSource = new JDialog(parent);
         this.parent = parent;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initChooseSource();
-            }
-        }).start();
+        new Thread(() -> initChooseSource()).start();
 
         this.eocvSim = eocvSim;
 
@@ -71,31 +67,20 @@ public class CreateSource {
 
         chooseSource.getContentPane().add(contentsPane, BorderLayout.CENTER);
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
+        cancelButton.addActionListener(e -> close());
 
-        nextButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        switch((String)dropDown.getSelectedItem()) {
-                            case "IMAGE":
-                                new CreateImageSource(parent, eocvSim);
-                                break;
-                            case "CAMERA":
-                                new CreateCameraSource(parent, eocvSim);
-                                break;
-                        }
-                    }
-                }).run();
-            }
+        nextButton.addActionListener(e -> {
+            close();
+            new Thread(() -> {
+                switch ((String) Objects.requireNonNull(dropDown.getSelectedItem())) {
+                    case "IMAGE":
+                        new CreateImageSource(parent, eocvSim);
+                        break;
+                    case "CAMERA":
+                        new CreateCameraSource(parent, eocvSim);
+                        break;
+                }
+            }).start();
         });
 
         chooseSource.setResizable(false);

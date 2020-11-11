@@ -54,7 +54,7 @@ public class Visualizer {
 
 	private EOCVSim eocvSim = null;
 	
-	private String title = "EasyOpenCV Simulator";
+	private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
 	private String titleMsg = "No pipeline";
 	
 	private String beforeTitle = "";
@@ -366,11 +366,9 @@ public class Visualizer {
 
 		//handling onViewportTapped evts
 		img.addMouseListener(new MouseAdapter() {
-
 			public void mouseClicked(MouseEvent e) {
 				eocvSim.pipelineManager.currentPipeline.onViewportTapped();
 			}
-
 		});
 
 		// delete input source
@@ -378,12 +376,9 @@ public class Visualizer {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-				eocvSim.runOnMainThread(new Runnable() {
-					@Override
-					public void run() {
-						eocvSim.inputSourceManager.deleteInputSource(source);
-						updateSourcesList();
-					}
+				eocvSim.runOnMainThread(() -> {
+					eocvSim.inputSourceManager.deleteInputSource(source);
+					updateSourcesList();
 				});
 			}
 		});
@@ -392,15 +387,16 @@ public class Visualizer {
         imgScrollPane.addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                eocvSim.runOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(isCtrlPressed) { //check if control key is pressed
-                            lastMousePosition = mousePosition;
-                            scale -= 0.5 * e.getPreciseWheelRotation();
-							if(scale <= 0) scale = 0.5;
-							scaleAndZoom(lastMousePosition);
-                        }
+                eocvSim.runOnMainThread(() -> {
+                    if(isCtrlPressed) { //check if control key is pressed
+
+                        lastMousePosition = mousePosition;
+
+                        scale -= 0.5 * e.getPreciseWheelRotation();
+                        if(scale <= 0) scale = 0.5;
+
+                        scaleAndZoom(lastMousePosition);
+
                     }
                 });
             }
@@ -444,7 +440,7 @@ public class Visualizer {
     private void scaleAndZoom(Point point) {
 
 		double multiplier = (320f/240f) / ((double)lastMatBI.getHeight() / (double)lastMatBI.getHeight());
-		Math.abs(multiplier);
+		multiplier = Math.abs(multiplier);
 
 		if(scale >= 1.5 * multiplier) scale = 1.5 * multiplier;
 		if(scale <= 0) scale = 0.5;
@@ -467,7 +463,6 @@ public class Visualizer {
 		
 		try {
 
-			if(lastMatBI != null) lastMatBI.flush();
 		    lastMatBI = CvUtil.matToBufferedImage(mat);
 
             scaleAndZoom(lastMousePosition);

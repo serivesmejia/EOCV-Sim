@@ -220,12 +220,9 @@ public class CreateImageSource {
     }
 
     public void createSource(String sourceName, String imgPath, Size size) {
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
-                eocvSim.visualizer.updateSourcesList();
-            }
+        eocvSim.runOnMainThread(() -> {
+            eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
+            eocvSim.visualizer.updateSourcesList();
         });
     }
 

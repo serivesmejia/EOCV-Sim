@@ -129,7 +129,7 @@ public class EOCVSim {
 
 		String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
 
-		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB memory used)";
+		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB Java memory used)";
 
 		if(pipelineManager.currentPipeline == null) {
 			visualizer.setTitleMessage("No pipeline" + fpsMsg + isPaused + memoryMsg);

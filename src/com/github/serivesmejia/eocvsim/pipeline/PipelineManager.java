@@ -160,24 +160,14 @@ public class PipelineManager {
 	}
 
 	public void requestChangePipeline(int index) {
-		runOnUpdate(new Runnable() {
-			@Override
-			public void run() {
-				changePipeline(index);
-			}
-		});
+		runOnUpdate(() -> changePipeline(index));
 	}
 
 	public void runThenPause() {
 
 		setPaused(false);
 
-		eocvSim.runOnMainThread(new Runnable() {
-			@Override
-			public void run() {
-				setPaused(true);
-			}
-		});
+		eocvSim.runOnMainThread(() -> setPaused(true));
 
 	}
 
@@ -218,12 +208,7 @@ public class PipelineManager {
 	}
 
 	public void requestSetPaused(boolean paused, PauseReason pauseReason) {
-		eocvSim.runOnMainThread(new Runnable() {
-			@Override
-			public void run() {
-				setPaused(paused, pauseReason);
-			}
-		});
+		eocvSim.runOnMainThread(() -> setPaused(paused, pauseReason));
 	}
 
 	public void requestSetPaused(boolean paused) {
