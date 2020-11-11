@@ -495,7 +495,7 @@ public class Visualizer {
 		
 	    DefaultListModel<String> listModel = new DefaultListModel<>();  
         
-		for(Class<OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+		for(Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
 			listModel.addElement(pipelineClass.getSimpleName());
 		}
 		

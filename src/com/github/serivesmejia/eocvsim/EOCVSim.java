@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim;
 import java.awt.Dimension;
 import java.util.ArrayList;
 
+import com.github.serivesmejia.eocvsim.tuner.TunerManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
@@ -16,9 +17,10 @@ import com.github.serivesmejia.eocvsim.util.SysUtil;
 public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
-	public PipelineManager pipelineManager = null;
 
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
+	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
+	public TunerManager tunerManager = new TunerManager(this);
 
 	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "1.2.0";
@@ -47,18 +49,15 @@ public class EOCVSim {
 		visualizer.updateSourcesList();
 		visualizer.sourceSelector.setSelectedIndex(0);
 
+		//create a dialog to give user visual feedback
 		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
+		lookForPipelineAPWD.onCancel(() -> System.exit(0));
 		
-		lookForPipelineAPWD.onCancel(new Runnable() {
-			@Override
-			public void run() {
-				System.exit(0);
-			}
-		});
-		
-		pipelineManager.init(lookForPipelineAPWD);
+		pipelineManager.init(lookForPipelineAPWD); //init pipeline manager (scan for pipelines)
 
-		lookForPipelineAPWD.destroyDialog();
+		lookForPipelineAPWD.destroyDialog(); //destroy dialog since wait's over.
+
+		tunerManager.init(); //init tunable variables manager
 
 		visualizer.updatePipelinesList();
 		visualizer.pipelineSelector.setSelectedIndex(0);
@@ -87,6 +86,7 @@ public class EOCVSim {
 			updateVisualizerTitle();
 
 			inputSourceManager.update(pipelineManager.isPaused());
+			tunerManager.update();
 
 			//if we dont have a mat from the inputsource, we'll just skip this frame.
 			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;

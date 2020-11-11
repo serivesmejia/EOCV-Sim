@@ -14,7 +14,7 @@ import com.github.serivesmejia.eocvsim.util.Log;
 
 public class PipelineManager {
 
-	public volatile ArrayList<Class<OpenCvPipeline>> pipelines = new ArrayList<>();
+	public volatile ArrayList<Class<? extends OpenCvPipeline>> pipelines = new ArrayList<>();
 	
 	public OpenCvPipeline currentPipeline = null;
 	public String currentPipelineName = "";
@@ -32,6 +32,7 @@ public class PipelineManager {
 	private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
 
 	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
+	private final ArrayList<Runnable> runnsOnChange = new ArrayList<>();
 	private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
 	private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
 
@@ -115,7 +116,7 @@ public class PipelineManager {
 		OpenCvPipeline nextPipeline = null;
 		Telemetry nextTelemetry;
 		
-		Class<OpenCvPipeline> pipelineClass = pipelines.get(index);
+		Class<? extends OpenCvPipeline> pipelineClass = pipelines.get(index);
 	
 		Log.info("PipelineManager", "Changing to pipeline " + pipelineClass.getName());
 		
@@ -157,6 +158,10 @@ public class PipelineManager {
 
 		eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
 
+		for(Runnable runn : runnsOnChange.toArray(new Runnable[0])) {
+			runn.run();
+		}
+
 	}
 
 	public void requestChangePipeline(int index) {
@@ -169,6 +174,10 @@ public class PipelineManager {
 
 		eocvSim.runOnMainThread(() -> setPaused(true));
 
+	}
+
+	public void runOnChange(Runnable runn) {
+		runnsOnChange.add(runn);
 	}
 
 	public void runOnPause(Runnable runn) {
