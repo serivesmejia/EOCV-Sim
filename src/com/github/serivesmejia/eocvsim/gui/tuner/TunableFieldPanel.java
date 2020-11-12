@@ -9,7 +9,7 @@ public class TunableFieldPanel extends JPanel {
 
     public final TunableField tunableField;
 
-    public JTextArea[] fields;
+    public JTextField[] fields;
 
     public TunableFieldPanel(TunableField tunableField) {
         super();
@@ -19,17 +19,17 @@ public class TunableFieldPanel extends JPanel {
 
     private void init() {
 
-        setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
+        setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
 
         JLabel fieldNameLabel = new JLabel();
         fieldNameLabel.setText(tunableField.getFieldName());
 
         add(fieldNameLabel);
 
-        fields = new JTextArea[tunableField.getGuiFieldAmount()];
+        fields = new JTextField[tunableField.getGuiFieldAmount()];
 
         for(int i = 0 ; i < fields.length ; i++) {
-            fields[i] = new JTextArea(tunableField.getGuiFieldValue(i).toString());
+            fields[i] = new JTextField(tunableField.getGuiFieldValue(i).toString());
             add(fields[i]);
         }
 

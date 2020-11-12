@@ -30,16 +30,15 @@ public class Visualizer {
 	public JFrame frame = new JFrame();
 	public volatile JLabel img = new JLabel();
 
-	public JPanel upPanel = new JPanel();
-	public JPanel downPanel = new JPanel();
+	public JPanel tunerMenuPanel = new JPanel();
 
 	public JScrollPane imgScrollPane = null;
 	public JPanel imgScrollContainer = new JPanel();
 
 	public JPanel rightContainer = new JPanel();
 
-	public JSplitPane horizontalSplitPane = null;
-	public JSplitPane verticalSplitPane = null;
+	public JSplitPane globalSplitPane = null;
+	public JSplitPane imageTunerSplitPane = null;
 
 	public JPanel pipelineSelectorContainer = new JPanel();
 	public volatile JList<String> pipelineSelector = new JList<>();
@@ -255,20 +254,21 @@ public class Visualizer {
 		 * SPLIT
 		 */
 
-		verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgScrollPane, downPanel);
+		//left side, image scroll & tuner menu split panel
+		imageTunerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgScrollPane, tunerMenuPanel);
 
-		verticalSplitPane.setResizeWeight(1);
-		verticalSplitPane.setOneTouchExpandable(false);
-		verticalSplitPane.setContinuousLayout(true);
+		imageTunerSplitPane.setResizeWeight(1);
+		imageTunerSplitPane.setOneTouchExpandable(false);
+		imageTunerSplitPane.setContinuousLayout(true);
 
-		//up horizontal
-		horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, verticalSplitPane, rightContainer);
+		//global
+		globalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imageTunerSplitPane, rightContainer);
 
-		horizontalSplitPane.setResizeWeight(1);
-		horizontalSplitPane.setOneTouchExpandable(false);
-		horizontalSplitPane.setContinuousLayout(true);
+		globalSplitPane.setResizeWeight(1);
+		globalSplitPane.setOneTouchExpandable(false);
+		globalSplitPane.setContinuousLayout(true);
 
-		frame.add(horizontalSplitPane, BorderLayout.CENTER);
+		frame.add(globalSplitPane, BorderLayout.CENTER);
 
 		//initialize other various stuff of the frame
 		frame.setSize(780, 645);
@@ -281,7 +281,7 @@ public class Visualizer {
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		horizontalSplitPane.setDividerLocation(1070);
+		globalSplitPane.setDividerLocation(1070);
 
 		frame.setVisible(true);
 
@@ -388,35 +388,27 @@ public class Visualizer {
 		});
 
 		// delete input source
-		sourceSelectorDeleteBtt.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-				eocvSim.runOnMainThread(() -> {
-					eocvSim.inputSourceManager.deleteInputSource(source);
-					updateSourcesList();
-				});
-			}
+		sourceSelectorDeleteBtt.addActionListener(e -> {
+			String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
+			eocvSim.runOnMainThread(() -> {
+				eocvSim.inputSourceManager.deleteInputSource(source);
+				updateSourcesList();
+			});
 		});
 
 		//RESIZE HANDLING
-        imgScrollPane.addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                eocvSim.runOnMainThread(() -> {
-                    if(isCtrlPressed) { //check if control key is pressed
+        imgScrollPane.addMouseWheelListener(e -> eocvSim.runOnMainThread(() -> {
+			if(isCtrlPressed) { //check if control key is pressed
 
-                        lastMousePosition = mousePosition;
+				lastMousePosition = mousePosition;
 
-                        scale -= 0.5 * e.getPreciseWheelRotation();
-                        if(scale <= 0) scale = 0.5;
+				scale -= 0.5 * e.getPreciseWheelRotation();
+				if(scale <= 0) scale = 0.5;
 
-                        scaleAndZoom(lastMousePosition);
+				scaleAndZoom(lastMousePosition);
 
-                    }
-                });
-            }
-        });
+			}
+		}));
 
         imgScrollPane.addMouseMotionListener(new MouseMotionListener() {
             @Override
@@ -429,26 +421,23 @@ public class Visualizer {
         });
 
         //listening for keyboard presses and releases, to check if ctrl key was pressed or released
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                switch (ke.getID()) {
-                    case KeyEvent.KEY_PRESSED:
-                        if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
-                            isCtrlPressed = true;
-                            imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctr is pressed
-                        }
-                        break;
-                    case KeyEvent.KEY_RELEASED:
-                        if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
-                            isCtrlPressed = false;
-                            imgScrollPane.setWheelScrollingEnabled(true); //unlock
-                        }
-                        break;
-                }
-                return true; //idk let's just return true
-            }
-        });
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+			switch (ke.getID()) {
+				case KeyEvent.KEY_PRESSED:
+					if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+						isCtrlPressed = true;
+						imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctr is pressed
+					}
+					break;
+				case KeyEvent.KEY_RELEASED:
+					if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+						isCtrlPressed = false;
+						imgScrollPane.setWheelScrollingEnabled(true); //unlock
+					}
+					break;
+			}
+			return true; //idk let's just return true
+		});
 
     }
 
@@ -560,12 +549,15 @@ public class Visualizer {
 	}
 
 	public void updateTunerFields(List<TunableFieldPanel> fields) {
-		downPanel.removeAll();
+
+		tunerMenuPanel.removeAll();
+
 		for(TunableFieldPanel fieldPanel : fields) {
-			Log.info("add panel " + fieldPanel.tunableField.getFieldName());
-			downPanel.add(fieldPanel);
+			tunerMenuPanel.add(fieldPanel);
 		}
-		downPanel.updateUI();
+
+		tunerMenuPanel.updateUI();
+
 	}
 
 	// PLEASE WAIT DIALOGS
@@ -713,9 +705,7 @@ public class Visualizer {
 		}
 
 		public void onCancel(Runnable runn) {
-
 			onCancelRunnables.add(runn);
-
 		}
 
 		@Override
@@ -737,5 +727,5 @@ public class Visualizer {
 		}
 
 	}
-		
+
 }
