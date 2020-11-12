@@ -5,12 +5,14 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
@@ -506,7 +508,7 @@ public class Visualizer {
 	
 	public void setTitleMessage(String titleMsg) {
 		this.titleMsg = titleMsg;
-		if(beforeTitleMsg != title) setFrameTitle(title, titleMsg);
+		if(!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
 		beforeTitleMsg = titleMsg;
 	}
 	
@@ -560,6 +562,15 @@ public class Visualizer {
 
 		}
 
+	}
+
+	public void updateTunerFields(List<TunableFieldPanel> fields) {
+		downPanel.removeAll();
+		for(TunableFieldPanel fieldPanel : fields) {
+			Log.info("add panel " + fieldPanel.tunableField.getFieldName());
+			downPanel.add(fieldPanel);
+		}
+		downPanel.updateUI();
 	}
 
 	// PLEASE WAIT DIALOGS

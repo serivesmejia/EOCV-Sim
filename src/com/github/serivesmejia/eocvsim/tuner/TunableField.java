@@ -14,14 +14,12 @@ public abstract class TunableField<T> {
 
     protected Object initialFieldValue;
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField) {
+    public TunableField(OpenCvPipeline instance, Field reflectionField) throws IllegalAccessException {
 
         this.reflectionField = reflectionField;
         this.pipeline = instance;
 
-        try {
-            initialFieldValue = reflectionField.get(instance);
-        } catch (IllegalAccessException e) { }
+        initialFieldValue = reflectionField.get(instance);
 
     }
 
@@ -31,7 +29,9 @@ public abstract class TunableField<T> {
 
     public abstract void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException;
 
-    public abstract Object getValue();
+    public abstract T getValue();
+
+    public abstract Object getGuiFieldValue(int index);
 
     public final int getGuiFieldAmount() {
         return guiFieldAmount;

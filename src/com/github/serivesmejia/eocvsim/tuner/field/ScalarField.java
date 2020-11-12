@@ -11,11 +11,13 @@ public class ScalarField extends TunableField<Scalar> {
     int scalarSize;
     Scalar scalar;
 
-    public ScalarField(OpenCvPipeline instance, Field reflectionField) {
+    public ScalarField(OpenCvPipeline instance, Field reflectionField) throws IllegalAccessException {
 
         super(instance, reflectionField);
 
-        scalar = ((Scalar)initialFieldValue);
+        Scalar lastScalar = (Scalar) initialFieldValue;
+
+        scalar = new Scalar(lastScalar.val);
         scalarSize = scalar.val.length;
 
         guiFieldAmount = scalarSize;
@@ -38,6 +40,11 @@ public class ScalarField extends TunableField<Scalar> {
     @Override
     public Scalar getValue() {
         return scalar;
+    }
+
+    @Override
+    public Object getGuiFieldValue(int index) {
+        return scalar.val[index];
     }
 
 }

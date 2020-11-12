@@ -1,6 +1,7 @@
 package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
 import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Scalar;
@@ -16,12 +17,24 @@ public class TunerManager {
 
     private final List<TunableField> fields = new ArrayList<>();
 
+    private boolean firstInit = true;
+
     public TunerManager(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
     }
 
     public void init() {
-        eocvSim.pipelineManager.runOnChange(this::reset);
+
+        if(firstInit) {
+            eocvSim.pipelineManager.runOnChange(this::reset);
+            firstInit = false;
+        }
+
+        if(eocvSim.pipelineManager.currentPipeline == null) return;
+
+        addFieldsFrom(eocvSim.pipelineManager.currentPipeline);
+        eocvSim.visualizer.updateTunerFields(getTunableFieldPanels());
+
     }
 
     public void update() {
@@ -30,7 +43,7 @@ public class TunerManager {
 
     public void reset() {
         fields.clear();
-        addFieldsFrom(eocvSim.pipelineManager.currentPipeline);
+        init();
     }
 
     public void addFieldsFrom(OpenCvPipeline pipeline) {
@@ -43,13 +56,29 @@ public class TunerManager {
 
             TunableField toAddField = null; //for code simplicity
 
-            if (field.getType() == Scalar.class) {
-                toAddField = new ScalarField(pipeline, field);
+            try {
+                if (field.getType() == Scalar.class) {
+                    toAddField = new ScalarField(pipeline, field);
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
 
             if(toAddField != null) { this.fields.add(toAddField); }
 
         }
+
+    }
+
+    public List<TunableFieldPanel> getTunableFieldPanels() {
+
+        List<TunableFieldPanel> panels = new ArrayList<>();
+
+        for(TunableField field : fields) {
+            panels.add(new TunableFieldPanel(field));
+        }
+
+        return panels;
 
     }
 
