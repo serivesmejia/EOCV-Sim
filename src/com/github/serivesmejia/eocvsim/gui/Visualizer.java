@@ -2,7 +2,6 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.gui.util.LineWrapRenderer;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
@@ -29,12 +27,18 @@ public class Visualizer {
 
 	public JFrame frame = new JFrame();
 	public volatile JLabel img = new JLabel();
-	
+
+	public JPanel upPanel = new JPanel();
+	public JPanel downPanel = new JPanel();
+
 	public JScrollPane imgScrollPane = null;
 	public JPanel imgScrollContainer = new JPanel();
+
 	public JPanel rightContainer = new JPanel();
-	public JSplitPane splitPane = null;
-	
+
+	public JSplitPane horizontalSplitPane = null;
+	public JSplitPane verticalSplitPane = null;
+
 	public JPanel pipelineSelectorContainer = new JPanel();
 	public volatile JList<String> pipelineSelector = new JList<>();
 	public JScrollPane pipelineSelectorScroll = new JScrollPane();
@@ -65,9 +69,10 @@ public class Visualizer {
 
 	private int beforeSelectedPipeline = -1;
 
+	//stuff for zooming handling
 	private volatile double scale = 1f;
 
-	private volatile BufferedImage lastMatBI = null;
+	private volatile BufferedImage lastMatBufferedImage = null;
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
 
@@ -247,14 +252,28 @@ public class Visualizer {
 		/*
 		 * SPLIT
 		 */
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
 
-		splitPane.setResizeWeight(1);
-		splitPane.setOneTouchExpandable(false);
-		splitPane.setContinuousLayout(true);
+		//up horizontal
+		horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
 
-		frame.add(splitPane, BorderLayout.CENTER);
+		horizontalSplitPane.setResizeWeight(1);
+		horizontalSplitPane.setOneTouchExpandable(false);
+		horizontalSplitPane.setContinuousLayout(true);
 
+		//down vertical
+		upPanel.setLayout(new BorderLayout());
+		upPanel.add(horizontalSplitPane, BorderLayout.CENTER);
+
+		verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, downPanel);
+
+		verticalSplitPane.setResizeWeight(1);
+		verticalSplitPane.setOneTouchExpandable(false);
+		verticalSplitPane.setContinuousLayout(true);
+
+		//add vertical split pane
+		frame.add(verticalSplitPane);
+
+		//initialize other various stuff of the frame
 		frame.setSize(780, 645);
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
@@ -265,7 +284,7 @@ public class Visualizer {
 	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		splitPane.setDividerLocation(1070);
+		horizontalSplitPane.setDividerLocation(1070);
 
 		frame.setVisible(true);
 
@@ -439,7 +458,7 @@ public class Visualizer {
     //scale img
     private void scaleAndZoom(Point point) {
 
-		double multiplier = (320f/240f) / ((double)lastMatBI.getHeight() / (double)lastMatBI.getHeight());
+		double multiplier = (320f/240f) / ((double) lastMatBufferedImage.getHeight() / (double) lastMatBufferedImage.getHeight());
 		multiplier = Math.abs(multiplier);
 
 		if(scale >= 1.5 * multiplier) scale = 1.5 * multiplier;
@@ -454,7 +473,7 @@ public class Visualizer {
 
         view.setBounds(view.x+moveX,view.y+moveY, view.width, view.height);
 
-        ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBI, scale));
+        ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBufferedImage, scale));
         img.setIcon(icon);
 
     }
@@ -463,7 +482,7 @@ public class Visualizer {
 		
 		try {
 
-		    lastMatBI = CvUtil.matToBufferedImage(mat);
+		    lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
 
             scaleAndZoom(lastMousePosition);
 

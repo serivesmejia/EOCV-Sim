@@ -6,18 +6,38 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
 
-public class ScalarField extends TunableField {
+public class ScalarField extends TunableField<Scalar> {
 
     int scalarSize;
+    Scalar scalar;
 
     public ScalarField(OpenCvPipeline instance, Field reflectionField) {
+
         super(instance, reflectionField);
-        scalarSize = ((Scalar)initialFieldValue).val.;
+
+        scalar = ((Scalar)initialFieldValue);
+        scalarSize = scalar.val.length;
+
+        guiFieldAmount = scalarSize;
+
     }
 
     @Override
-    public void updateValue(Object newValue) {
+    public void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException {
 
+        if(newValue instanceof Double) {
+            scalar.val[index] = (double) newValue;
+        } else {
+            throw new IllegalArgumentException("Parameter should be a Double");
+        }
+
+        setPipelineFieldValue(scalar);
+
+    }
+
+    @Override
+    public Scalar getValue() {
+        return scalar;
     }
 
 }
