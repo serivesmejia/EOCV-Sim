@@ -255,25 +255,20 @@ public class Visualizer {
 		 * SPLIT
 		 */
 
-		//up horizontal
-		horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgScrollPane, rightContainer);
-
-		horizontalSplitPane.setResizeWeight(1);
-		horizontalSplitPane.setOneTouchExpandable(false);
-		horizontalSplitPane.setContinuousLayout(true);
-
-		//down vertical
-		upPanel.setLayout(new BorderLayout());
-		upPanel.add(horizontalSplitPane, BorderLayout.CENTER);
-
-		verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upPanel, downPanel);
+		verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgScrollPane, downPanel);
 
 		verticalSplitPane.setResizeWeight(1);
 		verticalSplitPane.setOneTouchExpandable(false);
 		verticalSplitPane.setContinuousLayout(true);
 
-		//add vertical split pane
-		frame.add(verticalSplitPane);
+		//up horizontal
+		horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, verticalSplitPane, rightContainer);
+
+		horizontalSplitPane.setResizeWeight(1);
+		horizontalSplitPane.setOneTouchExpandable(false);
+		horizontalSplitPane.setContinuousLayout(true);
+
+		frame.add(horizontalSplitPane, BorderLayout.CENTER);
 
 		//initialize other various stuff of the frame
 		frame.setSize(780, 645);
