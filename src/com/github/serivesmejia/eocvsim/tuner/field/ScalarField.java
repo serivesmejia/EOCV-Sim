@@ -5,11 +5,14 @@ import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 public class ScalarField extends TunableField<Scalar> {
 
     int scalarSize;
     Scalar scalar;
+
+    double[] lastVal = {};
 
     public ScalarField(OpenCvPipeline instance, Field reflectionField) throws IllegalAccessException {
 
@@ -25,16 +28,28 @@ public class ScalarField extends TunableField<Scalar> {
     }
 
     @Override
-    public void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException {
+    public void update() {
+        if(!Arrays.equals(scalar.val, lastVal)) { //update values in GUI if they changed since last check
+            updateGuiFieldValues();
+        }
+        lastVal = scalar.val;
+    }
 
+    @Override
+    public void updateGuiFieldValues() {
+        for(int i = 0 ; i < scalar.val.length ; i++) {
+            fieldPanel.setFieldValue(i, scalar.val[i]);
+        }
+    }
+
+    @Override
+    public void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException {
         if(newValue instanceof Double) {
             scalar.val[index] = (double) newValue;
+            setPipelineFieldValue(scalar);
         } else {
             throw new IllegalArgumentException("Parameter should be a Double");
         }
-
-        setPipelineFieldValue(scalar);
-
     }
 
     @Override

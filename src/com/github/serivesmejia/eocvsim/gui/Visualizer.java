@@ -436,7 +436,7 @@ public class Visualizer {
 					}
 					break;
 			}
-			return true; //idk let's just return true
+			return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
 		});
 
     }
