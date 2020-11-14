@@ -11,7 +11,7 @@ transfer it onto your robot!
 
 # Compatibility
 
-Because OpenCV in Java uses a native shared lib, which are platform specific, the simulator is currently limited to the following platforms:
+Because OpenCV in Java uses a native library, which are platform specific, the simulator is currently limited to the following platforms:
 
 * Windows x64 (tested)
 * Windows x32 (untested)
