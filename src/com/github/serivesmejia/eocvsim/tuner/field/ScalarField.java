@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.tuner.field;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -14,9 +15,9 @@ public class ScalarField extends TunableField<Scalar> {
 
     double[] lastVal = {};
 
-    public ScalarField(OpenCvPipeline instance, Field reflectionField) throws IllegalAccessException {
+    public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
 
-        super(instance, reflectionField);
+        super(instance, reflectionField, eocvSim, true);
 
         Scalar lastScalar = (Scalar) initialFieldValue;
 
@@ -43,13 +44,16 @@ public class ScalarField extends TunableField<Scalar> {
     }
 
     @Override
-    public void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException {
-        if(newValue instanceof Double) {
-            scalar.val[index] = (double) newValue;
-            setPipelineFieldValue(scalar);
-        } else {
-            throw new IllegalArgumentException("Parameter should be a Double");
+    public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
+
+       try {
+           scalar.val[index] = Double.parseDouble(newValue);
+        } catch(NumberFormatException ex) {
+                throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
+
+        setPipelineFieldValue(scalar);
+
     }
 
     @Override

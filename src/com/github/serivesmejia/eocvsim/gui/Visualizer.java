@@ -343,40 +343,40 @@ public class Visualizer {
 		});
 
 		//listener for changing input sources
-		sourceSelector.addListSelectionListener(new ListSelectionListener() {
+		sourceSelector.addListSelectionListener(evt -> {
 
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
+			try {
+				if(sourceSelector.getSelectedIndex() != -1) {
 
-				try {
-					if(sourceSelector.getSelectedIndex() != -1) {
+					ListModel<String> model = sourceSelector.getModel();
+					String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
-						ListModel<String> model = sourceSelector.getModel();
-						String source = model.getElementAt(sourceSelector.getSelectedIndex());
+					if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
+						if(!eocvSim.pipelineManager.isPaused()) {
 
-						if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
-							if(!eocvSim.pipelineManager.isPaused()) {
+							eocvSim.inputSourceManager.requestSetInputSource(source);
+							beforeSelectedSource = source;
+							beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
+
+						} else {
+
+							//check if the user requested the pause or if it was due to one shoot analysis when selecting images
+							if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+								sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
+							} else { //handling pausing
+								eocvSim.pipelineManager.requestSetPaused(false);
 								eocvSim.inputSourceManager.requestSetInputSource(source);
 								beforeSelectedSource = source;
 								beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-							} else {
-								if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
-									sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
-								} else { //handling pausing
-									eocvSim.pipelineManager.requestSetPaused(false);
-									eocvSim.inputSourceManager.requestSetInputSource(source);
-									beforeSelectedSource = source;
-									beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-								}
 							}
+
 						}
-
-					} else {
-						sourceSelector.setSelectedIndex(1);
 					}
-				} catch(ArrayIndexOutOfBoundsException ex) { }
 
-			}
+				} else {
+					sourceSelector.setSelectedIndex(1);
+				}
+			} catch(ArrayIndexOutOfBoundsException ignored) { }
 
 		});
 

@@ -3,11 +3,11 @@ package com.github.serivesmejia.eocvsim.tuner;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
-import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,13 +55,13 @@ public class TunerManager {
 
         for(Field field : fields) {
 
-            if(!field.canAccess(pipeline)) continue;
+            if(!field.canAccess(pipeline) || Modifier.isFinal(field.getModifiers())) continue;
 
             TunableField toAddField = null; //for code simplicity
 
             try {
                 if (field.getType() == Scalar.class) {
-                    toAddField = new ScalarField(pipeline, field);
+                    toAddField = new ScalarField(pipeline, field, eocvSim);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -78,7 +78,7 @@ public class TunerManager {
         List<TunableFieldPanel> panels = new ArrayList<>();
 
         for(TunableField field : fields) {
-            panels.add(new TunableFieldPanel(field));
+            panels.add(new TunableFieldPanel(field, eocvSim));
         }
 
         return panels;

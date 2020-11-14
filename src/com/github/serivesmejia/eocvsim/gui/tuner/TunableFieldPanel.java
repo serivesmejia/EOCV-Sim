@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui.tuner;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
@@ -13,11 +14,15 @@ public class TunableFieldPanel extends JPanel {
 
     private boolean isOnlyNumbers = false;
 
-    public TunableFieldPanel(TunableField tunableField) {
+    private EOCVSim eocvSim;
+
+    public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
 
         super();
 
         this.tunableField = tunableField;
+        this.eocvSim = eocvSim;
+
         tunableField.setTunableFieldPanel(this);
 
         init();
@@ -40,7 +45,7 @@ public class TunableFieldPanel extends JPanel {
 
         for(int i = 0 ; i < fields.length ; i++) {
 
-            TunableTextField field = new TunableTextField(i, tunableField);
+            TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
 
             field.setEditable(true);
 

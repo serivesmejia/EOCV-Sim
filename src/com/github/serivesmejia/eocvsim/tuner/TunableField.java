@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.tuner;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -15,20 +16,24 @@ public abstract class TunableField<T> {
     protected int guiFieldAmount = 1;
     protected boolean isOnlyNumbers = false;
 
+    protected EOCVSim eocvSim;
+
     protected Object initialFieldValue;
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField, boolean isOnlyNumbers) throws IllegalAccessException {
+    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, boolean isOnlyNumbers) throws IllegalAccessException {
 
         this.reflectionField = reflectionField;
         this.pipeline = instance;
-        this.isOnlyNumbers = true;
+        this.isOnlyNumbers = isOnlyNumbers;
+
+        this.eocvSim = eocvSim;
 
         initialFieldValue = reflectionField.get(instance);
 
     }
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField) throws IllegalAccessException {
-        this(instance, reflectionField, true);
+    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
+        this(instance, reflectionField, eocvSim, true);
     }
 
     public abstract void update();
@@ -37,9 +42,10 @@ public abstract class TunableField<T> {
 
     public void setPipelineFieldValue(T newValue) throws IllegalAccessException {
         reflectionField.set(pipeline, newValue);
+        eocvSim.pipelineManager.requestSetPaused(false);
     }
 
-    public abstract void setGuiFieldValue(int index, Object newValue) throws IllegalAccessException;
+    public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;
 
     public void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
