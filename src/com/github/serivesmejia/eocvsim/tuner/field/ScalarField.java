@@ -17,7 +17,7 @@ public class ScalarField extends TunableField<Scalar> {
 
     public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
 
-        super(instance, reflectionField, eocvSim, true);
+        super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
 
         Scalar lastScalar = (Scalar) initialFieldValue;
 

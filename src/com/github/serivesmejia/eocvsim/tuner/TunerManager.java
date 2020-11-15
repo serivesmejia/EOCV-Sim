@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.tuner.field.NumberField;
 import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -51,6 +52,8 @@ public class TunerManager {
 
     public void addFieldsFrom(OpenCvPipeline pipeline) {
 
+        if(pipeline == null) return;
+
         Field[] fields = pipeline.getClass().getFields();
 
         for(Field field : fields) {
@@ -60,9 +63,13 @@ public class TunerManager {
             TunableField toAddField = null; //for code simplicity
 
             try {
+
                 if (field.getType() == Scalar.class) {
                     toAddField = new ScalarField(pipeline, field, eocvSim);
+                } else if (field.getType() == Number.class) {
+                    toAddField = new NumberField(pipeline, field, eocvSim);
                 }
+
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }

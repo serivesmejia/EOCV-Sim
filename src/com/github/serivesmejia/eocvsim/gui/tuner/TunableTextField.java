@@ -14,9 +14,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
 public class TunableTextField extends JTextField {
 
-    static char[] validCharsIfNumber = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.'};
+    private final ArrayList<Character> validCharsIfNumber = new ArrayList<>();
 
     private final TunableField tunableField;
     private final int index;
@@ -37,9 +42,18 @@ public class TunableTextField extends JTextField {
         this.index = index;
         this.eocvSim = eocvSim;
 
+        //add all valid characters for non decimal numeric fields
+        Collections.addAll(validCharsIfNumber, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-');
+
+        //allow dots for decimal numeric fields
+        if(tunableField.getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL) {
+            validCharsIfNumber.add('.');
+        }
+
         setText(tunableField.getGuiFieldValue(index).toString());
 
         if(tunableField.isOnlyNumbers()) {
+
             ((AbstractDocument) getDocument()).setDocumentFilter(new DocumentFilter() {
 
                 @Override
@@ -70,6 +84,7 @@ public class TunableTextField extends JTextField {
                     super.replace(fb, offset, length, text, attrs);
 
                 }
+
             });
 
         }

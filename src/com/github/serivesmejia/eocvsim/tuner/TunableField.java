@@ -14,17 +14,19 @@ public abstract class TunableField<T> {
     protected OpenCvPipeline pipeline;
 
     protected int guiFieldAmount = 1;
-    protected boolean isOnlyNumbers = false;
+    protected AllowMode allowMode = AllowMode.TEXT;
 
     protected EOCVSim eocvSim;
 
     protected Object initialFieldValue;
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, boolean isOnlyNumbers) throws IllegalAccessException {
+    public enum AllowMode { ONLY_NUMBERS, ONLY_NUMBERS_DECIMAL, TEXT }
+
+    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
 
         this.reflectionField = reflectionField;
         this.pipeline = instance;
-        this.isOnlyNumbers = isOnlyNumbers;
+        this.allowMode = allowMode;
 
         this.eocvSim = eocvSim;
 
@@ -33,7 +35,7 @@ public abstract class TunableField<T> {
     }
 
     public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
-        this(instance, reflectionField, eocvSim, true);
+        this(instance, reflectionField, eocvSim, AllowMode.TEXT);
     }
 
     public abstract void update();
@@ -63,8 +65,13 @@ public abstract class TunableField<T> {
         return reflectionField.getName();
     }
 
+    public final AllowMode getAllowMode() {
+        return allowMode;
+    }
+
     public final boolean isOnlyNumbers() {
-        return isOnlyNumbers;
+        return getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS ||
+                getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL;
     }
 
 }
