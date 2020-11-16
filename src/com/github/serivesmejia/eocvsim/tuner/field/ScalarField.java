@@ -15,6 +15,8 @@ public class ScalarField extends TunableField<Scalar> {
 
     double[] lastVal = {};
 
+    volatile boolean hasChanged = false;
+
     public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
 
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
@@ -30,10 +32,15 @@ public class ScalarField extends TunableField<Scalar> {
 
     @Override
     public void update() {
-        if(!Arrays.equals(scalar.val, lastVal)) { //update values in GUI if they changed since last check
+
+        lastVal = scalar.val.clone();
+
+        if(hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
-        lastVal = scalar.val;
+
+        hasChanged = !Arrays.equals(scalar.val, lastVal);
+
     }
 
     @Override
@@ -64,6 +71,11 @@ public class ScalarField extends TunableField<Scalar> {
     @Override
     public Object getGuiFieldValue(int index) {
         return scalar.val[index];
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return hasChanged;
     }
 
 }

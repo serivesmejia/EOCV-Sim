@@ -43,4 +43,9 @@ public class NumberField extends TunableField<Number> {
         return null;
     }
 
+    @Override
+    public boolean hasChanged() {
+        return false;
+    }
+
 }

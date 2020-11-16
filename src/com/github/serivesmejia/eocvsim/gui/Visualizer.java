@@ -450,8 +450,6 @@ public class Visualizer {
 		if(scale >= 1.5 * multiplier) scale = 1.5 * multiplier;
 		if(scale <= 0) scale = 0.5;
 
-		System.out.println(scale);
-
         Rectangle view = imgScrollPane.getViewport().getViewRect();
 
         int moveX = point.x;
