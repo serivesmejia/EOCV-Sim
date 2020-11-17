@@ -14,6 +14,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,7 +116,26 @@ public class TunableTextField extends JTextField {
 
         });
 
+        //unpausing when typing on any tunable text box
+        addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) { execute(); }
+            @Override
+            public void keyPressed(KeyEvent e) { execute(); }
+            @Override
+            public void keyReleased(KeyEvent e) { execute(); }
+
+            public void execute() {
+                if(eocvSim.pipelineManager.isPaused()) {
+                    eocvSim.pipelineManager.requestSetPaused(false);
+                }
+            }
+
+        });
+
     }
+
     public void setNormalBorder() {
         setBorder(initialBorder);
     }

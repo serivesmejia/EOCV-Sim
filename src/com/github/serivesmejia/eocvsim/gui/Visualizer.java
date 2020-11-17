@@ -555,6 +555,7 @@ public class Visualizer {
 		}
 
 		tunerMenuPanel.updateUI();
+		imageTunerSplitPane.updateUI();
 
 	}
 

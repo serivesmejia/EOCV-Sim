@@ -26,20 +26,20 @@ public class ScalarField extends TunableField<Scalar> {
         scalar = new Scalar(lastScalar.val);
         scalarSize = scalar.val.length;
 
-        guiFieldAmount = scalarSize;
+        setGuiFieldAmount(scalarSize);
 
     }
 
     @Override
     public void update() {
 
-        lastVal = scalar.val.clone();
+        hasChanged = !Arrays.equals(scalar.val, lastVal);
 
         if(hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
-        hasChanged = !Arrays.equals(scalar.val, lastVal);
+        lastVal = scalar.val.clone();
 
     }
 
@@ -55,7 +55,8 @@ public class ScalarField extends TunableField<Scalar> {
 
        try {
            scalar.val[index] = Double.parseDouble(newValue);
-        } catch(NumberFormatException ex) {
+           lastVal = scalar.val.clone();
+       } catch(NumberFormatException ex) {
                 throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
 

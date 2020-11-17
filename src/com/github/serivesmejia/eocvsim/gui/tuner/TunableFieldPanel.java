@@ -1,7 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;

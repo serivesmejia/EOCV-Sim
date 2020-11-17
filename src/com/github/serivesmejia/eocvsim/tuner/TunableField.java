@@ -13,14 +13,12 @@ public abstract class TunableField<T> {
 
     protected OpenCvPipeline pipeline;
 
-    protected int guiFieldAmount = 1;
+    private int guiFieldAmount = 1;
     protected AllowMode allowMode;
 
     protected EOCVSim eocvSim;
 
     protected Object initialFieldValue;
-
-    private volatile boolean isFirstSet = true;
 
     public enum AllowMode { ONLY_NUMBERS, ONLY_NUMBERS_DECIMAL, TEXT }
 
@@ -47,21 +45,7 @@ public abstract class TunableField<T> {
     public void setPipelineFieldValue(T newValue) throws IllegalAccessException {
 
         if(hasChanged()) { //execute if value is not the same to save resources
-
             reflectionField.set(pipeline, newValue);
-
-            System.out.println("a");
-            
-            //do not pause if this is the first time we set the field value
-            //for some reason, the change listener on textboxes is also
-            //fired when we set the initial value programatically, not only
-            //for user input.
-            if(!isFirstSet) {
-                eocvSim.pipelineManager.requestSetPaused(false);
-            }
-
-            isFirstSet = false;
-
         }
 
     }
@@ -70,6 +54,10 @@ public abstract class TunableField<T> {
 
     public final void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
+    }
+
+    public final void setGuiFieldAmount(int amount) {
+        this.guiFieldAmount = amount;
     }
 
     public abstract T getValue();
