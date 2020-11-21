@@ -54,6 +54,8 @@ public class TunableTextField extends JTextField {
 
         setText(tunableField.getGuiFieldValue(index).toString());
 
+        setMinimumSize(new Dimension(200, getMinimumSize().height));
+
         if(tunableField.isOnlyNumbers()) {
 
             ((AbstractDocument) getDocument()).setDocumentFilter(new DocumentFilter() {

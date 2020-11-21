@@ -2,32 +2,40 @@ package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
+import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
-public class IntegerField extends TunableField<Integer> {
+public class StringField extends TunableField<String> {
 
-    int value;
-    int beforeValue;
+    String value;
+
+    String lastVal = "";
 
     volatile boolean hasChanged = false;
 
-    public IntegerField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
-        super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS);
-        value = (int)initialFieldValue;
+    public StringField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
+
+        super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
+
+        String lastString = (String) initialFieldValue;
+
+        value = new String(lastString);
+
     }
 
     @Override
     public void update() {
 
-        hasChanged = value != beforeValue;
+        hasChanged = !value.equals(lastVal);
 
-        if(hasChanged) {
+        if(hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
-        beforeValue = value;
+        lastVal = new String(value);
 
     }
 
@@ -39,19 +47,16 @@ public class IntegerField extends TunableField<Integer> {
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
 
-        try {
-            value = Integer.parseInt(newValue);
-            beforeValue = value;
-        } catch(NumberFormatException ex) {
-            throw new IllegalArgumentException("Parameter should be a valid numeric String");
-        }
+        value = newValue;
 
         setPipelineFieldValue(value);
+
+        lastVal = new String(value);
 
     }
 
     @Override
-    public Integer getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -62,6 +67,7 @@ public class IntegerField extends TunableField<Integer> {
 
     @Override
     public boolean hasChanged() {
+        hasChanged = !value.equals(lastVal);
         return hasChanged;
     }
 

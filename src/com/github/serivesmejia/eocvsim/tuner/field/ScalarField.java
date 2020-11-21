@@ -55,12 +55,13 @@ public class ScalarField extends TunableField<Scalar> {
 
        try {
            scalar.val[index] = Double.parseDouble(newValue);
-           lastVal = scalar.val.clone();
        } catch(NumberFormatException ex) {
                 throw new IllegalArgumentException("Parameter should be a valid numeric String");
-        }
+       }
 
-        setPipelineFieldValue(scalar);
+       setPipelineFieldValue(scalar);
+
+       lastVal = scalar.val.clone();
 
     }
 
@@ -76,6 +77,7 @@ public class ScalarField extends TunableField<Scalar> {
 
     @Override
     public boolean hasChanged() {
+        hasChanged = !Arrays.equals(scalar.val, lastVal);
         return hasChanged;
     }
 

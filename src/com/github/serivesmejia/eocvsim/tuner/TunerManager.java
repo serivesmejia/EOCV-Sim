@@ -2,7 +2,9 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.tuner.field.IntegerField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.DoubleField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.FloatField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.IntegerField;
 import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
 import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Scalar;
@@ -69,6 +71,10 @@ public class TunerManager {
                     toAddField = new ScalarField(pipeline, field, eocvSim);
                 } else if (field.getType() == int.class) {
                     toAddField = new IntegerField(pipeline, field, eocvSim);
+                } else if (field.getType() == float.class) {
+                    toAddField = new FloatField(pipeline, field, eocvSim);
+                } else if (field.getType() == double.class) {
+                    toAddField = new DoubleField(pipeline, field, eocvSim);
                 }
 
             } catch (Exception ex) {
