@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.tuner.field.StringField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.DoubleField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.FloatField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.IntegerField;
@@ -75,6 +76,8 @@ public class TunerManager {
                     toAddField = new FloatField(pipeline, field, eocvSim);
                 } else if (field.getType() == double.class) {
                     toAddField = new DoubleField(pipeline, field, eocvSim);
+                } else if (field.getType() == String.class) {
+                    toAddField = new StringField(pipeline, field, eocvSim);
                 }
 
             } catch (Exception ex) {

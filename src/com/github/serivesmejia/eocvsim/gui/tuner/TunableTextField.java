@@ -32,7 +32,7 @@ public class TunableTextField extends JTextField {
 
     private final Border initialBorder;
 
-    private volatile boolean hasValidText = false;
+    private volatile boolean hasValidText = true;
 
     public TunableTextField(int index, TunableField tunableField, EOCVSim eocvSim) {
 
@@ -44,19 +44,19 @@ public class TunableTextField extends JTextField {
         this.index = index;
         this.eocvSim = eocvSim;
 
-        //add all valid characters for non decimal numeric fields
-        Collections.addAll(validCharsIfNumber, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-');
-
-        //allow dots for decimal numeric fields
-        if(tunableField.getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL) {
-            validCharsIfNumber.add('.');
-        }
-
         setText(tunableField.getGuiFieldValue(index).toString());
 
         setMinimumSize(new Dimension(200, getMinimumSize().height));
 
         if(tunableField.isOnlyNumbers()) {
+
+            //add all valid characters for non decimal numeric fields
+            Collections.addAll(validCharsIfNumber, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-');
+
+            //allow dots for decimal numeric fields
+            if(tunableField.getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL) {
+                validCharsIfNumber.add('.');
+            }
 
             ((AbstractDocument) getDocument()).setDocumentFilter(new DocumentFilter() {
 
@@ -104,7 +104,7 @@ public class TunableTextField extends JTextField {
 
             public void change() {
                 eocvSim.runOnMainThread(() -> {
-                    if(hasValidText && !TunableTextField.this.getText().isBlank()) {
+                    if(!hasValidText || !tunableField.isOnlyNumbers() || !TunableTextField.this.getText().isBlank()) {
                         try {
                             tunableField.setGuiFieldValue(index, TunableTextField.this.getText());
                         } catch (Exception e) {

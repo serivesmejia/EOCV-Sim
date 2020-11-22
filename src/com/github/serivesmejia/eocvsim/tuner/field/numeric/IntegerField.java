@@ -1,7 +1,6 @@
 package com.github.serivesmejia.eocvsim.tuner.field.numeric;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import com.github.serivesmejia.eocvsim.tuner.field.NumericField;
 import org.openftc.easyopencv.OpenCvPipeline;
 

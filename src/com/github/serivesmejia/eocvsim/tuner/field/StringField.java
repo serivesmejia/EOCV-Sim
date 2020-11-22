@@ -2,11 +2,9 @@ package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
-import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class StringField extends TunableField<String> {
 
@@ -18,11 +16,8 @@ public class StringField extends TunableField<String> {
 
     public StringField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
 
-        super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
-
-        String lastString = (String) initialFieldValue;
-
-        value = new String(lastString);
+        super(instance, reflectionField, eocvSim, AllowMode.TEXT);
+        value = (String) initialFieldValue;
 
     }
 
@@ -35,7 +30,7 @@ public class StringField extends TunableField<String> {
             updateGuiFieldValues();
         }
 
-        lastVal = new String(value);
+        lastVal = value;
 
     }
 
