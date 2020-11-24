@@ -46,7 +46,8 @@ public class TunableTextField extends JTextField {
 
         setText(tunableField.getGuiFieldValue(index).toString());
 
-        setMinimumSize(new Dimension(200, getMinimumSize().height));
+        int plusW = Math.round(getText().length() / 5f) * 10;
+        this.setPreferredSize(new Dimension(40 + plusW, getPreferredSize().height));
 
         if(tunableField.isOnlyNumbers()) {
 
@@ -106,7 +107,7 @@ public class TunableTextField extends JTextField {
                 eocvSim.runOnMainThread(() -> {
                     if(!hasValidText || !tunableField.isOnlyNumbers() || !TunableTextField.this.getText().isBlank()) {
                         try {
-                            tunableField.setGuiFieldValue(index, TunableTextField.this.getText());
+                            tunableField.setGuiFieldValue(index, getText());
                         } catch (Exception e) {
                             setRedBorder();
                         }

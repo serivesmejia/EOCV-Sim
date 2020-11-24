@@ -9,7 +9,9 @@ import javax.swing.border.SoftBevelBorder;
 public class TunableFieldPanel extends JPanel {
 
     public final TunableField tunableField;
+
     public JTextField[] fields;
+    public JComboBox[] comboBoxes;
 
     private boolean isOnlyNumbers = false;
 
@@ -47,10 +49,20 @@ public class TunableFieldPanel extends JPanel {
             TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
 
             field.setEditable(true);
-
             add(field);
 
             fields[i] = field;
+
+        }
+
+        comboBoxes = new JComboBox[tunableField.getGuiComboBoxAmount()];
+
+        for(int i = 0 ; i < comboBoxes.length ; i++) {
+
+            TunableComboBox comboBox = new TunableComboBox(i, tunableField, eocvSim);
+            add(comboBox);
+
+            comboBoxes[i] = comboBox;
 
         }
 

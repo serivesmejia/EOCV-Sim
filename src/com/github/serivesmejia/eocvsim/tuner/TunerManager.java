@@ -2,11 +2,13 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.tuner.field.BooleanField;
 import com.github.serivesmejia.eocvsim.tuner.field.StringField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.DoubleField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.FloatField;
 import com.github.serivesmejia.eocvsim.tuner.field.numeric.IntegerField;
 import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.LongField;
 import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -68,16 +70,20 @@ public class TunerManager {
 
                 if(!field.canAccess(pipeline) || Modifier.isFinal(field.getModifiers())) continue;
 
-                if (field.getType() == Scalar.class) {
-                    toAddField = new ScalarField(pipeline, field, eocvSim);
-                } else if (field.getType() == int.class) {
+                if (field.getType() == int.class) {
                     toAddField = new IntegerField(pipeline, field, eocvSim);
                 } else if (field.getType() == float.class) {
                     toAddField = new FloatField(pipeline, field, eocvSim);
                 } else if (field.getType() == double.class) {
                     toAddField = new DoubleField(pipeline, field, eocvSim);
+                } else if (field.getType() == long.class) {
+                    toAddField = new LongField(pipeline, field, eocvSim);
+                } else if (field.getType() == boolean.class) {
+                    toAddField = new BooleanField(pipeline, field, eocvSim);
                 } else if (field.getType() == String.class) {
                     toAddField = new StringField(pipeline, field, eocvSim);
+                } else if (field.getType() == Scalar.class) {
+                    toAddField = new ScalarField(pipeline, field, eocvSim);
                 }
 
             } catch (Exception ex) {

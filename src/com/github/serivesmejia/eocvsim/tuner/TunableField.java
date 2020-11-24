@@ -14,6 +14,8 @@ public abstract class TunableField<T> {
     protected OpenCvPipeline pipeline;
 
     private int guiFieldAmount = 1;
+    private int guiComboBoxAmount = 0;
+
     protected AllowMode allowMode;
 
     protected EOCVSim eocvSim;
@@ -27,7 +29,6 @@ public abstract class TunableField<T> {
         this.reflectionField = reflectionField;
         this.pipeline = instance;
         this.allowMode = allowMode;
-
         this.eocvSim = eocvSim;
 
         initialFieldValue = reflectionField.get(instance);
@@ -52,6 +53,8 @@ public abstract class TunableField<T> {
 
     public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;
 
+    public void setGuiComboBoxValue(int index, String newValue) throws IllegalAccessException { }
+
     public final void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
     }
@@ -60,12 +63,22 @@ public abstract class TunableField<T> {
         this.guiFieldAmount = amount;
     }
 
+    public final void setGuiComboBoxAmount(int amount) {
+        this.guiComboBoxAmount = amount;
+    }
+
     public abstract T getValue();
 
     public abstract Object getGuiFieldValue(int index);
 
+    public Object[] getGuiComboBoxValues(int index) { return new Object[0]; }
+
     public final int getGuiFieldAmount() {
         return guiFieldAmount;
+    }
+
+    public final int getGuiComboBoxAmount() {
+        return guiComboBoxAmount;
     }
 
     public final String getFieldName() {
