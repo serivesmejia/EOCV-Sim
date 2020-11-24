@@ -47,7 +47,7 @@ public class CreateImageSource {
         createImageSource.setModal(true);
 
         createImageSource.setTitle("Create image source");
-        createImageSource.setSize(350, 200);
+        createImageSource.setSize(370, 200);
 
         JPanel contentsPanel = new JPanel(new GridLayout(4, 1));
 
@@ -148,22 +148,19 @@ public class CreateImageSource {
         widthTextField.getDocument().addDocumentListener(validSizeNumberListener);
         heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
 
-        selectDirButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        selectDirButton.addActionListener(e -> {
 
-                JFileChooser chooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                        "Images", "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
-                chooser.setFileFilter(filter);
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                    "Images", "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
+            chooser.setFileFilter(filter);
 
-                int returnVal = chooser.showOpenDialog(createImageSource);
+            int returnVal = chooser.showOpenDialog(createImageSource);
 
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    imageFileSelected(chooser.getSelectedFile());
-                }
-
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                imageFileSelected(chooser.getSelectedFile());
             }
+
         });
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -175,22 +172,14 @@ public class CreateImageSource {
             }
         });
 
-        createButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int width = Integer.parseInt(widthTextField.getText());
-                int height = Integer.parseInt(heightTextField.getText());
-                createSource(nameTextField.getText(), imgDirTextField.getText(), new Size(width, height));
-                close();
-            }
+        createButton.addActionListener(e -> {
+            int width = Integer.parseInt(widthTextField.getText());
+            int height = Integer.parseInt(heightTextField.getText());
+            createSource(nameTextField.getText(), imgDirTextField.getText(), new Size(width, height));
+            close();
         });
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
+        cancelButton.addActionListener(e -> close());
 
         createImageSource.setResizable(false);
         createImageSource.setLocationRelativeTo(null);

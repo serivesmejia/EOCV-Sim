@@ -19,7 +19,6 @@ public class InputSourceLoader {
     public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static String SOURCES_SAVEFILE_NAME = "eocvsim_sources.json";
-
     public static File SOURCES_SAVEFILE = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
 
     public void saveInputSource(String name, InputSource source) {
