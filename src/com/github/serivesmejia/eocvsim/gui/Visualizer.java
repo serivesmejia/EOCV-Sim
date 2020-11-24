@@ -12,6 +12,12 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.intellijthemes.FlatArcDarkOrangeIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDeepOceanIJTheme;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
@@ -83,6 +89,8 @@ public class Visualizer {
 
 	static {
 		try {
+			FlatMaterialDesignDarkIJTheme.install();//change this line to change the theme
+
 			ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -90,11 +98,14 @@ public class Visualizer {
 	}
 
 	public Visualizer(EOCVSim eocvSim) {
+
+
 		this.eocvSim = eocvSim;
 	}
 	
 	public void init() {
-		
+
+
 		rightContainer = new JPanel();
 
 		/*
