@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
 
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
@@ -61,8 +57,12 @@ public class Visualizer {
     public JScrollPane telemetryScroll = null;
     public volatile JList<String> telemetryList = null;
 
-	private EOCVSim eocvSim;
-	private ThemeInstaller themeInstaller = new ThemeInstaller();
+	private final EOCVSim eocvSim;
+	private final ThemeInstaller themeInstaller = new ThemeInstaller();
+
+	public final ArrayList<AsyncPleaseWaitDialog> pleaseWaitDialogs = new ArrayList<>();
+	public final ArrayList<JFrame> childFrames = new ArrayList<>();
+    public final ArrayList<JDialog> childDialogs = new ArrayList<>();
 
 	private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
 	private String titleMsg = "No pipeline";
@@ -77,12 +77,11 @@ public class Visualizer {
 
 	//stuff for zooming handling
 	private volatile double scale = 1f;
+    private volatile boolean isCtrlPressed = false;
 
 	private volatile BufferedImage lastMatBufferedImage = null;
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
-
-    private volatile boolean isCtrlPressed = false;
 
 	public static ImageIcon ICO_EOCVSIM = null;
 
@@ -104,6 +103,7 @@ public class Visualizer {
 
 		scale = eocvSim.configManager.getConfig().zoom;
 
+		//instantiate all swing elements after theme installation
 		frame = new JFrame();
 		img = new JLabel();
 
@@ -304,6 +304,8 @@ public class Visualizer {
 		frame.setMinimumSize(frame.getSize());
 		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
 
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
 		frame.setIconImage(ICO_EOCVSIM.getImage());
 
 	    frame.setLocationRelativeTo(null);
@@ -321,17 +323,21 @@ public class Visualizer {
 
 	private void registerListeners() {
 
+        frame.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                eocvSim.runOnMainThread(() -> {
+                    Log.info("Visualizer", "User requested close");
+                    close();
+                });
+            }
+        });
+
 		//listener for changing pause state
 		pipelinePauseBtt.addActionListener(e -> {
 
             boolean selected = pipelinePauseBtt.isSelected();
 
-            eocvSim.runOnMainThread(new Runnable() {
-                @Override
-                public void run() {
-                    eocvSim.pipelineManager.setPaused(selected);
-                }
-            });
+            eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
 
         });
 
@@ -457,6 +463,40 @@ public class Visualizer {
 			}
 			return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
 		});
+
+    }
+
+    public void close() {
+
+	    frame.setVisible(false);
+
+	    for(AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
+	        if(dialog != null) {
+	            dialog.destroyDialog();
+            }
+        }
+
+	    pleaseWaitDialogs.clear();
+
+        for(JFrame frame : childFrames) {
+            if(frame != null && frame.isVisible()) {
+                frame.setVisible(false);
+                frame.dispose();
+            }
+        }
+
+        childFrames.clear();
+
+        for(JDialog dialog : childDialogs) {
+            if(dialog != null && dialog.isVisible()) {
+                dialog.setVisible(false);
+                dialog.dispose();
+            }
+        }
+
+        childDialogs.clear();
+
+        frame.dispose();
 
     }
 
@@ -626,14 +666,11 @@ public class Visualizer {
 
 		boolean[] cancelled = {false};
 
-		cancelBtt.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				cancelled[0] = true;
-				dialog.setVisible(false);
-				dialog.dispose();
-			}
-		});
+		cancelBtt.addActionListener(e -> {
+            cancelled[0] = true;
+            dialog.setVisible(false);
+            dialog.dispose();
+        });
 
 		dialog.add(exitBttPanel);
 
@@ -669,7 +706,7 @@ public class Visualizer {
 
 	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
 
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError);
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError, eocvSim);
 
 		new Thread(rPWD).start();
 
@@ -679,7 +716,7 @@ public class Visualizer {
 
 	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
 
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false);
+		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false, eocvSim);
 
 		new Thread(rPWD).start();
 
@@ -707,9 +744,11 @@ public class Visualizer {
 		public volatile String initialMessage = "";
 		public volatile String initialSubMessage = "";
 
+		public volatile boolean isDestroyed = false;
+
 		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
 
-		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
+		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {
 
 			this.message = message;
 			this.subMessage = subMessage;
@@ -721,6 +760,8 @@ public class Visualizer {
 			this.cancellable = cancellable;
 
 			this.isError = isError;
+
+			eocvSim.visualizer.pleaseWaitDialogs.add(this);
 
 		}
 
@@ -742,8 +783,11 @@ public class Visualizer {
 		}
 
 		public void destroyDialog() {
-			dialog.setVisible(false);
-			dialog.dispose();
+		    if(!isDestroyed) {
+                dialog.setVisible(false);
+                dialog.dispose();
+                isDestroyed = true;
+            }
 		}
 
 	}

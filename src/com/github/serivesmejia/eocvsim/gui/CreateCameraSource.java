@@ -38,6 +38,8 @@ public class CreateCameraSource {
         createCameraSource = new JDialog(parent);
         this.eocvSim = eocvSim;
 
+        eocvSim.visualizer.childDialogs.add(createCameraSource);
+
         initCreateImageSource();
 
     }

@@ -27,6 +27,8 @@ public class CreateSource {
 
         this.eocvSim = eocvSim;
 
+        eocvSim.visualizer.childDialogs.add(chooseSource);
+
     }
 
     private void initChooseSource() {

@@ -38,6 +38,8 @@ public class CreateImageSource {
         createImageSource = new JDialog(parent);
         this.eocvSim = eocvSim;
 
+        eocvSim.visualizer.childDialogs.add(createImageSource);
+
         initCreateImageSource();
 
     }

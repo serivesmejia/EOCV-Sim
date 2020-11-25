@@ -8,7 +8,7 @@ import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
 
 public class ThemeInstaller {
 
-    private static Theme installedTheme;
+    private Theme installedTheme;
 
     public void installTheme(Theme theme) {
 
