@@ -167,6 +167,15 @@ public class Visualizer {
 		menuBar.add(fileMenu);
 
 		editMenu = new JMenu("Edit");
+
+		JMenuItem editSettings = new JMenuItem("Settings");
+
+		editSettings.addActionListener(e ->
+				new DialogFactory(eocvSim).createConfigDialog()
+		);
+
+		editMenu.add(editSettings);
+
 		menuBar.add(editMenu);
 
 		frame.setJMenuBar(menuBar);

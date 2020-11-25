@@ -28,7 +28,7 @@ public class DialogFactory {
 
     public Thread createConfigDialog() {
         return createStartThread(() -> {
-            new CreateCameraSource(eocvSim.visualizer.frame, eocvSim);
+            new Configuration(eocvSim.visualizer.frame, eocvSim);
         });
     }
 
