@@ -33,6 +33,8 @@ public class EOCVSim {
 
 	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
+	public enum DestroyReason { USER_REQUESTED, THEME_CHANGING, SIM_CRASHED }
+
 	public void init() {
 
 		Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
@@ -125,7 +127,28 @@ public class EOCVSim {
 			System.gc(); //run JVM garbage collector
 			
 		}
-		
+
+		Log.warn("EOCVSim", "Main thread interrupted");
+
+	}
+
+	public void destroy(DestroyReason reason) {
+
+		String hexCode = Integer.toHexString(this.hashCode());
+		Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
+
+		Log.warn("EOCVSim", "Trying to save config file...");
+
+		configManager.saveToFile();
+		configManager.stopUpdaterThread();
+
+		visualizer.close();
+		Thread.currentThread().interrupt();
+
+	}
+
+	public void destroy() {
+		destroy(DestroyReason.USER_REQUESTED);
 	}
 	
 	public void updateVisualizerTitle() {

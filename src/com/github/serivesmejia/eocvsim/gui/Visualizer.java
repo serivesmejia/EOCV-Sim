@@ -326,8 +326,7 @@ public class Visualizer {
         frame.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
                 eocvSim.runOnMainThread(() -> {
-                    Log.info("Visualizer", "User requested close");
-                    close();
+                    eocvSim.destroy();
                 });
             }
         });

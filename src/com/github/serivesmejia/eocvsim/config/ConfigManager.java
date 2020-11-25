@@ -6,10 +6,10 @@ import java.io.FileNotFoundException;
 
 public class ConfigManager {
 
-    ConfigLoader configLoader = new ConfigLoader();
-    Config config;
+    public final ConfigLoader configLoader = new ConfigLoader();
+    private Config config;
 
-    public Thread configUpdaterThread = new Thread(new ConfigUpdater());
+    private Thread configUpdaterThread = new Thread(new ConfigUpdater());
 
     public void init() {
 
@@ -31,6 +31,14 @@ public class ConfigManager {
 
         configUpdaterThread.start();
 
+    }
+
+    public void saveToFile() {
+        configLoader.saveToFile(config);
+    }
+
+    public void stopUpdaterThread() {
+        configUpdaterThread.interrupt();
     }
 
     public Config getConfig() {
