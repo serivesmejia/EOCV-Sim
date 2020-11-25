@@ -3,6 +3,6 @@ package com.github.serivesmejia.eocvsim.config;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 
 public class Config {
-    public Theme simTheme;
-    public int zoom;
+    public volatile Theme simTheme = Theme.Default;
+    public volatile double zoom = 1;
 }

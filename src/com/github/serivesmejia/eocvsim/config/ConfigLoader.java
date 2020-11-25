@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 public class ConfigLoader {
 
@@ -15,9 +16,9 @@ public class ConfigLoader {
     public static String CONFIG_SAVEFILE_NAME = "eocvsim_config.json";
     public static File CONFIG_SAVEFILE = new File(SysUtil.getAppData() + File.separator + CONFIG_SAVEFILE_NAME);
 
-    public Config loadFromFile(File file) {
+    public Config loadFromFile(File file) throws FileNotFoundException {
 
-        if(!file.exists()) return null;
+        if(!file.exists()) throw new FileNotFoundException();
 
         String jsonConfig = SysUtil.loadFileStr(file);
         if(jsonConfig.trim().equals("")) return null;
@@ -30,7 +31,7 @@ public class ConfigLoader {
 
     }
 
-    public Config loadFromFile() {
+    public Config loadFromFile() throws FileNotFoundException {
         return loadFromFile(CONFIG_SAVEFILE);
     }
 

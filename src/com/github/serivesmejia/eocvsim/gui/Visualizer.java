@@ -102,6 +102,8 @@ public class Visualizer {
 
 		themeInstaller.installTheme(theme);
 
+		scale = eocvSim.configManager.getConfig().zoom;
+
 		frame = new JFrame();
 		img = new JLabel();
 
@@ -320,54 +322,44 @@ public class Visualizer {
 	private void registerListeners() {
 
 		//listener for changing pause state
-		pipelinePauseBtt.addActionListener(new ActionListener() {
+		pipelinePauseBtt.addActionListener(e -> {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
+            boolean selected = pipelinePauseBtt.isSelected();
 
-				boolean selected = pipelinePauseBtt.isSelected();
+            eocvSim.runOnMainThread(new Runnable() {
+                @Override
+                public void run() {
+                    eocvSim.pipelineManager.setPaused(selected);
+                }
+            });
 
-				eocvSim.runOnMainThread(new Runnable() {
-					@Override
-					public void run() {
-						eocvSim.pipelineManager.setPaused(selected);
-					}
-				});
-
-			}
-
-		});
+        });
 
 		//listener for changing pipeline
-		pipelineSelector.addListSelectionListener(new ListSelectionListener() {
+		pipelineSelector.addListSelectionListener(evt -> {
+            if(pipelineSelector.getSelectedIndex() != -1) {
 
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				if(pipelineSelector.getSelectedIndex() != -1) {
+                int pipeline = pipelineSelector.getSelectedIndex();
 
-					int pipeline = pipelineSelector.getSelectedIndex();
+                if (!evt.getValueIsAdjusting() &&  pipeline != beforeSelectedPipeline) {
+                    if(!eocvSim.pipelineManager.isPaused()) {
+                        eocvSim.pipelineManager.requestChangePipeline(pipeline);
+                        beforeSelectedPipeline = pipeline;
+                    } else {
+                        if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+                            pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
+                        } else { //handling pausing
+                            eocvSim.pipelineManager.requestSetPaused(false);
+                            eocvSim.pipelineManager.requestChangePipeline(pipeline);
+                            beforeSelectedPipeline = pipeline;
+                        }
+                    }
+                }
 
-					if (!evt.getValueIsAdjusting() &&  pipeline != beforeSelectedPipeline) {
-						if(!eocvSim.pipelineManager.isPaused()) {
-							eocvSim.pipelineManager.requestChangePipeline(pipeline);
-							beforeSelectedPipeline = pipeline;
-						} else {
-							if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
-								pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
-							} else { //handling pausing
-								eocvSim.pipelineManager.requestSetPaused(false);
-								eocvSim.pipelineManager.requestChangePipeline(pipeline);
-								beforeSelectedPipeline = pipeline;
-							}
-						}
-					}
-
-				} else {
-					pipelineSelector.setSelectedIndex(1);
-				}
-			}
-
-		});
+            } else {
+                pipelineSelector.setSelectedIndex(1);
+            }
+        });
 
 		//listener for changing input sources
 		sourceSelector.addListSelectionListener(evt -> {
@@ -486,6 +478,8 @@ public class Visualizer {
 
         ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBufferedImage, scale));
         img.setIcon(icon);
+
+        eocvSim.configManager.getConfig().zoom = scale;
 
     }
 
