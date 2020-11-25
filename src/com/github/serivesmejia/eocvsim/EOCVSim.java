@@ -33,7 +33,7 @@ public class EOCVSim {
 
 	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
-	public enum DestroyReason { USER_REQUESTED, THEME_CHANGING, SIM_CRASHED }
+	public enum DestroyReason { USER_REQUESTED, THEME_CHANGING, RESTART }
 
 	public void init() {
 
@@ -144,6 +144,17 @@ public class EOCVSim {
 
 		visualizer.close();
 		Thread.currentThread().interrupt();
+
+	}
+
+	public void restart() {
+
+		Log.white();
+		Log.info("EOCVSim", "Restarting...");
+		Log.white();
+
+		destroy();
+		new EOCVSim().init();
 
 	}
 

@@ -16,6 +16,7 @@ import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
+import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
@@ -29,6 +30,10 @@ public class Visualizer {
 
 	public JFrame frame = null;
 	public volatile JLabel img = null;
+
+	public JMenuBar menuBar = null;
+	public JMenu fileMenu = null;
+	public JMenu editMenu = null;
 
 	public JPanel tunerMenuPanel = new JPanel();
 
@@ -107,6 +112,8 @@ public class Visualizer {
 		frame = new JFrame();
 		img = new JLabel();
 
+		menuBar = new JMenuBar();
+
 		tunerMenuPanel = new JPanel();
 		imgScrollContainer = new JPanel();
 
@@ -128,6 +135,41 @@ public class Visualizer {
 		telemetryList = new JList<>();
 
 		rightContainer = new JPanel();
+
+		/*
+		* TOP MENU BAR
+		*/
+
+		fileMenu = new JMenu("File");
+
+		JMenu fileNewSubmenu = new JMenu("New");
+		fileMenu.add(fileNewSubmenu);
+
+		JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
+		fileNewSubmenu.add(fileNewInputSourceSubmenu);
+
+		JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
+
+		fileNewInputSourceImageItem.addActionListener(e ->
+			new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.IMAGE)
+		);
+
+		fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
+
+		JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
+
+		fileNewInputSourceCameraItem.addActionListener(e ->
+			new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.CAMERA)
+		);
+
+		fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
+
+		menuBar.add(fileMenu);
+
+		editMenu = new JMenu("Edit");
+		menuBar.add(editMenu);
+
+		frame.setJMenuBar(menuBar);
 
 		/*
 		* IMG VISUALIZER & SCROLL PANE

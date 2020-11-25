@@ -73,16 +73,7 @@ public class CreateSource {
 
         nextButton.addActionListener(e -> {
             close();
-            new Thread(() -> {
-                switch ((String) Objects.requireNonNull(dropDown.getSelectedItem())) {
-                    case "IMAGE":
-                        new CreateImageSource(parent, eocvSim);
-                        break;
-                    case "CAMERA":
-                        new CreateCameraSource(parent, eocvSim);
-                        break;
-                }
-            }).start();
+            new DialogFactory(eocvSim).createSourceDialog(SourceType.valueOf(dropDown.getSelectedItem().toString()));
         });
 
         chooseSource.setResizable(false);
