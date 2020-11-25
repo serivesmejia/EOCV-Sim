@@ -12,12 +12,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.intellijthemes.FlatArcDarkOrangeIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
-import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
-import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDeepOceanIJTheme;
+
+import com.github.serivesmejia.eocvsim.gui.theme.Theme;
+import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
@@ -33,38 +31,39 @@ import com.github.serivesmejia.eocvsim.util.Log;
 
 public class Visualizer {
 
-	public JFrame frame = new JFrame();
-	public volatile JLabel img = new JLabel();
+	public JFrame frame = null;
+	public volatile JLabel img = null;
 
 	public JPanel tunerMenuPanel = new JPanel();
 
 	public JScrollPane imgScrollPane = null;
 	public JPanel imgScrollContainer = new JPanel();
 
-	public JPanel rightContainer = new JPanel();
+	public JPanel rightContainer = null;
 
 	public JSplitPane globalSplitPane = null;
 	public JSplitPane imageTunerSplitPane = null;
 
-	public JPanel pipelineSelectorContainer = new JPanel();
-	public volatile JList<String> pipelineSelector = new JList<>();
-	public JScrollPane pipelineSelectorScroll = new JScrollPane();
-	public JPanel pipelineButtonsContainer = new JPanel();
-	public JToggleButton pipelinePauseBtt =  new JToggleButton("Pause");
+	public JPanel pipelineSelectorContainer = null;
+	public volatile JList<String> pipelineSelector = null;
+	public JScrollPane pipelineSelectorScroll = null;
+	public JPanel pipelineButtonsContainer = null;
+	public JToggleButton pipelinePauseBtt = null;
 
-	public JPanel sourceSelectorContainer = new JPanel();
-	public volatile JList<String> sourceSelector = new JList<>();
-	public JScrollPane sourceSelectorScroll = new JScrollPane();
-	public JPanel sourceSelectorButtonsContainer = new JPanel();
-	public JButton sourceSelectorCreateBtt = new JButton("Create");
-	public JButton sourceSelectorDeleteBtt = new JButton("Delete");
+	public JPanel sourceSelectorContainer = null;
+	public volatile JList<String> sourceSelector = null;
+	public JScrollPane sourceSelectorScroll = null;
+	public JPanel sourceSelectorButtonsContainer = null;
+	public JButton sourceSelectorCreateBtt = null;
+	public JButton sourceSelectorDeleteBtt = null;
 
-	public JPanel telemetryContainer = new JPanel();
-    public JScrollPane telemetryScroll = new JScrollPane();
-    public volatile JList<String> telemetryList = new JList<>();
+	public JPanel telemetryContainer = null;
+    public JScrollPane telemetryScroll = null;
+    public volatile JList<String> telemetryList = null;
 
-	private EOCVSim eocvSim = null;
-	
+	private EOCVSim eocvSim;
+	private ThemeInstaller themeInstaller = new ThemeInstaller();
+
 	private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
 	private String titleMsg = "No pipeline";
 	
@@ -89,8 +88,6 @@ public class Visualizer {
 
 	static {
 		try {
-			FlatMaterialDesignDarkIJTheme.install();//change this line to change the theme
-
 			ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -98,13 +95,35 @@ public class Visualizer {
 	}
 
 	public Visualizer(EOCVSim eocvSim) {
-
-
 		this.eocvSim = eocvSim;
 	}
 	
-	public void init() {
+	public void init(Theme theme) {
 
+		themeInstaller.installTheme(theme);
+
+		frame = new JFrame();
+		img = new JLabel();
+
+		tunerMenuPanel = new JPanel();
+		imgScrollContainer = new JPanel();
+
+		pipelineSelectorContainer = new JPanel();
+		pipelineSelector = new JList<>();
+		pipelineSelectorScroll = new JScrollPane();
+		pipelineButtonsContainer = new JPanel();
+		pipelinePauseBtt =  new JToggleButton("Pause");
+
+		sourceSelectorContainer = new JPanel();
+		sourceSelector = new JList<>();
+		sourceSelectorScroll = new JScrollPane();
+		sourceSelectorButtonsContainer = new JPanel();
+		sourceSelectorCreateBtt = new JButton("Create");
+		sourceSelectorDeleteBtt = new JButton("Delete");
+
+		telemetryContainer = new JPanel();
+		telemetryScroll = new JScrollPane();
+		telemetryList = new JList<>();
 
 		rightContainer = new JPanel();
 
@@ -191,17 +210,14 @@ public class Visualizer {
 		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
 		try {
-			sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager));
+			sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		sourceSelectorCreateBtt.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(CreateSource.alreadyOpened) return;
-				new CreateSource(frame, eocvSim);
-			}
+		sourceSelectorCreateBtt.addActionListener(e -> {
+			if(CreateSource.alreadyOpened) return;
+			new CreateSource(frame, eocvSim);
 		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);

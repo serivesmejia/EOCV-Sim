@@ -90,7 +90,32 @@ public final class GuiUtil {
     }
 
     public static ImageIcon loadImageIcon(String path) throws IOException {
-        return new ImageIcon(ImageIO.read(GuiUtil.class.getResourceAsStream(path)));
+        return new ImageIcon(loadBufferedImage(path));
+    }
+
+    public static BufferedImage loadBufferedImage(String path) throws IOException {
+        return ImageIO.read(GuiUtil.class.getResourceAsStream(path));
+    }
+
+    public static void invertBufferedImageColors(BufferedImage input) {
+
+        for (int x = 0; x < input.getWidth(); x++) {
+            for (int y = 0; y < input.getHeight(); y++) {
+
+                int rgba = input.getRGB(x, y);
+                Color col = new Color(rgba, true);
+
+                if(col.getAlpha() <= 0) continue;
+
+                col = new Color(255 - col.getRed(),
+                        255 - col.getGreen(),
+                        255 - col.getBlue());
+
+                input.setRGB(x, y, col.getRGB());
+
+            }
+        }
+
     }
 
 }

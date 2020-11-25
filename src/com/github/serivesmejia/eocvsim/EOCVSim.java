@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim;
 import java.awt.Dimension;
 import java.util.ArrayList;
 
+import com.github.serivesmejia.eocvsim.config.ConfigManager;
 import com.github.serivesmejia.eocvsim.tuner.TunerManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
@@ -17,6 +18,8 @@ import com.github.serivesmejia.eocvsim.util.SysUtil;
 public class EOCVSim {
 
 	public volatile Visualizer visualizer = new Visualizer(this);
+
+	public ConfigManager configManager = new ConfigManager();
 
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
@@ -41,12 +44,14 @@ public class EOCVSim {
 		EMPTY_MAT = new Mat();
 		
 		pipelineManager = new PipelineManager(this);
-		
-		visualizer.init();
 
-		inputSourceManager.init();
+		configManager.init(); //load config
 
-		visualizer.updateSourcesList();
+		visualizer.init(true); //create gui
+
+		inputSourceManager.init(); //loading user created input sources
+
+		visualizer.updateSourcesList(); //update sources and pick first one
 		visualizer.sourceSelector.setSelectedIndex(0);
 
 		//create a dialog to give user visual feedback
@@ -59,7 +64,7 @@ public class EOCVSim {
 
 		tunerManager.init(); //init tunable variables manager
 
-		visualizer.updatePipelinesList();
+		visualizer.updatePipelinesList(); //update pipelines and pick first one (DefaultPipeline)
 		visualizer.pipelineSelector.setSelectedIndex(0);
 		
 		beginLoop();
