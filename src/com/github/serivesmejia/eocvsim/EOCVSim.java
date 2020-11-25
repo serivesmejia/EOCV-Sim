@@ -26,7 +26,7 @@ public class EOCVSim {
 	public TunerManager tunerManager = new TunerManager(this);
 
 	public static Mat EMPTY_MAT = null;
-	public static String VERSION = "1.2.0";
+	public static String VERSION = "2.0.0";
 
 	public static int DEFAULT_EOCV_WIDTH = 320;
 	public static int DEFAULT_EOCV_HEIGHT = 240;
