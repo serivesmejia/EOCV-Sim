@@ -105,9 +105,13 @@ public class Visualizer {
 	
 	public void init(Theme theme) {
 
-		themeInstaller.installTheme(theme);
+        try {
+            themeInstaller.installTheme(theme);
+        } catch (Exception e) {
+            Log.error("Visualizer", "Failed to set theme " + theme.name(), e);
+        }
 
-		scale = eocvSim.configManager.getConfig().zoom;
+        scale = eocvSim.configManager.getConfig().zoom;
 
 		//instantiate all swing elements after theme installation
 		frame = new JFrame();

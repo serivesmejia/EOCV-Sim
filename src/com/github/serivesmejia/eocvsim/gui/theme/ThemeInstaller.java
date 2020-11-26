@@ -3,14 +3,17 @@ package com.github.serivesmejia.eocvsim.gui.theme;
 import com.formdev.flatlaf.*;
 import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
 
+import javax.swing.*;
+
 public class ThemeInstaller {
 
     private Theme installedTheme;
 
-    public void installTheme(Theme theme) {
+    public void installTheme(Theme theme) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
 
         switch(theme) {
             case Default:
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                 break;
             case Light:
                 FlatLightLaf.install();
