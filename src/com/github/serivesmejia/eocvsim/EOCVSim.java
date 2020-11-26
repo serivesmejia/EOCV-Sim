@@ -158,7 +158,7 @@ public class EOCVSim {
 
 		Log.white();
 
-		new Thread(() -> new EOCVSim().init()).start(); //run next instance on a separate thread to wait for the old one to get interrupted.
+		new Thread(() -> new EOCVSim().init()).start(); //run next instance on a separate thread for the old one to get interrupted and ended
 
 	}
 

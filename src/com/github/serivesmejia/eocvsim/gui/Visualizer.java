@@ -165,6 +165,16 @@ public class Visualizer {
 
 		fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
 
+		fileMenu.addSeparator();
+
+		JMenuItem fileRestart = new JMenuItem("Restart");
+
+		fileRestart.addActionListener((e) ->
+			eocvSim.runOnMainThread(eocvSim::restart)
+		);
+
+		fileMenu.add(fileRestart);
+
 		menuBar.add(fileMenu);
 
 		editMenu = new JMenu("Edit");
