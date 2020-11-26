@@ -592,17 +592,12 @@ public class Visualizer {
 	public void updateVisualizedMat(Mat mat) {
 		
 		try {
-
 		    lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
-
             scaleAndZoom(lastMousePosition);
-
 		} catch(Throwable ex) {
 			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");
 		}
-		
-		mat.release();
-		
+
 	}
 	
 	private void setFrameTitle(String title, String titleMsg) {

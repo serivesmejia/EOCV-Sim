@@ -26,6 +26,7 @@ public class ConfigLoader {
         try {
             return gson.fromJson(jsonConfig, Config.class);
         } catch(Throwable ex) {
+            Log.info("ConfigLoader", "Gson exception while parsing config file", ex);
             return null;
         }
 

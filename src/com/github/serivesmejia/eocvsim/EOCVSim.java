@@ -140,10 +140,8 @@ public class EOCVSim {
 		Log.info("EOCVSim", "Trying to save config file...");
 
 		configManager.saveToFile();
-		configManager.stopUpdaterThread();
 
 		visualizer.close();
-
 		Thread.currentThread().interrupt();
 
 	}
