@@ -128,7 +128,7 @@ public class EOCVSim {
 			
 		}
 
-		Log.warn("EOCVSim", "Main thread interrupted");
+		Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")");
 
 	}
 
@@ -150,7 +150,6 @@ public class EOCVSim {
 
 	public void restart() {
 
-		Log.white();
 		Log.info("EOCVSim", "Restarting...");
 		Log.white();
 

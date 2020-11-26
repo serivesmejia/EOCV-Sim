@@ -1,9 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui.theme;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.*;
 import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
 
 public class ThemeInstaller {
@@ -13,6 +10,8 @@ public class ThemeInstaller {
     public void installTheme(Theme theme) {
 
         switch(theme) {
+            case Default:
+                break;
             case Light:
                 FlatLightLaf.install();
                 break;
@@ -39,7 +38,7 @@ public class ThemeInstaller {
     }
 
     public boolean isInstalledThemeDark() {
-        return installedTheme != Theme.Default && installedTheme != Theme.Light && installedTheme != Theme.Intellij;
+        return FlatLaf.isLafDark();
     }
 
 }

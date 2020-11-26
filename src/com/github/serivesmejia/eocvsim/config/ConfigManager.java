@@ -19,16 +19,17 @@ public class ConfigManager {
             config = configLoader.loadFromFile();
             if(config == null) {
                 Log.error("ConfigManager", "Error while parsing config file, it will be replaced and fixed, but the user configurations will be reset");
-                throw new NullPointerException();
+                throw new NullPointerException(); //for it to be catched later and handle the creation of a new config
             } else {
                 Log.info("ConfigManager", "Loaded config from file successfully");
             }
-            Log.white();
-        } catch (Exception ex) {
+        } catch (Exception ex) { //handles FileNotFoundException & a NullPointerException thrown above
             config = new Config();
             Log.info("ConfigManager", "Creating config file...");
             configLoader.saveToFile(config);
         }
+
+        Log.white();
 
         configUpdaterThread.start();
 
