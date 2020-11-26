@@ -163,7 +163,9 @@ public class InputSourceManager {
 
 		currInputSource = src;
 
-		pauseIfImage();
+		//if pause on images option is turned on by user
+		if(eocvSim.configManager.getConfig().pauseOnImages)
+			pauseIfImage();
 		
 		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 

@@ -156,7 +156,9 @@ public class PipelineManager {
 		currentPipelineIndex = index;
 		currentPipelineName = currentPipeline.getClass().getSimpleName();
 
-		eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
+		//if pause on images option is turned on by user
+		if(eocvSim.configManager.getConfig().pauseOnImages)
+			eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
 
 		for(Runnable runn : runnsOnChange.toArray(new Runnable[0])) {
 			runn.run();

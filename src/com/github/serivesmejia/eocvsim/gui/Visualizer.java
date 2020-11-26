@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.swing.*;
 
+import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
@@ -569,7 +570,8 @@ public class Visualizer {
         ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBufferedImage, scale));
         img.setIcon(icon);
 
-        eocvSim.configManager.getConfig().zoom = scale;
+        Config config = eocvSim.configManager.getConfig();
+        if(config.storeZoom) config.zoom = scale; //store lastest scale if store setting turned on
 
     }
 

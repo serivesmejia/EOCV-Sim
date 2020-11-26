@@ -137,12 +137,13 @@ public class EOCVSim {
 		String hexCode = Integer.toHexString(this.hashCode());
 		Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
 
-		Log.warn("EOCVSim", "Trying to save config file...");
+		Log.info("EOCVSim", "Trying to save config file...");
 
 		configManager.saveToFile();
 		configManager.stopUpdaterThread();
 
 		visualizer.close();
+
 		Thread.currentThread().interrupt();
 
 	}
@@ -153,8 +154,11 @@ public class EOCVSim {
 		Log.info("EOCVSim", "Restarting...");
 		Log.white();
 
-		destroy();
-		new EOCVSim().init();
+		destroy(DestroyReason.RESTART);
+
+		Log.white();
+
+		new Thread(() -> new EOCVSim().init()).start(); //run next instance on a separate thread to wait for the old one to get interrupted.
 
 	}
 

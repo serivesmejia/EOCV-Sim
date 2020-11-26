@@ -19,11 +19,12 @@ public class ConfigManager {
             config = configLoader.loadFromFile();
             if(config == null) {
                 Log.error("ConfigManager", "Error while parsing config file, it will be replaced and fixed, but the user configurations will be reset");
+                throw new NullPointerException();
             } else {
                 Log.info("ConfigManager", "Loaded config from file successfully");
             }
             Log.white();
-        } catch (FileNotFoundException ex) {
+        } catch (Exception ex) {
             config = new Config();
             Log.info("ConfigManager", "Creating config file...");
             configLoader.saveToFile(config);
@@ -51,7 +52,7 @@ public class ConfigManager {
         public long sleepTime;
 
         public ConfigUpdater() {
-            this(15000);
+            this(30000);
         }
 
         public ConfigUpdater(long sleepTime) {
