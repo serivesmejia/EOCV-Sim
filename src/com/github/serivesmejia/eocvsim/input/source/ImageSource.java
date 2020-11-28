@@ -56,22 +56,35 @@ public class ImageSource extends InputSource {
 		if(!initialized) return;
 
 		if(lastCloneTo != null) {
-			lastCloneTo = null;
 			matRecycler.returnMat(lastCloneTo);
+			lastCloneTo = null;
 		}
 
-		if(img != null) img.release();
+		if(img != null) {
+			matRecycler.returnMat(img);
+			img = null;
+		}
 
-		img = null;
+		matRecycler.releaseAll();
 		
 		initialized = false;
 		
 	}
 
 	public void close() {
+
+		if(img != null)  {
+			matRecycler.returnMat(img);
+			img = null;
+		}
+
+		if(lastCloneTo != null) {
+			matRecycler.returnMat(lastCloneTo);
+			lastCloneTo = null;
+		}
+
 		matRecycler.releaseAll();
-		if(img != null) img.release();
-		img = null;
+
 	}
 
 	public void readImage() {
@@ -99,11 +112,9 @@ public class ImageSource extends InputSource {
 	public Mat update() {
 
 		if(img == null) return null;
-		if(isPaused) return img;
+		if(isPaused) return lastCloneTo;
 
-		if(lastCloneTo != null) matRecycler.returnMat(lastCloneTo);
-
-		lastCloneTo = matRecycler.takeMat();
+		if(lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
 
 		img.copyTo(lastCloneTo);
 
