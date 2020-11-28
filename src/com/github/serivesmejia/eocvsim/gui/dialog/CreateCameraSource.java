@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.gui;
+package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;

@@ -10,6 +10,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
+import org.openftc.easyopencv.MatRecycler;
 
 import java.util.Objects;
 
@@ -25,6 +26,8 @@ public class CameraSource extends InputSource {
     private final int webcamIndex;
     @Expose
     private volatile Size size;
+
+    private MatRecycler matRecycler = new MatRecycler(2);
 
     public CameraSource(int webcamIndex, Size size) {
         this.webcamIndex = webcamIndex;
@@ -44,7 +47,7 @@ public class CameraSource extends InputSource {
             return false;
         }
 
-        Mat newFrame = new Mat();
+        MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 
         camera.read(newFrame);
 
@@ -54,7 +57,7 @@ public class CameraSource extends InputSource {
             return false;
         }
 
-        newFrame.release();
+        matRecycler.returnMat(newFrame);
 
         return true;
 
@@ -97,7 +100,7 @@ public class CameraSource extends InputSource {
         if(size == null) size = lastFrame.size();
 
         Imgproc.cvtColor(lastFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
-        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_CUBIC);
 
         return lastFrame;
 

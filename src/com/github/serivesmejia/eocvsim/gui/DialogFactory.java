@@ -1,9 +1,10 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.dialog.Configuration;
+import com.github.serivesmejia.eocvsim.gui.dialog.CreateCameraSource;
+import com.github.serivesmejia.eocvsim.gui.dialog.CreateImageSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
-
-import java.util.Objects;
 
 public class DialogFactory {
 

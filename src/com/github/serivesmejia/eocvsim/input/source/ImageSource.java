@@ -8,6 +8,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.MatRecycler;
 
 public class ImageSource extends InputSource {
 
@@ -16,9 +17,12 @@ public class ImageSource extends InputSource {
 	@Expose
 	private volatile Size size;
 	
-	private volatile Mat img;
+	private volatile MatRecycler.RecyclableMat img;
+	private volatile MatRecycler.RecyclableMat lastCloneTo;
 	
 	private volatile transient boolean initialized = false;
+
+	private MatRecycler matRecycler = new MatRecycler(2);
 
 	public ImageSource(String imgPath) {
 		this(imgPath, null);
@@ -37,17 +41,27 @@ public class ImageSource extends InputSource {
 		
 		readImage();
 
-		if(img == null || img.empty()) return false;
+        return img != null && !img.empty();
 
-		return true;
+    }
 
-	}
+    @Override
+    public void onPause() {
+        //if(img != null) img.release();
+    }
 
+    @Override
 	public void reset() {
 		
 		if(!initialized) return;
-		
+
+		if(lastCloneTo != null) {
+			lastCloneTo = null;
+			matRecycler.returnMat(lastCloneTo);
+		}
+
 		if(img != null) img.release();
+
 		img = null;
 		
 		initialized = false;
@@ -55,17 +69,16 @@ public class ImageSource extends InputSource {
 	}
 
 	public void close() {
-
+		matRecycler.releaseAll();
 		if(img != null) img.release();
 		img = null;
-
 	}
 
 	public void readImage() {
 
 		Mat readMat = Imgcodecs.imread(this.imgPath);
 
-		if(img == null) img = new Mat(readMat.rows(), readMat.cols(), readMat.type());
+		if(img == null) img = matRecycler.takeMat();
 
 		if(readMat.empty()) { return; }
 
@@ -73,7 +86,7 @@ public class ImageSource extends InputSource {
 		readMat.release();
 
 		if(this.size != null) {
-			Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+			Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_CUBIC);
 		} else {
 			this.size = img.size();
 		}
@@ -88,7 +101,13 @@ public class ImageSource extends InputSource {
 		if(img == null) return null;
 		if(isPaused) return img;
 
-		return img.clone();
+		if(lastCloneTo != null) matRecycler.returnMat(lastCloneTo);
+
+		lastCloneTo = matRecycler.takeMat();
+
+		img.copyTo(lastCloneTo);
+
+		return lastCloneTo;
 
 	}
 

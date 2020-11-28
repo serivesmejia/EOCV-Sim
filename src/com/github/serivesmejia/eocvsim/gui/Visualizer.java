@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.swing.*;
 
 import com.github.serivesmejia.eocvsim.config.Config;
+import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
@@ -592,7 +593,7 @@ public class Visualizer {
 	public void updateVisualizedMat(Mat mat) {
 		
 		try {
-		    lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
+		    lastMatBufferedImage = CvUtil.Mat2BufferedImage(mat);
             scaleAndZoom(lastMousePosition);
 		} catch(Throwable ex) {
 			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");

@@ -1,6 +1,7 @@
-package com.github.serivesmejia.eocvsim.gui;
+package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager.SourceType;
 
@@ -23,7 +24,7 @@ public class CreateSource {
 
         chooseSource = new JDialog(parent);
         this.parent = parent;
-        new Thread(() -> initChooseSource()).start();
+        new Thread(this::initChooseSource).start();
 
         this.eocvSim = eocvSim;
 

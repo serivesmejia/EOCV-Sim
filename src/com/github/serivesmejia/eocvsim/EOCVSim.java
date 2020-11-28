@@ -82,6 +82,8 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
+			long msStartLoop = System.currentTimeMillis();
+
 			Telemetry telemetry = pipelineManager.currentTelemetry;
 
 			//run all pending requested runnables
@@ -125,6 +127,10 @@ public class EOCVSim {
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
 			System.gc(); //run JVM garbage collector
+
+			long msEndLoop = System.currentTimeMillis();
+
+			System.out.println("loop took " + (msEndLoop - msStartLoop));
 			
 		}
 
