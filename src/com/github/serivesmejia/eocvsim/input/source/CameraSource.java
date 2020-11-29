@@ -27,7 +27,7 @@ public class CameraSource extends InputSource {
     @Expose
     private volatile Size size;
 
-    private MatRecycler matRecycler = new MatRecycler(2);
+    private volatile transient MatRecycler matRecycler = new MatRecycler(2);
 
     public CameraSource(int webcamIndex, Size size) {
         this.webcamIndex = webcamIndex;
@@ -46,6 +46,8 @@ public class CameraSource extends InputSource {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex);
             return false;
         }
+
+        if(matRecycler == null) matRecycler = new MatRecycler(2);
 
         MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 

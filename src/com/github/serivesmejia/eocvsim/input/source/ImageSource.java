@@ -17,8 +17,8 @@ public class ImageSource extends InputSource {
 	@Expose
 	private volatile Size size;
 	
-	private volatile MatRecycler.RecyclableMat img;
-	private volatile MatRecycler.RecyclableMat lastCloneTo;
+	private volatile transient MatRecycler.RecyclableMat img;
+	private volatile transient MatRecycler.RecyclableMat lastCloneTo;
 	
 	private volatile transient boolean initialized = false;
 

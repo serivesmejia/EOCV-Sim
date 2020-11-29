@@ -7,6 +7,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class MatPoster {
@@ -25,7 +26,7 @@ public class MatPoster {
         this.maxQueueItems = maxQueueItems;
 
         postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
-        postQueue.setEvictAction(Mat::release);
+        postQueue.setEvictAction(Mat::release); //release mat if it's dropped by the EvitingBlockingQueue
 
     }
 
@@ -39,7 +40,7 @@ public class MatPoster {
             return;
         }
 
-        postQueue.offer(m);
+        postQueue.offer(m.clone());
 
     }
 
@@ -48,7 +49,18 @@ public class MatPoster {
     }
 
     public void stop() {
+
+        Log.info("MatPoster", "Destroying...");
+
         posterThread.interrupt();
+
+        for (Iterator<Mat> it = postQueue.iterator(); it.hasNext(); ) {
+            Mat m = it.next();
+            if(m != null) {
+                m.release();
+            }
+        }
+
     }
 
     private class PosterRunnable implements Runnable {
@@ -79,6 +91,8 @@ public class MatPoster {
                 }
 
             }
+
+            Log.warn("MatPoster-Thread", "Thread interrupted (" + Integer.toHexString(hashCode()) + ")");
 
         }
     }

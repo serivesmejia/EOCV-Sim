@@ -91,7 +91,7 @@ public class Visualizer {
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
 
-    public volatile MatPoster matPoster = new MatPoster(5);
+    public MatPoster matPoster;
 
     private volatile boolean hasFinishedInitializing = false;
 	public Thread asyncVisualizerThread;
@@ -111,6 +111,8 @@ public class Visualizer {
 	}
 	
 	public void init(Theme theme) {
+
+		this.matPoster = new MatPoster(10);
 
         try {
             themeInstaller.installTheme(theme);

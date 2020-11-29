@@ -102,7 +102,7 @@ public class EOCVSim {
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
 
 				if(!pipelineManager.isPaused())
-					visualizer.matPoster.post(pipelineManager.lastOutputMat.clone());
+					visualizer.matPoster.post(pipelineManager.lastOutputMat);
 
 				if(telemetry != null) {
 					telemetry.errItem.setCaption("");
