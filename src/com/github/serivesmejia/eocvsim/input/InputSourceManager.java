@@ -11,7 +11,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
@@ -21,7 +20,7 @@ import com.github.serivesmejia.eocvsim.util.SysUtil;
 public class InputSourceManager {
 
 	public volatile Mat lastMatFromSource = null;
-	public volatile InputSource currInputSource = null;
+	public volatile InputSource currentInputSource = null;
 	
 	public volatile HashMap<String, InputSource> sources = new HashMap<>();
 
@@ -78,11 +77,11 @@ public class InputSourceManager {
 
 	public void update(boolean isPaused) {
 
-		if(currInputSource == null) return;
-		currInputSource.setPaused(isPaused);
+		if(currentInputSource == null) return;
+		currentInputSource.setPaused(isPaused);
 
 		try {
-			lastMatFromSource = currInputSource.update();
+			lastMatFromSource = currentInputSource.update();
 		} catch(Throwable ex) {
 			Log.error("InputSourceManager", "Error while processing current source", ex);
 		}
@@ -92,7 +91,7 @@ public class InputSourceManager {
 	public void addInputSource(String name, InputSource inputSource) {
 		
 		if(inputSource == null) {
-			currInputSource = null;
+			currentInputSource = null;
 			return;
 		}
 
@@ -157,17 +156,20 @@ public class InputSourceManager {
 			apwdCam.destroyDialog();
 		}
 
-		if(currInputSource != null) {
-			currInputSource.reset();
+		if(currentInputSource != null) {
+			currentInputSource.reset();
 		}
 
-		currInputSource = src;
+		currentInputSource = src;
 
 		//if pause on images option is turned on by user
 		if(eocvSim.configManager.getConfig().pauseOnImages)
 			pauseIfImage();
 		
-		Log.info("InputSourceManager", "Set InputSource to " + currInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
+		Log.info("InputSourceManager", "Set InputSource to " + currentInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
+
+		//enable or disable source delete button depending if source is default or not
+		eocvSim.visualizer.sourceSelectorDeleteBtt.setEnabled(!currentInputSource.isDefault);
 
 		return true;
 
@@ -176,7 +178,7 @@ public class InputSourceManager {
 	public void pauseIfImage() {
 		//if the new input source is an image, we will pause the next frame
 		//to execute one shot analysis on images and save resources.
-		if(getSourceType(currInputSource) == SourceType.IMAGE) {
+		if(getSourceType(currentInputSource) == SourceType.IMAGE) {
 			eocvSim.runOnMainThread(new Runnable() {
 				@Override
 				public void run() {
