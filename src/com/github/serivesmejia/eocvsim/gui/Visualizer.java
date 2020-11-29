@@ -16,6 +16,7 @@ import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
+import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
@@ -90,6 +91,8 @@ public class Visualizer {
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
 
+    public volatile MatPoster matPoster;
+
     private volatile boolean hasFinishedInitializing = false;
 	public Thread asyncVisualizerThread;
 
@@ -120,6 +123,9 @@ public class Visualizer {
 		//instantiate all swing elements after theme installation
 		frame = new JFrame();
 		img = new JLabel();
+
+		//create mat poster
+		matPoster = new MatPoster(this, 10);
 
 		menuBar = new JMenuBar();
 
@@ -548,6 +554,8 @@ public class Visualizer {
     public void close() {
 
 	    frame.setVisible(false);
+
+	    matPoster.stop();
 
 	    for(AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
 	        if(dialog != null) {
