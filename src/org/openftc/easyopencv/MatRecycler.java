@@ -59,10 +59,12 @@ public class MatRecycler
         try {
             mat = availableMats.take();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
+
         mat.checkedOut = true;
         return mat;
+
     }
 
     public synchronized void returnMat(RecyclableMat mat)

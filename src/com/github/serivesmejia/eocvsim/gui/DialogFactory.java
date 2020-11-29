@@ -28,9 +28,7 @@ public class DialogFactory {
     }
 
     public Thread createConfigDialog() {
-        return createStartThread(() -> {
-            new Configuration(eocvSim.visualizer.frame, eocvSim);
-        });
+        return createStartThread(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
     }
 
     private Thread createStartThread(Runnable runn) {

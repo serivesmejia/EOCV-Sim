@@ -91,7 +91,7 @@ public class Visualizer {
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
 
-    public volatile MatPoster matPoster;
+    public volatile MatPoster matPoster = new MatPoster(5);
 
     private volatile boolean hasFinishedInitializing = false;
 	public Thread asyncVisualizerThread;
@@ -123,9 +123,6 @@ public class Visualizer {
 		//instantiate all swing elements after theme installation
 		frame = new JFrame();
 		img = new JLabel();
-
-		//create mat poster
-		matPoster = new MatPoster(this, 10);
 
 		menuBar = new JMenuBar();
 
@@ -399,11 +396,21 @@ public class Visualizer {
 	}
 
 	public void initAsync(Theme simTheme) {
-		asyncVisualizerThread = new Thread(() -> init(simTheme));
+		asyncVisualizerThread = new Thread(() -> init(simTheme), "Visualizer-Thread");
 		asyncVisualizerThread.start();
 	}
 
 	private void registerListeners() {
+
+		//listener for updating visualized image on post by MatPoster
+		matPoster.addPostable((mat) -> {
+			try {
+				lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
+				scaleAndZoom(lastMousePosition);
+			} catch(Throwable ex) {
+				Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
+			}
+		});
 
         frame.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
@@ -413,11 +420,8 @@ public class Visualizer {
 
 		//listener for changing pause state
 		pipelinePauseBtt.addActionListener(e -> {
-
             boolean selected = pipelinePauseBtt.isSelected();
-
             eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
-
         });
 
 		//listener for changing pipeline
@@ -610,17 +614,6 @@ public class Visualizer {
         if(config.storeZoom) config.zoom = scale; //store lastest scale if store setting turned on
 
     }
-
-	public void updateVisualizedMat(Mat mat) {
-		
-		try {
-		    lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
-            scaleAndZoom(lastMousePosition);
-		} catch(Throwable ex) {
-			Log.error("Visualizer", "Couldn't visualize last mat: (" + ex.toString() + ")");
-		}
-
-	}
 	
 	private void setFrameTitle(String title, String titleMsg) {
 		frame.setTitle(title + " - " + titleMsg);

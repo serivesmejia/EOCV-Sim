@@ -25,7 +25,6 @@ public class EOCVSim {
 	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
 	public TunerManager tunerManager = new TunerManager(this);
 
-	public static Mat EMPTY_MAT = null;
 	public static String VERSION = "2.0.0";
 
 	public static int DEFAULT_EOCV_WIDTH = 320;
@@ -42,9 +41,7 @@ public class EOCVSim {
 		
 		SysUtil.loadCvNativeLib();
 		Log.white();
-		
-		EMPTY_MAT = new Mat();
-		
+
 		pipelineManager = new PipelineManager(this);
 
 		configManager.init(); //load config
@@ -84,8 +81,6 @@ public class EOCVSim {
 
 		while(!Thread.interrupted()) {
 
-			long msStartLoop = System.currentTimeMillis();
-
 			Telemetry telemetry = pipelineManager.currentTelemetry;
 
 			//run all pending requested runnables
@@ -107,7 +102,7 @@ public class EOCVSim {
 				pipelineManager.update(inputSourceManager.lastMatFromSource);
 
 				if(!pipelineManager.isPaused())
-					visualizer.matPoster.post(pipelineManager.lastOutputMat);
+					visualizer.matPoster.post(pipelineManager.lastOutputMat.clone());
 
 				if(telemetry != null) {
 					telemetry.errItem.setCaption("");
@@ -130,10 +125,6 @@ public class EOCVSim {
 
 			System.gc(); //run JVM garbage collector
 
-			long msEndLoop = System.currentTimeMillis();
-
-			System.out.println("loop took " + (msEndLoop - msStartLoop));
-			
 		}
 
 		Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")");

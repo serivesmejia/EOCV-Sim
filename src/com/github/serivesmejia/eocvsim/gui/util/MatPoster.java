@@ -1,29 +1,32 @@
 package com.github.serivesmejia.eocvsim.gui.util;
 
-import com.github.serivesmejia.eocvsim.gui.Visualizer;
-import com.github.serivesmejia.eocvsim.util.CvUtil;
+import com.github.serivesmejia.eocvsim.util.Log;
+import org.firstinspires.ftc.robotcore.external.function.Consumer;
+import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue;
 import org.opencv.core.Mat;
-import org.openftc.easyopencv.MatRecycler;
+import org.opencv.imgproc.Imgproc;
 
-import javax.swing.*;
-import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class MatPoster {
 
-    private final Visualizer visualizer;
+    private final ArrayList<Postable> postables = new ArrayList<>();
 
-    private final ArrayBlockingQueue<Mat> postQueue;
-    private final Thread posterThread = new Thread(new PosterRunnable());
+    private final EvictingBlockingQueue<Mat> postQueue;
+    private final Thread posterThread = new Thread(new PosterRunnable(), "MatPoster-Thread");
 
     private final int maxQueueItems;
 
     private volatile boolean hasPosterThreadStarted = false;
 
-    public MatPoster(Visualizer visualizer, int maxQueueItems) {
-        this.visualizer = visualizer;
+    public MatPoster(int maxQueueItems) {
+
         this.maxQueueItems = maxQueueItems;
-        postQueue = new ArrayBlockingQueue<>(maxQueueItems);
+
+        postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
+        postQueue.setEvictAction(Mat::release);
+
     }
 
     public void post(Mat m) {
@@ -31,17 +34,17 @@ public class MatPoster {
         //start mat posting thread if it hasn't been started yet
         if(!posterThread.isAlive() && !hasPosterThreadStarted) posterThread.start();
 
-        if(postQueue.size() >= maxQueueItems) {
-            try {
-                postQueue.take();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return;
-            }
+        if(m == null || m.empty()) {
+            Log.warn("MatPoster", "Tried to post empty or null mat, skipped this frame.");
+            return;
         }
 
-        postQueue.add(m);
+        postQueue.offer(m);
 
+    }
+
+    public void addPostable(Postable postable) {
+        postables.add(postable);
     }
 
     public void stop() {
@@ -53,17 +56,35 @@ public class MatPoster {
         public void run() {
             hasPosterThreadStarted = true;
             while(!Thread.interrupted()) {
-                synchronized(postQueue) {
-                    if(postQueue.size() == 0) return;
-                    try {
-                        Mat currentMat = postQueue.take();
-                        visualizer.updateVisualizedMat(currentMat);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+
+                if(postQueue.size() == 0) continue; //skip if we have no queued frames
+
+                try {
+
+                    Mat takenMat = postQueue.take();
+
+                    Imgproc.cvtColor(takenMat, takenMat, Imgproc.COLOR_RGB2BGR);
+
+                    for(Postable postable : postables) {
+                        postable.post(takenMat);
                     }
+
+                    takenMat.release();
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                } catch (Exception ex) {
+                    continue;
                 }
+
             }
+
         }
+    }
+
+    public interface Postable {
+        void post(Mat m);
     }
 
 }

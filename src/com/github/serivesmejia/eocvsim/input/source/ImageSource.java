@@ -22,7 +22,7 @@ public class ImageSource extends InputSource {
 	
 	private volatile transient boolean initialized = false;
 
-	private MatRecycler matRecycler = new MatRecycler(2);
+	private final MatRecycler matRecycler = new MatRecycler(2);
 
 	public ImageSource(String imgPath) {
 		this(imgPath, null);
@@ -111,10 +111,11 @@ public class ImageSource extends InputSource {
 	@Override
 	public Mat update() {
 
-		if(img == null) return null;
 		if(isPaused) return lastCloneTo;
 
 		if(lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
+
+		if(img == null) return null;
 
 		img.copyTo(lastCloneTo);
 
