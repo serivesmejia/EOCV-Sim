@@ -22,7 +22,7 @@ public class ImageSource extends InputSource {
 	
 	private volatile transient boolean initialized = false;
 
-	private final MatRecycler matRecycler = new MatRecycler(2);
+	private volatile transient MatRecycler matRecycler = new MatRecycler(2);
 
 	public ImageSource(String imgPath) {
 		this(imgPath, null);
@@ -38,6 +38,8 @@ public class ImageSource extends InputSource {
 		
 		if(initialized) return false;
 		initialized = true;
+
+		if(matRecycler == null) matRecycler = new MatRecycler(2);
 		
 		readImage();
 
