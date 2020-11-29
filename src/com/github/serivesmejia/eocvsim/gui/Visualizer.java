@@ -90,6 +90,9 @@ public class Visualizer {
     private volatile Point mousePosition = new Point(0, 0);
     private volatile Point lastMousePosition = new Point(0, 0);
 
+    private volatile boolean hasFinishedInitializing = false;
+	public Thread asyncVisualizerThread;
+
 	public static ImageIcon ICO_EOCVSIM = null;
 
 	static {
@@ -385,16 +388,20 @@ public class Visualizer {
 
 		registerListeners();
 
+		hasFinishedInitializing = true;
+
 	}
 
+	public void initAsync(Theme simTheme) {
+		asyncVisualizerThread = new Thread(() -> init(simTheme));
+		asyncVisualizerThread.start();
+	}
 
 	private void registerListeners() {
 
         frame.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
-                eocvSim.runOnMainThread(() -> {
-                    eocvSim.destroy();
-                });
+                eocvSim.runOnMainThread(eocvSim::destroy);
             }
         });
 
@@ -531,6 +538,12 @@ public class Visualizer {
 		});
 
     }
+
+    public void waitForFinishingInit() {
+		while (!hasFinishedInitializing) {
+			Thread.onSpinWait();
+		}
+	}
 
     public void close() {
 

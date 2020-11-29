@@ -49,9 +49,11 @@ public class EOCVSim {
 
 		configManager.init(); //load config
 
-		visualizer.init(configManager.getConfig().simTheme); //create gui
+		visualizer.initAsync(configManager.getConfig().simTheme); //create gui in new thread
 
 		inputSourceManager.init(); //loading user created input sources
+
+		visualizer.waitForFinishingInit();
 
 		visualizer.updateSourcesList(); //update sources and pick first one
 		visualizer.sourceSelector.setSelectedIndex(0);

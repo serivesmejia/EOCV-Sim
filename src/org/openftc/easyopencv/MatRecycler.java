@@ -94,8 +94,7 @@ public class MatRecycler
         private int idx = -1;
         private volatile boolean checkedOut = false;
 
-        private RecyclableMat(int idx)
-        {
+        private RecyclableMat(int idx) {
             this.idx = idx;
         }
     }
