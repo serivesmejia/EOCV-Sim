@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 
 public class FloatField extends NumericField {
 
+    protected float beforeValue;
+
     public FloatField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
         value = (float) initialFieldValue;
@@ -24,8 +26,15 @@ public class FloatField extends NumericField {
 
         setPipelineFieldValue(value);
 
-        beforeValue = value;
+        beforeValue = value.floatValue();
 
+    }
+
+    @Override
+    public boolean hasChanged() {
+        boolean hasChanged = value.floatValue() != beforeValue;
+        beforeValue = value.floatValue();
+        return hasChanged;
     }
 
 }

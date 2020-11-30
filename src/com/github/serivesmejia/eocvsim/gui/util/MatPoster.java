@@ -34,7 +34,7 @@ public class MatPoster {
         postQueue.setEvictAction((m) -> {
             matRecycler.returnMat(m);
             m.release();
-        }); //release mat and return it to recycler if it's dropped by the EvitingBlockingQueue
+        }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
 
     }
 

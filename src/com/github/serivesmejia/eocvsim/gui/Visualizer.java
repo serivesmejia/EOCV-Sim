@@ -416,7 +416,8 @@ public class Visualizer {
 		matPoster.addPostable((mat) -> {
 			try {
 				lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
-				scaleAndZoom(lastMousePosition);
+				img.setIcon(new ImageIcon(lastMatBufferedImage));
+				//scaleAndZoom(lastMousePosition);
 			} catch(Throwable ex) {
 				Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
 			}

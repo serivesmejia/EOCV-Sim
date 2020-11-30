@@ -9,7 +9,6 @@ import java.lang.reflect.Field;
 public class NumericField extends TunableField<Number> {
 
     protected Number value;
-    protected Number beforeValue;
 
     protected volatile boolean hasChanged = false;
 
@@ -20,13 +19,19 @@ public class NumericField extends TunableField<Number> {
     @Override
     public void update() {
 
-        hasChanged = !value.equals(beforeValue);
+        if(value == null) return;
+
+        try {
+            value = (Number) reflectionField.get(pipeline);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        hasChanged = hasChanged();
 
         if(hasChanged) {
             updateGuiFieldValues();
         }
-
-        beforeValue = value;
 
     }
 
@@ -50,8 +55,7 @@ public class NumericField extends TunableField<Number> {
 
     @Override
     public boolean hasChanged() {
-        hasChanged = !value.equals(beforeValue);
-        return hasChanged;
+        return false;
     }
 
 }

@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 
 public class DoubleField extends NumericField {
 
+    private double beforeValue;
+
     public DoubleField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
         value = (double) initialFieldValue;
@@ -24,8 +26,16 @@ public class DoubleField extends NumericField {
 
         setPipelineFieldValue(value);
 
-        beforeValue = value;
+        beforeValue = value.doubleValue();
 
     }
+
+    @Override
+    public boolean hasChanged() {
+        boolean hasChanged = value.doubleValue() != beforeValue;
+        beforeValue = value.doubleValue();
+        return hasChanged;
+    }
+
 
 }

@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 
 public class LongField extends NumericField {
 
+    private long beforeValue;
+
     public LongField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS);
         value = (long) initialFieldValue;
@@ -24,8 +26,15 @@ public class LongField extends NumericField {
 
         setPipelineFieldValue(value);
 
-        beforeValue = value;
+        beforeValue = value.longValue();
 
+    }
+
+    @Override
+    public boolean hasChanged() {
+        boolean hasChanged = value.longValue() != beforeValue;
+        beforeValue = value.longValue();
+        return hasChanged;
     }
 
 }
