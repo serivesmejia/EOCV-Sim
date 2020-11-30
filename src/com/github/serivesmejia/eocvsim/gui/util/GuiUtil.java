@@ -101,8 +101,12 @@ public final class GuiUtil {
         return ImageIO.read(GuiUtil.class.getResourceAsStream(path));
     }
 
+    public static void saveBufferedImage(File file, BufferedImage bufferedImage, String format) throws IOException {
+        ImageIO.write(bufferedImage, format, file);
+    }
+
     public static void saveBufferedImage(File file, BufferedImage bufferedImage) throws IOException {
-        ImageIO.write(bufferedImage, "jpg", file);
+        saveBufferedImage(file, bufferedImage, "jpg");
     }
 
     public static void invertBufferedImageColors(BufferedImage input) {
@@ -128,12 +132,12 @@ public final class GuiUtil {
 
     public static void saveBufferedImageFileChooser(Component parent, BufferedImage bufferedImage) {
 
-        FileNameExtensionFilter jpgFilter = new FileNameExtensionFilter("jpg",  "jpg");
-        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("png",  "png");
+        FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG (*.jpg)",  "jpg", "jpeg");
+        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG (*.png)",  "png");
 
+        DialogFactory.createFileChooser(parent, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, jpegFilter, pngFilter)
 
-        DialogFactory.createFileChooser(parent, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, jpgFilter, pngFilter)
-                     .addCloseListener((MODE, selectedFile) -> {
+        .addCloseListener((MODE, selectedFile) -> {
 
         });
 

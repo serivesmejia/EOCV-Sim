@@ -5,6 +5,7 @@ import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.MatRecycler;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +15,9 @@ public class MatPoster {
 
     private final ArrayList<Postable> postables = new ArrayList<>();
 
-    private final EvictingBlockingQueue<Mat> postQueue;
+    private final EvictingBlockingQueue<MatRecycler.RecyclableMat> postQueue;
+    private final MatRecycler matRecycler;
+
     private final Thread posterThread = new Thread(new PosterRunnable(), "MatPoster-Thread");
 
     private final int maxQueueItems;
@@ -26,7 +29,12 @@ public class MatPoster {
         this.maxQueueItems = maxQueueItems;
 
         postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
-        postQueue.setEvictAction(Mat::release); //release mat if it's dropped by the EvitingBlockingQueue
+        matRecycler = new MatRecycler(maxQueueItems+2);
+
+        postQueue.setEvictAction((m) -> {
+            matRecycler.returnMat(m);
+            m.release();
+        }); //release mat and return it to recycler if it's dropped by the EvitingBlockingQueue
 
     }
 
@@ -40,7 +48,10 @@ public class MatPoster {
             return;
         }
 
-        postQueue.offer(m.clone());
+        MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
+        m.copyTo(recycledMat);
+
+        postQueue.offer(recycledMat);
 
     }
 
@@ -54,11 +65,13 @@ public class MatPoster {
 
         posterThread.interrupt();
 
-        for (Mat m : postQueue) {
+        for (MatRecycler.RecyclableMat m : postQueue) {
             if (m != null) {
-                m.release();
+                matRecycler.returnMat(m);
             }
         }
+
+        matRecycler.releaseAll();
 
     }
 
@@ -72,7 +85,7 @@ public class MatPoster {
 
                 try {
 
-                    Mat takenMat = postQueue.take();
+                    MatRecycler.RecyclableMat takenMat = postQueue.take();
 
                     Imgproc.cvtColor(takenMat, takenMat, Imgproc.COLOR_RGB2BGR);
 
@@ -81,6 +94,7 @@ public class MatPoster {
                     }
 
                     takenMat.release();
+                    matRecycler.returnMat(takenMat);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();

@@ -33,8 +33,8 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class MatRecycler
 {
-    private RecyclableMat[] mats;
-    private ArrayBlockingQueue<RecyclableMat> availableMats;
+    private volatile RecyclableMat[] mats;
+    private volatile ArrayBlockingQueue<RecyclableMat> availableMats;
 
     public MatRecycler(int num)
     {
