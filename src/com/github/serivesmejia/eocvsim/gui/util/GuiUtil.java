@@ -1,9 +1,12 @@
 package com.github.serivesmejia.eocvsim.gui.util;
 
+import com.github.serivesmejia.eocvsim.gui.DialogFactory;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -11,6 +14,7 @@ import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -97,6 +101,10 @@ public final class GuiUtil {
         return ImageIO.read(GuiUtil.class.getResourceAsStream(path));
     }
 
+    public static void saveBufferedImage(File file, BufferedImage bufferedImage) throws IOException {
+        ImageIO.write(bufferedImage, "jpg", file);
+    }
+
     public static void invertBufferedImageColors(BufferedImage input) {
 
         for (int x = 0; x < input.getWidth(); x++) {
@@ -115,6 +123,19 @@ public final class GuiUtil {
 
             }
         }
+
+    }
+
+    public static void saveBufferedImageFileChooser(Component parent, BufferedImage bufferedImage) {
+
+        FileNameExtensionFilter jpgFilter = new FileNameExtensionFilter("jpg",  "jpg");
+        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("png",  "png");
+
+
+        DialogFactory.createFileChooser(parent, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, jpgFilter, pngFilter)
+                     .addCloseListener((MODE, selectedFile) -> {
+
+        });
 
     }
 

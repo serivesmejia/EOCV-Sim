@@ -1,6 +1,7 @@
 package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
@@ -152,16 +153,14 @@ public class CreateImageSource {
 
         selectDirButton.addActionListener(e -> {
 
-            JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "Images", "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
-            chooser.setFileFilter(filter);
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Images",
+                    "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
 
-            int returnVal = chooser.showOpenDialog(createImageSource);
-
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
-                imageFileSelected(chooser.getSelectedFile());
-            }
+            DialogFactory.createFileChooser(createImageSource, filter).addCloseListener((returnVal, selectedFile) -> {
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    imageFileSelected(selectedFile);
+                }
+            });
 
         });
 

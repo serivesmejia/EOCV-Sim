@@ -178,7 +178,15 @@ public class Visualizer {
 
 		fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
 
-		fileMenu.addSeparator();
+        JMenuItem fileSaveMatItem = new JMenuItem("Save mat to disk");
+
+        fileSaveMatItem.addActionListener(e ->
+                GuiUtil.saveBufferedImageFileChooser(frame, lastMatBufferedImage)
+        );
+
+        fileMenu.add(fileSaveMatItem);
+
+        fileMenu.addSeparator();
 
 		JMenuItem fileRestart = new JMenuItem("Restart");
 

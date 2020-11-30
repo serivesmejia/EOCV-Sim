@@ -54,9 +54,8 @@ public class MatPoster {
 
         posterThread.interrupt();
 
-        for (Iterator<Mat> it = postQueue.iterator(); it.hasNext(); ) {
-            Mat m = it.next();
-            if(m != null) {
+        for (Mat m : postQueue) {
+            if (m != null) {
                 m.release();
             }
         }
