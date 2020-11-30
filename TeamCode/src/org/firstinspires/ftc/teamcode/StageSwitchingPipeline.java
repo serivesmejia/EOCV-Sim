@@ -87,6 +87,10 @@ public class StageSwitchingPipeline extends OpenCvPipeline
         input.copyTo(contoursOnFrameMat);
         Imgproc.drawContours(contoursOnFrameMat, contoursList, -1, new Scalar(0, 0, 255), 3, 8);
 
+        telemetry.addData("[Stage]", stageToRenderToViewport);
+        telemetry.addData("[Found Contours]", "%d", numContoursFound);
+        telemetry.update();
+
         switch (stageToRenderToViewport)
         {
             case YCbCr_CHAN2:

@@ -23,6 +23,8 @@ import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
@@ -87,9 +89,10 @@ public class Visualizer {
 	private volatile double scale = 1f;
     private volatile boolean isCtrlPressed = false;
 
-	private volatile BufferedImage lastMatBufferedImage = null;
-    private volatile Point mousePosition = new Point(0, 0);
-    private volatile Point lastMousePosition = new Point(0, 0);
+    private volatile Mat lastScaledMat;
+	private volatile Mat lastPostedMat;
+
+    private volatile BufferedImage lastMatBufferedImage;
 
     public MatPoster matPoster;
 
@@ -112,6 +115,10 @@ public class Visualizer {
 	
 	public void init(Theme theme) {
 
+		//instantiate opencv stuff here to make sure
+		//native lib has already been loaded
+		lastScaledMat = new Mat();
+		lastPostedMat = new Mat();
 		this.matPoster = new MatPoster(10);
 
         try {
@@ -415,9 +422,8 @@ public class Visualizer {
 		//listener for updating visualized image on post by MatPoster
 		matPoster.addPostable((mat) -> {
 			try {
-				lastMatBufferedImage = CvUtil.matToBufferedImage(mat);
-				img.setIcon(new ImageIcon(lastMatBufferedImage));
-				//scaleAndZoom(lastMousePosition);
+				mat.copyTo(lastPostedMat);
+				this.scaleAndZoom(mat);
 			} catch(Throwable ex) {
 				Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
 			}
@@ -518,26 +524,11 @@ public class Visualizer {
 		//RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(e -> eocvSim.runOnMainThread(() -> {
 			if(isCtrlPressed) { //check if control key is pressed
-
-				lastMousePosition = mousePosition;
-
-				scale -= 0.5 * e.getPreciseWheelRotation();
+				scale -= 0.3 * e.getPreciseWheelRotation();
 				if(scale <= 0) scale = 0.5;
-
-				scaleAndZoom(lastMousePosition);
-
+				scaleAndZoom(lastPostedMat);
 			}
 		}));
-
-        imgScrollPane.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) { }
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                PointerInfo info = MouseInfo.getPointerInfo();
-                mousePosition = info.getLocation();
-            }
-        });
 
         //listening for keyboard presses and releases, to check if ctrl key was pressed or released
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
@@ -545,7 +536,7 @@ public class Visualizer {
 				case KeyEvent.KEY_PRESSED:
 					if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
 						isCtrlPressed = true;
-						imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctr is pressed
+						imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctrl is pressed
 					}
 					break;
 				case KeyEvent.KEY_RELEASED:
@@ -603,25 +594,18 @@ public class Visualizer {
     }
 
     //scale img
-    private void scaleAndZoom(Point point) {
+    private void scaleAndZoom(Mat mat) {
 
-		double multiplier = (320f/240f) / ((double) lastMatBufferedImage.getHeight() / (double) lastMatBufferedImage.getHeight());
-		multiplier = Math.abs(multiplier);
+		if(scale < 0) scale = 1;
 
-		if(scale >= 1.5 * multiplier) scale = 1.5 * multiplier;
-		if(scale <= 0) scale = 0.5;
+		Size size = new Size(mat.width() * scale, mat.height() * scale);
 
-        Rectangle view = imgScrollPane.getViewport().getViewRect();
+		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+		lastMatBufferedImage = CvUtil.matToBufferedImage(lastScaledMat);
 
-        int moveX = point.x;
-        int moveY = point.y;
+		img.setIcon(new ImageIcon(lastMatBufferedImage));
 
-        view.setBounds(view.x+moveX,view.y+moveY, view.width, view.height);
-
-        ImageIcon icon = new ImageIcon(GuiUtil.scaleImage(lastMatBufferedImage, scale));
-        img.setIcon(icon);
-
-        Config config = eocvSim.configManager.getConfig();
+		Config config = eocvSim.configManager.getConfig();
         if(config.storeZoom) config.zoom = scale; //store lastest scale if store setting turned on
 
     }
