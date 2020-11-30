@@ -4,6 +4,7 @@ import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -24,9 +25,10 @@ public class PipelineManager {
 
 	public volatile Mat lastOutputMat = new Mat();
 
-	public int lastFPS = 0;
+	private int lastFPS = 0;
 	private int fpsCount = 0;
-	private long nextFPSUpdateMillis = 0;
+
+	private ElapsedTime fpsElapsedTime = new ElapsedTime();
 
 	private volatile boolean isPaused = false;
 	private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
@@ -57,7 +59,6 @@ public class PipelineManager {
 		Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
 		Log.white();
 
-		nextFPSUpdateMillis = System.currentTimeMillis(); //the next time the FPS counter will be updated, in milliseconds
 		requestChangePipeline(0); //change to the default pipeline
 
 	}
@@ -97,16 +98,13 @@ public class PipelineManager {
 	}
 	
 	private void calcFPS() {
-		
 		fpsCount++;
-
 		//update and reset the fps count if a second has passed since the last update
-		if(System.currentTimeMillis() >= nextFPSUpdateMillis) {
-			nextFPSUpdateMillis = System.currentTimeMillis() + 1000;
+		if(fpsElapsedTime.seconds() >= 1) {
 			lastFPS = fpsCount;
 			fpsCount = 0;
+			fpsElapsedTime.reset();
 		}
-		
 	}
 	
 	public void changePipeline(int index) {
@@ -164,6 +162,10 @@ public class PipelineManager {
 			runn.run();
 		}
 
+	}
+
+	public int getFPS() {
+		return lastFPS;
 	}
 
 	public void requestChangePipeline(int index) {

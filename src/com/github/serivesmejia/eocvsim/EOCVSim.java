@@ -164,7 +164,7 @@ public class EOCVSim {
 	
 	public void updateVisualizerTitle() {
 		
-		String fpsMsg = " (" + String.valueOf(pipelineManager.lastFPS) + " FPS)";
+		String fpsMsg = " (" + String.valueOf(pipelineManager.getFPS()) + " FPS)";
 
 		String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
 
