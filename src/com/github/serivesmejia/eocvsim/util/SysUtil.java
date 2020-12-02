@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 import org.opencv.core.Core;
 
@@ -187,6 +188,12 @@ public class SysUtil {
 
 	public static File getAppData() {
 		return new File(System.getProperty("user.home") + File.separator);
+	}
+
+	public static Optional<String> getExtensionByStringHandling(String filename) {
+		return Optional.ofNullable(filename)
+				.filter(f -> f.contains("."))
+				.map(f -> f.substring(filename.lastIndexOf(".") + 1));
 	}
 
 	public static class CopyFileIsData {

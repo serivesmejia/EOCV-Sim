@@ -1,6 +1,10 @@
 package com.github.serivesmejia.eocvsim.gui.util;
 
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
+import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists;
+import com.github.serivesmejia.eocvsim.util.Log;
+import com.github.serivesmejia.eocvsim.util.SysUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,6 +20,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +53,6 @@ public final class GuiUtil {
 
     }
 
-
     public static ImageIcon scaleImage(ImageIcon icon, int w, int h) {
 
         int nw = icon.getIconWidth();
@@ -68,31 +72,6 @@ public final class GuiUtil {
 
     }
 
-    public static BufferedImage scaleImage(BufferedImage image, double scale) {
-
-        if(scale <= 0) scale = 1;
-
-        int w = (int)Math.round(scale*(double)image.getWidth());
-        int h = (int)Math.round(scale*(double)image.getHeight());
-
-        if(w <= 0) w = image.getWidth();
-        if(h <= 0) h = image.getHeight();
-
-        BufferedImage bi = new BufferedImage(w, h, image.getType());
-        Graphics2D g2 = bi.createGraphics();
-
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-        AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
-
-        g2.drawRenderedImage(image, at);
-        g2.dispose();
-
-        return bi;
-
-    }
-
     public static ImageIcon loadImageIcon(String path) throws IOException {
         return new ImageIcon(loadBufferedImage(path));
     }
@@ -107,6 +86,18 @@ public final class GuiUtil {
 
     public static void saveBufferedImage(File file, BufferedImage bufferedImage) throws IOException {
         saveBufferedImage(file, bufferedImage, "jpg");
+    }
+
+    public static void catchSaveBufferedImage(File file, BufferedImage bufferedImage, String format) {
+        try {
+            saveBufferedImage(file, bufferedImage, format);
+        } catch (IOException e) {
+            Log.error("GuiUtil", "Failed to save buffered image", e);
+        }
+    }
+
+    public static void catchSaveBufferedImage(File file, BufferedImage bufferedImage) {
+        catchSaveBufferedImage(file, bufferedImage, "jpg");
     }
 
     public static void invertBufferedImageColors(BufferedImage input) {
@@ -130,7 +121,7 @@ public final class GuiUtil {
 
     }
 
-    public static void saveBufferedImageFileChooser(Component parent, BufferedImage bufferedImage) {
+    public static void saveBufferedImageFileChooser(Component parent, BufferedImage bufferedImage, EOCVSim eocvSim) {
 
         FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG (*.jpg)",  "jpg", "jpeg");
         FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG (*.png)",  "png");
@@ -138,7 +129,27 @@ public final class GuiUtil {
         DialogFactory.createFileChooser(parent, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, jpegFilter, pngFilter)
 
         .addCloseListener((MODE, selectedFile) -> {
+            if(MODE == JFileChooser.APPROVE_OPTION) {
+                Optional<String> extension = SysUtil.getExtensionByStringHandling(selectedFile.getName());
 
+                if(!selectedFile.exists()) {
+                    if(extension.isPresent()) {
+                        catchSaveBufferedImage(selectedFile, bufferedImage, extension.get());
+                    } else {
+                        catchSaveBufferedImage(selectedFile, bufferedImage);
+                    }
+                } else {
+                    FileAlreadyExists.UserChoice userChoice = new DialogFactory(eocvSim).fileAlreadyExists(); //create confirm dialog
+                    if(userChoice == FileAlreadyExists.UserChoice.REPLACE) {
+                        if(extension.isPresent()) {
+                            catchSaveBufferedImage(selectedFile, bufferedImage, extension.get());
+                        } else {
+                            catchSaveBufferedImage(selectedFile, bufferedImage);
+                        }
+                    }
+                }
+
+            }
         });
 
     }

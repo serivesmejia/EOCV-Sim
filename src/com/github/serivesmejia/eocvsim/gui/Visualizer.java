@@ -91,7 +91,6 @@ public class Visualizer {
 
     private volatile Mat lastScaledMat;
 	private volatile Mat lastPostedMat;
-
     private volatile BufferedImage lastMatBufferedImage;
 
     public MatPoster matPoster;
@@ -188,7 +187,7 @@ public class Visualizer {
         JMenuItem fileSaveMatItem = new JMenuItem("Save mat to disk");
 
         fileSaveMatItem.addActionListener(e ->
-                GuiUtil.saveBufferedImageFileChooser(frame, lastMatBufferedImage)
+                GuiUtil.saveBufferedImageFileChooser(frame, lastMatBufferedImage, eocvSim)
         );
 
         fileMenu.add(fileSaveMatItem);
@@ -309,7 +308,7 @@ public class Visualizer {
 
 		sourceSelectorCreateBtt.addActionListener(e -> {
 			if(CreateSource.alreadyOpened) return;
-			new CreateSource(frame, eocvSim);
+			new DialogFactory(eocvSim).createSourceDialog();
 		});
 
 		sourceSelectorContainer.add(sourceSelectorScrollContainer);
@@ -421,13 +420,13 @@ public class Visualizer {
 
 		//listener for updating visualized image on post by MatPoster
 		matPoster.addPostable((mat) -> {
-			try {
-				mat.copyTo(lastPostedMat);
-				this.scaleAndZoom(mat);
-			} catch(Throwable ex) {
-				Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
-			}
-		});
+            mat.copyTo(lastPostedMat);
+            try {
+                this.scaleAndZoom(lastPostedMat);
+            } catch(Throwable ex) {
+                Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
+            }
+        });
 
         frame.addWindowListener(new WindowAdapter(){
             public void windowClosing(WindowEvent e){
@@ -522,13 +521,13 @@ public class Visualizer {
 		});
 
 		//RESIZE HANDLING
-        imgScrollPane.addMouseWheelListener(e -> eocvSim.runOnMainThread(() -> {
+        imgScrollPane.addMouseWheelListener(e -> {
 			if(isCtrlPressed) { //check if control key is pressed
 				scale -= 0.3 * e.getPreciseWheelRotation();
 				if(scale <= 0) scale = 0.5;
 				scaleAndZoom(lastPostedMat);
 			}
-		}));
+		});
 
         //listening for keyboard presses and releases, to check if ctrl key was pressed or released
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
@@ -560,7 +559,6 @@ public class Visualizer {
     public void close() {
 
 	    frame.setVisible(false);
-
 	    matPoster.stop();
 
 	    for(AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
@@ -594,9 +592,10 @@ public class Visualizer {
     }
 
     //scale img
-    private void scaleAndZoom(Mat mat) {
+    private synchronized void scaleAndZoom(Mat mat) {
 
 		if(scale < 0) scale = 1;
+		else if(scale > 2) scale = 2;
 
 		Size size = new Size(mat.width() * scale, mat.height() * scale);
 

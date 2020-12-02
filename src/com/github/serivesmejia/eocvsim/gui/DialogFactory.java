@@ -1,15 +1,14 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.dialog.Configuration;
-import com.github.serivesmejia.eocvsim.gui.dialog.CreateCameraSource;
-import com.github.serivesmejia.eocvsim.gui.dialog.CreateImageSource;
+import com.github.serivesmejia.eocvsim.gui.dialog.*;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class DialogFactory {
@@ -33,8 +32,16 @@ public class DialogFactory {
         });
     }
 
+    public Thread createSourceDialog() {
+        return createStartThread( () -> new CreateSource(eocvSim.visualizer.frame, eocvSim));
+    }
+
     public Thread createConfigDialog() {
         return createStartThread(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
+    }
+
+    public FileAlreadyExists.UserChoice fileAlreadyExists() {
+        return new FileAlreadyExists(eocvSim.visualizer.frame, eocvSim).run();
     }
 
     public static FileChooser createFileChooser(Component parent, FileChooser.Mode mode, FileFilter... filters) {
@@ -56,7 +63,7 @@ public class DialogFactory {
     }
 
     private static Thread createStartThread(Runnable runn) {
-        Thread t = new Thread(runn); t.start();
+        Thread t = new Thread(runn, "DialogFactory-Thread"); t.start();
         return t;
     }
 
