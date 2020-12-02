@@ -187,7 +187,7 @@ public class Visualizer {
         JMenuItem fileSaveMatItem = new JMenuItem("Save mat to disk");
 
         fileSaveMatItem.addActionListener(e ->
-                GuiUtil.saveBufferedImageFileChooser(frame, lastMatBufferedImage, eocvSim)
+                GuiUtil.saveMatFileChooser(frame, lastPostedMat, eocvSim)
         );
 
         fileMenu.add(fileSaveMatItem);

@@ -42,6 +42,8 @@ public class EOCVSim {
 		SysUtil.loadCvNativeLib();
 		Log.white();
 
+		Thread.currentThread().setPriority((int)(Thread.MAX_PRIORITY*0.8));
+
 		pipelineManager = new PipelineManager(this);
 
 		configManager.init(); //load config
