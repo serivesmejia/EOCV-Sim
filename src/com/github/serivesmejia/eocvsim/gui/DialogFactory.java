@@ -97,6 +97,7 @@ public class DialogFactory {
                 for(FileFilter filter : filters) {
                     chooser.addChoosableFileFilter(filter);
                 }
+                chooser.setFileFilter(filters[0]);
             }
 
         }
@@ -111,7 +112,7 @@ public class DialogFactory {
                 returnVal = chooser.showOpenDialog(parent);
             }
 
-            executeCloseListeners(returnVal, chooser.getSelectedFile());
+            executeCloseListeners(returnVal, chooser.getSelectedFile(), chooser.getFileFilter());
 
         }
 
@@ -119,19 +120,19 @@ public class DialogFactory {
             this.closeListeners.add(listener);
         }
 
-        private void executeCloseListeners(int OPTION, File selectedFile) {
+        private void executeCloseListeners(int OPTION, File selectedFile, FileFilter selectedFileFilter) {
             for(FileChooserCloseListener listener : closeListeners) {
-                listener.onClose(OPTION, selectedFile);
+                listener.onClose(OPTION, selectedFile, selectedFileFilter);
             }
         }
 
         public void close() {
             chooser.setVisible(false);
-            executeCloseListeners(JFileChooser.CANCEL_OPTION, null);
+            executeCloseListeners(JFileChooser.CANCEL_OPTION, null, null);
         }
 
         public interface FileChooserCloseListener {
-            void onClose(int OPTION, File selectedFile);
+            void onClose(int OPTION, File selectedFile, FileFilter selectedFileFilter);
         }
 
     }

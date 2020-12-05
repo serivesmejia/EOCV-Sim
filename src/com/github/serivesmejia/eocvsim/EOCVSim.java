@@ -111,7 +111,7 @@ public class EOCVSim {
 					telemetry.errItem.setValue("");
 				}
 
-			} catch(Throwable ex) {
+			} catch(Exception ex) {
 
 				Log.error("Error while processing pipeline", ex);
 
@@ -124,8 +124,6 @@ public class EOCVSim {
 			}
 
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
-
-			System.gc(); //run JVM garbage collector
 
 		}
 
@@ -147,6 +145,10 @@ public class EOCVSim {
 
 	}
 
+	public void destroy() {
+		destroy(DestroyReason.USER_REQUESTED);
+	}
+
 	public void restart() {
 
 		Log.info("EOCVSim", "Restarting...");
@@ -156,14 +158,10 @@ public class EOCVSim {
 
 		Log.white();
 
-		new Thread(() -> new EOCVSim().init()).start(); //run next instance on a separate thread for the old one to get interrupted and ended
+		new Thread(() -> new EOCVSim().init(), "main").start(); //run next instance on a separate thread for the old one to get interrupted and ended
 
 	}
 
-	public void destroy() {
-		destroy(DestroyReason.USER_REQUESTED);
-	}
-	
 	public void updateVisualizerTitle() {
 		
 		String fpsMsg = " (" + String.valueOf(pipelineManager.getFPS()) + " FPS)";

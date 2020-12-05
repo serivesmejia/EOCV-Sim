@@ -156,7 +156,7 @@ public class CreateImageSource {
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Images",
                     "jpg", "jpeg", "jpe", "jp2","bmp", "png", "tiff", "tif");
 
-            DialogFactory.createFileChooser(createImageSource, filter).addCloseListener((returnVal, selectedFile) -> {
+            DialogFactory.createFileChooser(createImageSource, filter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     imageFileSelected(selectedFile);
                 }

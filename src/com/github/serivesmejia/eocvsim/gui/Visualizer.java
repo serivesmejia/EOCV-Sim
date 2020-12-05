@@ -16,6 +16,7 @@ import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
+import com.github.serivesmejia.eocvsim.gui.util.ImageX;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
@@ -34,7 +35,7 @@ import com.github.serivesmejia.eocvsim.util.Log;
 public class Visualizer {
 
 	public JFrame frame = null;
-	public volatile JLabel img = null;
+	public volatile ImageX img = null;
 
 	public JMenuBar menuBar = null;
 	public JMenu fileMenu = null;
@@ -130,7 +131,7 @@ public class Visualizer {
 
 		//instantiate all swing elements after theme installation
 		frame = new JFrame();
-		img = new JLabel();
+		img = new ImageX();
 
 		menuBar = new JMenuBar();
 
@@ -184,7 +185,7 @@ public class Visualizer {
 
 		fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
 
-        JMenuItem fileSaveMatItem = new JMenuItem("Save mat to disk");
+        JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
 
         fileSaveMatItem.addActionListener(e ->
                 GuiUtil.saveMatFileChooser(frame, lastPostedMat, eocvSim)
@@ -420,9 +421,10 @@ public class Visualizer {
 
 		//listener for updating visualized image on post by MatPoster
 		matPoster.addPostable((mat) -> {
+			Log.info("Posted mat brrrrr");
             mat.copyTo(lastPostedMat);
             try {
-                this.scaleAndZoom(lastPostedMat);
+                this.visualizeScaleMat(lastPostedMat);
             } catch(Throwable ex) {
                 Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
             }
@@ -525,7 +527,7 @@ public class Visualizer {
 			if(isCtrlPressed) { //check if control key is pressed
 				scale -= 0.3 * e.getPreciseWheelRotation();
 				if(scale <= 0) scale = 0.5;
-				scaleAndZoom(lastPostedMat);
+				visualizeScaleMat(lastPostedMat);
 			}
 		});
 
@@ -592,17 +594,17 @@ public class Visualizer {
     }
 
     //scale img
-    private synchronized void scaleAndZoom(Mat mat) {
+    private synchronized void visualizeScaleMat(Mat mat) {
 
-		if(scale < 0) scale = 1;
+		if(scale < 0) scale = 0.2;
 		else if(scale > 2) scale = 2;
 
 		Size size = new Size(mat.width() * scale, mat.height() * scale);
+		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
 
-		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
-		lastMatBufferedImage = CvUtil.matToBufferedImage(lastScaledMat);
+		lastMatBufferedImage = CvUtil.matToBufferedImage(lastScaledMat); //convert resized mat to buffered image
 
-		img.setIcon(new ImageIcon(lastMatBufferedImage));
+		img.setImage(lastMatBufferedImage);
 
 		Config config = eocvSim.configManager.getConfig();
         if(config.storeZoom) config.zoom = scale; //store lastest scale if store setting turned on

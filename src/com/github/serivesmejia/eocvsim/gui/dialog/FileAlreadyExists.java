@@ -8,6 +8,8 @@ import java.awt.*;
 public class FileAlreadyExists {
 
     public volatile JDialog fileAlreadyExists = null;
+    public volatile JPanel contentsPanel = new JPanel();
+
     public static volatile boolean alreadyOpened = false;
     EOCVSim eocvSim = null;
 
@@ -29,30 +31,37 @@ public class FileAlreadyExists {
 
         fileAlreadyExists.setModal(true);
 
-        fileAlreadyExists.setTitle("File Already Exists");
-        fileAlreadyExists.setSize(300, 150);
+        fileAlreadyExists.setTitle("Warning");
+        fileAlreadyExists.setSize(300, 120);
 
-        JLabel alreadyExistsLabel = new JLabel("Specified file already exists in the selected directory");
+        JPanel alreadyExistsPanel = new JPanel(new FlowLayout());
 
-        fileAlreadyExists.add(alreadyExistsLabel);
+        JLabel alreadyExistsLabel = new JLabel("File already exists in the selected directory");
+        alreadyExistsPanel.add(alreadyExistsLabel);
+
+        contentsPanel.add(alreadyExistsPanel);
 
         JPanel replaceCancelPanel = new JPanel(new FlowLayout());
 
         JButton replaceButton = new JButton("Replace");
         replaceCancelPanel.add(replaceButton);
 
-        replaceButton.addActionListener((e) ->
-            userChoice = UserChoice.REPLACE
-        );
+        replaceButton.addActionListener((e) -> {
+            userChoice = UserChoice.REPLACE;
+            fileAlreadyExists.setVisible(false);
+        });
 
         JButton cancelButton = new JButton("Cancel");
         replaceCancelPanel.add(cancelButton);
 
-        replaceButton.addActionListener((e) ->
-                userChoice = UserChoice.CANCEL
-        );
+        cancelButton.addActionListener((e) -> {
+            userChoice = UserChoice.CANCEL;
+            fileAlreadyExists.setVisible(false);
+        });
 
-        fileAlreadyExists.add(replaceCancelPanel);
+        contentsPanel.add(replaceCancelPanel);
+
+        fileAlreadyExists.add(contentsPanel);
 
         fileAlreadyExists.setResizable(false);
         fileAlreadyExists.setLocationRelativeTo(null);
