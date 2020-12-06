@@ -18,7 +18,7 @@ Because OpenCV in Java uses a native library, which are platform specific, the s
 * MacOS x64 (tested)*
 * Linux x64 (tested for Ubuntu 20.04)<br/>
 
-*\*For Mac support, you will also need to follow [these steps](https://opencv-java-tutorials.readthedocs.io/en/latest/01-installing-opencv-for-java.html#install-opencv-3-x-under-macos) to download some other required native libraries, except for the last step since EOCV Sim already loads automatically the core dylib file.*
+*\*For Mac support, you will also need to follow [these steps](https://opencv-java-tutorials.readthedocs.io/en/latest/01-installing-opencv-for-java.html#install-opencv-3-x-under-macos) to download some other required native libraries, and you should find a libopencv_java450.dylib under /usr/local/share/java/opencv4/libopencv_java450.dylib. Right click on the .dylib file, and click "duplicate." Rename the duplicated file (libopencv_java450 copy.dylib) to mac64_opencv_java440.dylib. Move the renamed .dylib to your user folder, and replace the existing file. EOCV sim should now work as expected*
 
 # Installation
 
