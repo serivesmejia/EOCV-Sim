@@ -421,13 +421,17 @@ public class Visualizer {
 
 		//listener for updating visualized image on post by MatPoster
 		matPoster.addPostable((mat) -> {
-            mat.copyTo(lastPostedMat);
+
+			Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR); //change mat color space to be compatible with BufferedImages
+			mat.copyTo(lastPostedMat);
+
             try {
                 this.visualizeScaleMat(lastPostedMat);
 				Log.info("Posted mat brrrrr");
-            } catch(Throwable ex) {
+            } catch(Exception ex) {
                 Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
             }
+
         });
 
         frame.addWindowListener(new WindowAdapter(){

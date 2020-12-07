@@ -87,8 +87,6 @@ public class MatPoster {
 
                     MatRecycler.RecyclableMat takenMat = postQueue.take();
 
-                    Imgproc.cvtColor(takenMat, takenMat, Imgproc.COLOR_RGB2BGR);
-
                     for(Postable postable : postables) {
                         postable.post(takenMat);
                     }

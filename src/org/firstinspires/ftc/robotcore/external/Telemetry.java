@@ -185,7 +185,7 @@ public class Telemetry {
 
     }
 
-    public static class Item extends ItemOrLine {
+    public static class Item implements ItemOrLine {
 
         protected String caption = "";
 
@@ -209,12 +209,7 @@ public class Telemetry {
         }
 
         public void setValue(String value) {
-            setValue(new Func<String>() {
-                @Override
-                public String value() {
-                    return value;
-                }
-            });
+            setValue((Func<String>) () -> value);
         }
 
         public void setValue(Func func) {
@@ -230,12 +225,7 @@ public class Telemetry {
         }
 
         public void setValue(Func func, Object... args) {
-            setValue(new Func<String>() {
-                @Override
-                public String value() {
-                    return String.format(func.value().toString(), args);
-                }
-            });
+            setValue((Func<String>) () -> String.format(func.value().toString(), args));
         }
 
         public void setRetained(boolean retained) { this.isRetained = retained; }
@@ -251,7 +241,7 @@ public class Telemetry {
 
     }
 
-    public static class Line extends ItemOrLine {
+    public static class Line implements ItemOrLine {
 
         protected String caption = "";
 
@@ -272,6 +262,9 @@ public class Telemetry {
 
     }
 
-    private static class ItemOrLine { }
+    private static interface ItemOrLine {
+        void setCaption(String caption);
+        String getCaption();
+    }
 
 }
