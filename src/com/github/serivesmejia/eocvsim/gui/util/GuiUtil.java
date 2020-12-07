@@ -10,15 +10,12 @@ import org.opencv.core.Mat;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -31,23 +28,24 @@ public final class GuiUtil {
 
     public static void jTextFieldOnlyNumbers(JTextField field, int minNumber, int onMinNumberChangeTo) {
 
-        ((AbstractDocument)field.getDocument()).setDocumentFilter(new DocumentFilter(){
-            Pattern regEx = Pattern.compile("\\d*");
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+            final Pattern regEx = Pattern.compile("\\d*");
 
             @Override
             public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
                 Matcher matcher = regEx.matcher(text);
-                if(!matcher.matches()){
+                if (!matcher.matches()) {
                     return;
                 }
 
-                if(field.getText().length() == 0) {
+                if (field.getText().length() == 0) {
                     try {
                         int number = Integer.parseInt(text);
                         if (number <= minNumber) {
                             text = String.valueOf(onMinNumberChangeTo);
                         }
-                    } catch (NumberFormatException ex) {  }
+                    } catch (NumberFormatException ex) {
+                    }
                 }
 
                 super.replace(fb, offset, length, text, attrs);
@@ -61,12 +59,12 @@ public final class GuiUtil {
         int nw = icon.getIconWidth();
         int nh = icon.getIconHeight();
 
-        if(icon.getIconWidth() > w) {
+        if (icon.getIconWidth() > w) {
             nw = w;
             nh = (nw * icon.getIconHeight()) / icon.getIconWidth();
         }
 
-        if(nh > h) {
+        if (nh > h) {
             nh = h;
             nw = (icon.getIconWidth() * nh) / icon.getIconHeight();
         }
@@ -111,7 +109,7 @@ public final class GuiUtil {
                 int rgba = input.getRGB(x, y);
                 Color col = new Color(rgba, true);
 
-                if(col.getAlpha() <= 0) continue;
+                if (col.getAlpha() <= 0) continue;
 
                 col = new Color(255 - col.getRed(),
                         255 - col.getGreen(),
@@ -126,53 +124,53 @@ public final class GuiUtil {
 
     public static void saveBufferedImageFileChooser(Component parent, BufferedImage bufferedImage, EOCVSim eocvSim) {
 
-        FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG (*.jpg)",  "jpg", "jpeg");
-        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG (*.png)",  "png");
+        FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG (*.jpg)", "jpg", "jpeg");
+        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG (*.png)", "png");
 
-        String[] validExts = { "jpg", "jpeg", "png" };
+        String[] validExts = {"jpg", "jpeg", "png"};
 
         DialogFactory.createFileChooser(parent, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, jpegFilter, pngFilter)
 
-        .addCloseListener((MODE, selectedFile, selectedFileFilter) -> {
-            if(MODE == JFileChooser.APPROVE_OPTION) {
+                .addCloseListener((MODE, selectedFile, selectedFileFilter) -> {
+                    if (MODE == JFileChooser.APPROVE_OPTION) {
 
-                Optional<String> extension = SysUtil.getExtensionByStringHandling(selectedFile.getName());
+                        Optional<String> extension = SysUtil.getExtensionByStringHandling(selectedFile.getName());
 
-                boolean saveImage;
+                        boolean saveImage;
 
-                if(!selectedFile.exists()) {
-                    saveImage = true;
-                } else {
-                    FileAlreadyExists.UserChoice userChoice = new DialogFactory(eocvSim).fileAlreadyExists(); //create confirm dialog
-                    saveImage = userChoice == FileAlreadyExists.UserChoice.REPLACE;
-                }
-
-                String ext = "";
-
-                if(saveImage) {
-                        if (selectedFileFilter instanceof FileNameExtensionFilter) { //if user selected an extension
-
-                            //get selected extension
-                            ext = ((FileNameExtensionFilter) selectedFileFilter).getExtensions()[0];
-
-                            selectedFile = new File(selectedFile + "." + ext); //append extension to file
-                            catchSaveBufferedImage(selectedFile, bufferedImage, ext);
-
-                        } else if (extension.isPresent() && Arrays.asList(validExts).contains(extension.get())) { //if user gave a extension to file and it's valid (jpg, jpeg or png)
-
-                            ext = extension.get(); //get the extension
-                            catchSaveBufferedImage(selectedFile, bufferedImage, ext);
-
-                        } else { //default to jpg if the conditions are not met
-
-                            selectedFile = new File(selectedFile + ".jpg"); //append default extension to file
-                            catchSaveBufferedImage(selectedFile, bufferedImage);
-
+                        if (!selectedFile.exists()) {
+                            saveImage = true;
+                        } else {
+                            FileAlreadyExists.UserChoice userChoice = new DialogFactory(eocvSim).fileAlreadyExists(); //create confirm dialog
+                            saveImage = userChoice == FileAlreadyExists.UserChoice.REPLACE;
                         }
-                }
 
-            }
-        });
+                        String ext = "";
+
+                        if (saveImage) {
+                            if (selectedFileFilter instanceof FileNameExtensionFilter) { //if user selected an extension
+
+                                //get selected extension
+                                ext = ((FileNameExtensionFilter) selectedFileFilter).getExtensions()[0];
+
+                                selectedFile = new File(selectedFile + "." + ext); //append extension to file
+                                catchSaveBufferedImage(selectedFile, bufferedImage, ext);
+
+                            } else if (extension.isPresent() && Arrays.asList(validExts).contains(extension.get())) { //if user gave a extension to file and it's valid (jpg, jpeg or png)
+
+                                ext = extension.get(); //get the extension
+                                catchSaveBufferedImage(selectedFile, bufferedImage, ext);
+
+                            } else { //default to jpg if the conditions are not met
+
+                                selectedFile = new File(selectedFile + ".jpg"); //append default extension to file
+                                catchSaveBufferedImage(selectedFile, bufferedImage);
+
+                            }
+                        }
+
+                    }
+                });
 
     }
 

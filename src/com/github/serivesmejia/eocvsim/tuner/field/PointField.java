@@ -3,11 +3,9 @@ package com.github.serivesmejia.eocvsim.tuner.field;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class PointField extends TunableField<Point> {
 
@@ -34,11 +32,11 @@ public class PointField extends TunableField<Point> {
 
         hasChanged = point.x != lastXY[0] || point.y != lastXY[1];
 
-        if(hasChanged) { //update values in GUI if they changed since last check
+        if (hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
-        lastXY = new double[] { point.x, point.y };
+        lastXY = new double[]{point.x, point.y};
 
     }
 
@@ -51,20 +49,20 @@ public class PointField extends TunableField<Point> {
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
 
-       try {
-           double value = Double.parseDouble(newValue);
-           if(index == 0) {
-               point.x = value;
-           } else {
-               point.y = value;
-           }
-       } catch(NumberFormatException ex) {
-                throw new IllegalArgumentException("Parameter should be a valid numeric String");
-       }
+        try {
+            double value = Double.parseDouble(newValue);
+            if (index == 0) {
+                point.x = value;
+            } else {
+                point.y = value;
+            }
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Parameter should be a valid numeric String");
+        }
 
-       setPipelineFieldValue(point);
+        setPipelineFieldValue(point);
 
-       lastXY = new double[] {point.x, point.y};
+        lastXY = new double[]{point.x, point.y};
 
     }
 

@@ -3,9 +3,7 @@ package com.github.serivesmejia.eocvsim.input.source;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.util.Log;
-
 import com.google.gson.annotations.Expose;
-
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -16,14 +14,12 @@ import java.util.Objects;
 
 public class CameraSource extends InputSource {
 
+    @Expose
+    private final int webcamIndex;
     private transient VideoCapture camera = null;
     private transient Mat lastFramePaused = null;
     private transient Mat lastFrame = null;
-
     private transient boolean initialized = false;
-
-    @Expose
-    private final int webcamIndex;
     @Expose
     private volatile Size size;
 
@@ -37,23 +33,23 @@ public class CameraSource extends InputSource {
     @Override
     public boolean init() {
 
-        if(initialized) return false;
+        if (initialized) return false;
         initialized = true;
 
         camera = new VideoCapture(webcamIndex);
 
-        if(!camera.isOpened()) {
+        if (!camera.isOpened()) {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex);
             return false;
         }
 
-        if(matRecycler == null) matRecycler = new MatRecycler(2);
+        if (matRecycler == null) matRecycler = new MatRecycler(2);
 
         MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 
         camera.read(newFrame);
 
-        if(newFrame.empty()) {
+        if (newFrame.empty()) {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex + ", returned Mat was empty.");
             newFrame.release();
             return false;
@@ -68,9 +64,9 @@ public class CameraSource extends InputSource {
     @Override
     public void reset() {
 
-        if(!initialized) return;
+        if (!initialized) return;
 
-        if(camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
+        if (camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
 
         camera = null;
         initialized = false;
@@ -79,27 +75,27 @@ public class CameraSource extends InputSource {
 
     @Override
     public void close() {
-        if(camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
+        if (camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
     }
 
     @Override
     public Mat update() {
 
-        if(isPaused) {
+        if (isPaused) {
             return lastFramePaused;
-        } else if(lastFramePaused != null){
+        } else if (lastFramePaused != null) {
             lastFramePaused.release();
             lastFramePaused = null;
         }
 
-        if(lastFrame == null) lastFrame = new Mat();
-        if(camera == null) return lastFrame;
+        if (lastFrame == null) lastFrame = new Mat();
+        if (camera == null) return lastFrame;
 
         camera.read(lastFrame);
 
-        if(lastFrame.empty()) return lastFrame;
+        if (lastFrame.empty()) return lastFrame;
 
-        if(size == null) size = lastFrame.size();
+        if (size == null) size = lastFrame.size();
 
         Imgproc.cvtColor(lastFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
         Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_CUBIC);
@@ -111,8 +107,8 @@ public class CameraSource extends InputSource {
     @Override
     public void onPause() {
 
-        if(lastFrame != null) lastFrame.release();
-        if(lastFramePaused == null) lastFramePaused = new Mat();
+        if (lastFrame != null) lastFrame.release();
+        if (lastFramePaused == null) lastFramePaused = new Mat();
 
         camera.read(lastFramePaused);
 
@@ -123,7 +119,7 @@ public class CameraSource extends InputSource {
 
         camera.release();
         camera = null;
-System.gc();
+        System.gc();
     }
 
     @Override
@@ -141,7 +137,7 @@ System.gc();
 
     @Override
     public String toString() {
-        if(size == null) size = new Size();
+        if (size == null) size = new Size();
         return "CameraSource(" + webcamIndex + ", " + (size != null ? size.toString() : "null") + ")";
     }
 

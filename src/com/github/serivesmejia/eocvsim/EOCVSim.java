@@ -1,207 +1,196 @@
 package com.github.serivesmejia.eocvsim;
 
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.github.serivesmejia.eocvsim.config.ConfigManager;
-import com.github.serivesmejia.eocvsim.tuner.TunerManager;
-import com.github.serivesmejia.eocvsim.util.FpsLimiter;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
-
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
+import com.github.serivesmejia.eocvsim.tuner.TunerManager;
+import com.github.serivesmejia.eocvsim.util.FpsLimiter;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.awt.*;
+import java.util.ArrayList;
 
 public class EOCVSim {
 
-	public volatile Visualizer visualizer = new Visualizer(this);
+    public static String VERSION = "2.0.0";
+    public static int DEFAULT_EOCV_WIDTH = 320;
+    public static int DEFAULT_EOCV_HEIGHT = 240;
+    private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+    public volatile Visualizer visualizer = new Visualizer(this);
+    public ConfigManager configManager = new ConfigManager();
+    public InputSourceManager inputSourceManager = new InputSourceManager(this);
+    public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
+    public TunerManager tunerManager = new TunerManager(this);
+    public FpsLimiter fpsLimiter = new FpsLimiter(30);
 
-	public ConfigManager configManager = new ConfigManager();
+    public void init() {
 
-	public InputSourceManager inputSourceManager = new InputSourceManager(this);
-	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
-	public TunerManager tunerManager = new TunerManager(this);
+        Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
+        Log.white();
 
-	public FpsLimiter fpsLimiter = new FpsLimiter(30);
+        SysUtil.loadCvNativeLib();
+        Log.white();
 
-	public static String VERSION = "2.0.0";
+        Thread.currentThread().setPriority((int) (Thread.MAX_PRIORITY * 0.8));
 
-	public static int DEFAULT_EOCV_WIDTH = 320;
-	public static int DEFAULT_EOCV_HEIGHT = 240;
+        pipelineManager = new PipelineManager(this);
 
-	private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+        configManager.init(); //load config
 
-	public enum DestroyReason { USER_REQUESTED, THEME_CHANGING, RESTART }
+        visualizer.initAsync(configManager.getConfig().simTheme); //create gui in new thread
 
-	public void init() {
+        inputSourceManager.init(); //loading user created input sources
 
-		Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
-		Log.white();
-		
-		SysUtil.loadCvNativeLib();
-		Log.white();
+        visualizer.waitForFinishingInit();
 
-		Thread.currentThread().setPriority((int)(Thread.MAX_PRIORITY*0.8));
+        visualizer.updateSourcesList(); //update sources and pick first one
+        visualizer.sourceSelector.setSelectedIndex(0);
 
-		pipelineManager = new PipelineManager(this);
+        //create a dialog to give user visual feedback
+        AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
+        lookForPipelineAPWD.onCancel(() -> System.exit(0));
 
-		configManager.init(); //load config
+        pipelineManager.init(lookForPipelineAPWD); //init pipeline manager (scan for pipelines)
 
-		visualizer.initAsync(configManager.getConfig().simTheme); //create gui in new thread
+        lookForPipelineAPWD.destroyDialog(); //destroy dialog since wait's over.
 
-		inputSourceManager.init(); //loading user created input sources
+        tunerManager.init(); //init tunable variables manager
 
-		visualizer.waitForFinishingInit();
+        visualizer.updatePipelinesList(); //update pipelines and pick first one (DefaultPipeline)
+        visualizer.pipelineSelector.setSelectedIndex(0);
 
-		visualizer.updateSourcesList(); //update sources and pick first one
-		visualizer.sourceSelector.setSelectedIndex(0);
+        beginLoop();
 
-		//create a dialog to give user visual feedback
-		AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
-		lookForPipelineAPWD.onCancel(() -> System.exit(0));
-		
-		pipelineManager.init(lookForPipelineAPWD); //init pipeline manager (scan for pipelines)
+    }
 
-		lookForPipelineAPWD.destroyDialog(); //destroy dialog since wait's over.
+    public void beginLoop() {
 
-		tunerManager.init(); //init tunable variables manager
+        Log.info("EOCVSim", "Begin EOCVSim loop");
+        Log.white();
 
-		visualizer.updatePipelinesList(); //update pipelines and pick first one (DefaultPipeline)
-		visualizer.pipelineSelector.setSelectedIndex(0);
-		
-		beginLoop();
-		
-	}
-	
-	public void beginLoop() {
-		
-		Log.info("EOCVSim", "Begin EOCVSim loop");
-		Log.white();
+        inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
 
-		inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
+        int count = 0;
 
-		int count = 0;
+        while (!Thread.interrupted()) {
 
-		while(!Thread.interrupted()) {
+            Telemetry telemetry = pipelineManager.currentTelemetry;
 
-			Telemetry telemetry = pipelineManager.currentTelemetry;
+            //run all pending requested runnables
+            for (Runnable runn : runnsOnMain.toArray(new Runnable[0])) {
+                runn.run();
+                runnsOnMain.remove(runn);
+            }
 
-			//run all pending requested runnables
-			for(Runnable runn : runnsOnMain.toArray(new Runnable[0])) {
-				runn.run();
-				runnsOnMain.remove(runn);
-			}
+            updateVisualizerTitle();
 
-			updateVisualizerTitle();
+            inputSourceManager.update(pipelineManager.isPaused());
+            tunerManager.update();
 
-			inputSourceManager.update(pipelineManager.isPaused());
-			tunerManager.update();
+            //if we dont have a mat from the inputsource, we'll just skip this frame.
+            if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
 
-			//if we dont have a mat from the inputsource, we'll just skip this frame.
-			if(inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue;
+            try {
 
-			try {
+                pipelineManager.update(inputSourceManager.lastMatFromSource);
 
-				pipelineManager.update(inputSourceManager.lastMatFromSource);
+                if (!pipelineManager.isPaused())
+                    visualizer.matPoster.post(pipelineManager.lastOutputMat);
 
-				if(!pipelineManager.isPaused())
-					visualizer.matPoster.post(pipelineManager.lastOutputMat);
+                if (telemetry != null) {
+                    telemetry.errItem.setCaption("");
+                    telemetry.errItem.setValue("");
+                }
 
-				if(telemetry != null) {
-					telemetry.errItem.setCaption("");
-					telemetry.errItem.setValue("");
-				}
+            } catch (Exception ex) {
 
-			} catch(Exception ex) {
+                Log.error("Error while processing pipeline", ex);
 
-				Log.error("Error while processing pipeline", ex);
+                if (telemetry != null) {
+                    telemetry.errItem.setCaption("[/!\\]");
+                    telemetry.errItem.setValue("Error while processing pipeline\nCheck console for details.");
+                    telemetry.update();
+                }
 
-				if(telemetry != null) {
-					telemetry.errItem.setCaption("[/!\\]");
-					telemetry.errItem.setValue("Error while processing pipeline\nCheck console for details.");
-					telemetry.update();
-				}
+            }
 
-			}
+            visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
-			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
+            if (count == 100) { //run garbage collector every 100 frames
+                System.gc();
+                count = 0;
+            } else {
+                count++;
+            }
 
-			if(count == 100) { //run garbage collector every 100 frames
-				System.gc();
-				count = 0;
-			} else {
-				count++;
-			}
+            try {
+                fpsLimiter.sync();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
 
-			try {
-				fpsLimiter.sync();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				break;
-			}
+        }
 
-		}
+        Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")");
 
-		Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")");
+    }
 
-	}
+    public void destroy(DestroyReason reason) {
 
-	public void destroy(DestroyReason reason) {
+        String hexCode = Integer.toHexString(this.hashCode());
 
-		String hexCode = Integer.toHexString(this.hashCode());
+        Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
+        Log.info("EOCVSim", "Trying to save config file...");
 
-		Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
-		Log.info("EOCVSim", "Trying to save config file...");
+        configManager.saveToFile();
 
-		configManager.saveToFile();
+        visualizer.close();
+        Thread.currentThread().interrupt();
 
-		visualizer.close();
-		Thread.currentThread().interrupt();
+    }
 
-	}
+    public void destroy() {
+        destroy(DestroyReason.USER_REQUESTED);
+    }
 
-	public void destroy() {
-		destroy(DestroyReason.USER_REQUESTED);
-	}
+    public void restart() {
 
-	public void restart() {
+        Log.info("EOCVSim", "Restarting...");
+        Log.white();
 
-		Log.info("EOCVSim", "Restarting...");
-		Log.white();
+        destroy(DestroyReason.RESTART);
 
-		destroy(DestroyReason.RESTART);
+        Log.white();
 
-		Log.white();
+        new Thread(() -> new EOCVSim().init(), "main").start(); //run next instance on a separate thread for the old one to get interrupted and ended
 
-		new Thread(() -> new EOCVSim().init(), "main").start(); //run next instance on a separate thread for the old one to get interrupted and ended
+    }
 
-	}
+    public void updateVisualizerTitle() {
 
-	public void updateVisualizerTitle() {
-		
-		String fpsMsg = " (" + String.valueOf(pipelineManager.getFPS()) + " FPS)";
+        String fpsMsg = " (" + pipelineManager.getFPS() + " FPS)";
 
-		String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
+        String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
 
-		String memoryMsg = " (" + String.valueOf(SysUtil.getMemoryUsageMB()) + " MB Java memory used)";
+        String memoryMsg = " (" + SysUtil.getMemoryUsageMB() + " MB Java memory used)";
 
-		if(pipelineManager.currentPipeline == null) {
-			visualizer.setTitleMessage("No pipeline" + fpsMsg + isPaused + memoryMsg);
-		} else {
-			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
-		}
+        if (pipelineManager.currentPipeline == null) {
+            visualizer.setTitleMessage("No pipeline" + fpsMsg + isPaused + memoryMsg);
+        } else {
+            visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
+        }
 
-	}
+    }
 
-	public void runOnMainThread(Runnable runn) {
-		runnsOnMain.add(runn);
-	}
+    public void runOnMainThread(Runnable runn) {
+        runnsOnMain.add(runn);
+    }
+
+    public enum DestroyReason {USER_REQUESTED, THEME_CHANGING, RESTART}
 
 }

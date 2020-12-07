@@ -11,7 +11,7 @@ public class ThemeInstaller {
 
     public void installTheme(Theme theme) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
 
-        switch(theme) {
+        switch (theme) {
             case Default:
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                 break;

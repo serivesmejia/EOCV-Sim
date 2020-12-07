@@ -1,9 +1,7 @@
 package com.github.serivesmejia.eocvsim.input.source;
 
 import com.github.serivesmejia.eocvsim.input.InputSource;
-
 import com.google.gson.annotations.Expose;
-
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -12,36 +10,36 @@ import org.openftc.easyopencv.MatRecycler;
 
 public class ImageSource extends InputSource {
 
-	@Expose
-	private volatile String imgPath;
-	@Expose
-	private volatile Size size;
-	
-	private volatile transient MatRecycler.RecyclableMat img;
-	private volatile transient MatRecycler.RecyclableMat lastCloneTo;
-	
-	private volatile transient boolean initialized = false;
+    @Expose
+    private final String imgPath;
+    @Expose
+    private volatile Size size;
 
-	private volatile transient MatRecycler matRecycler = new MatRecycler(2);
+    private volatile transient MatRecycler.RecyclableMat img;
+    private volatile transient MatRecycler.RecyclableMat lastCloneTo;
 
-	public ImageSource(String imgPath) {
-		this(imgPath, null);
-	}
-	
-	public ImageSource(String imgPath, Size size) {
-		this.imgPath = imgPath;
-		this.size = size;
-	}
+    private volatile transient boolean initialized = false;
 
-	@Override
-	public boolean init() {
-		
-		if(initialized) return false;
-		initialized = true;
+    private volatile transient MatRecycler matRecycler = new MatRecycler(2);
 
-		if(matRecycler == null) matRecycler = new MatRecycler(2);
-		
-		readImage();
+    public ImageSource(String imgPath) {
+        this(imgPath, null);
+    }
+
+    public ImageSource(String imgPath, Size size) {
+        this.imgPath = imgPath;
+        this.size = size;
+    }
+
+    @Override
+    public boolean init() {
+
+        if (initialized) return false;
+        initialized = true;
+
+        if (matRecycler == null) matRecycler = new MatRecycler(2);
+
+        readImage();
 
         return img != null && !img.empty();
 
@@ -50,91 +48,93 @@ public class ImageSource extends InputSource {
     @Override
     public void onPause() {
         //if(img != null) img.release();
-		System.gc();
+        System.gc();
     }
 
     @Override
-	public void reset() {
-		
-		if(!initialized) return;
+    public void reset() {
 
-		if(lastCloneTo != null) {
-			matRecycler.returnMat(lastCloneTo);
-			lastCloneTo = null;
-		}
+        if (!initialized) return;
 
-		if(img != null) {
-			matRecycler.returnMat(img);
-			img = null;
-		}
+        if (lastCloneTo != null) {
+            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo = null;
+        }
 
-		matRecycler.releaseAll();
-		
-		initialized = false;
-		
-	}
+        if (img != null) {
+            matRecycler.returnMat(img);
+            img = null;
+        }
 
-	public void close() {
+        matRecycler.releaseAll();
 
-		if(img != null)  {
-			matRecycler.returnMat(img);
-			img = null;
-		}
+        initialized = false;
 
-		if(lastCloneTo != null) {
-			matRecycler.returnMat(lastCloneTo);
-			lastCloneTo = null;
-		}
+    }
 
-		matRecycler.releaseAll();
+    public void close() {
 
-	}
+        if (img != null) {
+            matRecycler.returnMat(img);
+            img = null;
+        }
 
-	public void readImage() {
+        if (lastCloneTo != null) {
+            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo = null;
+        }
 
-		Mat readMat = Imgcodecs.imread(this.imgPath);
+        matRecycler.releaseAll();
 
-		if(img == null) img = matRecycler.takeMat();
+    }
 
-		if(readMat.empty()) { return; }
+    public void readImage() {
 
-		readMat.copyTo(img);
-		readMat.release();
+        Mat readMat = Imgcodecs.imread(this.imgPath);
 
-		if(this.size != null) {
-			Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_CUBIC);
-		} else {
-			this.size = img.size();
-		}
+        if (img == null) img = matRecycler.takeMat();
 
-		Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2RGB);
+        if (readMat.empty()) {
+            return;
+        }
 
-	}
+        readMat.copyTo(img);
+        readMat.release();
 
-	@Override
-	public Mat update() {
+        if (this.size != null) {
+            Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_CUBIC);
+        } else {
+            this.size = img.size();
+        }
 
-		if(isPaused) return lastCloneTo;
+        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2RGB);
 
-		if(lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
+    }
 
-		if(img == null) return null;
+    @Override
+    public Mat update() {
 
-		img.copyTo(lastCloneTo);
+        if (isPaused) return lastCloneTo;
 
-		return lastCloneTo;
+        if (lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
 
-	}
+        if (img == null) return null;
 
-	@Override
-	public InputSource cloneSource() {
-		return new ImageSource(imgPath, size);
-	}
+        img.copyTo(lastCloneTo);
 
-	@Override
-	public String toString() {
-		if(size == null) size = new Size();
-		return "ImageSource(\"" + imgPath + "\", " + (size != null ? size.toString() : "null") + ")";
-	}
-	
+        return lastCloneTo;
+
+    }
+
+    @Override
+    public InputSource cloneSource() {
+        return new ImageSource(imgPath, size);
+    }
+
+    @Override
+    public String toString() {
+        if (size == null) size = new Size();
+        return "ImageSource(\"" + imgPath + "\", " + (size != null ? size.toString() : "null") + ")";
+    }
+
 }

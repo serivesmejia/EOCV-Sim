@@ -5,39 +5,52 @@ import org.opencv.core.Mat;
 
 public abstract class InputSource {
 
-	public transient boolean isDefault = false;
-	public transient EOCVSim eocvSim = null;
+    public transient boolean isDefault = false;
+    public transient EOCVSim eocvSim = null;
 
-	protected transient String name = "";
+    protected transient String name = "";
 
-	protected transient boolean isPaused = false;
-	private transient boolean beforeIsPaused = false;
+    protected transient boolean isPaused = false;
+    private transient boolean beforeIsPaused = false;
 
-	public boolean init(){ return false; }
-	public void reset(){}
-	public void close(){}
+    public boolean init() {
+        return false;
+    }
 
-	public void onPause(){}
-	public void onResume(){}
+    public void reset() {
+    }
 
-	public Mat update() { return null; }
+    public void close() {
+    }
 
-	public InputSource cloneSource() { return null; }
+    public void onPause() {
+    }
 
-	public final void setPaused(boolean paused) {
+    public void onResume() {
+    }
 
-		isPaused = paused;
+    public Mat update() {
+        return null;
+    }
 
-		if(beforeIsPaused != isPaused) {
-			if(isPaused) {
-				onPause();
-			} else {
-				onResume();
-			}
-		}
+    public InputSource cloneSource() {
+        return null;
+    }
 
-		beforeIsPaused = paused;
+    public final void setPaused(boolean paused) {
 
-	}
+        isPaused = paused;
+
+        if (beforeIsPaused != isPaused) {
+            if (isPaused) {
+                onPause();
+            } else {
+                onResume();
+            }
+        }
+
+        beforeIsPaused = paused;
+
+    }
 
 }

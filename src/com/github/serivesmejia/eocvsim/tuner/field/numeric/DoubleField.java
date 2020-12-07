@@ -20,7 +20,7 @@ public class DoubleField extends NumericField {
 
         try {
             value = Double.valueOf(newValue);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
 

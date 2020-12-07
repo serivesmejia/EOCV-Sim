@@ -26,7 +26,7 @@ public class StringField extends TunableField<String> {
 
         hasChanged = !value.equals(lastVal);
 
-        if(hasChanged) { //update values in GUI if they changed since last check
+        if (hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
@@ -46,7 +46,7 @@ public class StringField extends TunableField<String> {
 
         setPipelineFieldValue(value);
 
-        lastVal = new String(value);
+        lastVal = value;
 
     }
 

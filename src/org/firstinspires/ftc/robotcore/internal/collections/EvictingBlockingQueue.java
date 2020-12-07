@@ -27,7 +27,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.robotcore.internal.collections;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.internal.system.Assert;
 
@@ -42,8 +41,7 @@ import java.util.concurrent.TimeUnit;
  * rather than failing when new data is added to the queue.
  */
 @SuppressWarnings("WeakerAccess")
-public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>
-{
+public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
     //----------------------------------------------------------------------------------------------
     // State
     //
@@ -52,9 +50,9 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
     // Removals also take the lock so we don't evict data unncessarily.
     //----------------------------------------------------------------------------------------------
 
-    protected final Object     theLock = new Object();
+    protected final Object theLock = new Object();
     protected BlockingQueue<E> targetQueue;
-    protected Consumer<E>      evictAction = null;
+    protected Consumer<E> evictAction = null;
 
     //----------------------------------------------------------------------------------------------
     // Construction
@@ -63,17 +61,15 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
     /**
      * Constructs an EvictingBlockingQueue using the target queue as an implementation. The
      * target queue must have a capacity of at least one.
+     *
      * @param targetQueue the underlying implementation queue from which we will auto-evict as needed
      */
-    public EvictingBlockingQueue(BlockingQueue<E> targetQueue)
-    {
+    public EvictingBlockingQueue(BlockingQueue<E> targetQueue) {
         this.targetQueue = targetQueue;
     }
 
-    public void setEvictAction(Consumer<E> evictAction)
-    {
-        synchronized (theLock)
-        {
+    public void setEvictAction(Consumer<E> evictAction) {
+        synchronized (theLock) {
             this.evictAction = evictAction;
         }
     }
@@ -82,13 +78,13 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
     // AbstractCollection
     //----------------------------------------------------------------------------------------------
 
-    @Override public Iterator<E> iterator()
-    {
+    @Override
+    public Iterator<E> iterator() {
         return targetQueue.iterator();
     }
 
-    @Override public int size()
-    {
+    @Override
+    public int size() {
         return targetQueue.size();
     }
 
@@ -96,16 +92,13 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
     // Core: the hard parts
     //----------------------------------------------------------------------------------------------
 
-    @Override public boolean offer(E e)
-    {
-        synchronized (theLock)
-        {
-            if (targetQueue.remainingCapacity() == 0)
-            {
+    @Override
+    public boolean offer(E e) {
+        synchronized (theLock) {
+            if (targetQueue.remainingCapacity() == 0) {
                 E evicted = targetQueue.poll();
                 Assert.assertNotNull(evicted);
-                if (evictAction != null)
-                {
+                if (evictAction != null) {
                     evictAction.accept(evicted);
                 }
             }
@@ -116,12 +109,10 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
         }
     }
 
-    @Override public E take() throws InterruptedException
-    {
-        synchronized (theLock)
-        {
-            for (;;)
-            {
+    @Override
+    public E take() throws InterruptedException {
+        synchronized (theLock) {
+            for (; ; ) {
                 // Can we get something? Return if we can.
                 E result = poll();
                 if (result != null)
@@ -137,13 +128,11 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
         }
     }
 
-    @Override public E poll(long timeout, TimeUnit unit) throws InterruptedException
-    {
-        synchronized (theLock)
-        {
+    @Override
+    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
+        synchronized (theLock) {
             final long deadline = System.nanoTime() + unit.toNanos(timeout);
-            for (;;)
-            {
+            for (; ; ) {
                 // Can we get something? Return if we can.
                 E result = poll();
                 if (result != null)
@@ -155,14 +144,12 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
 
                 // How much longer can we wait?
                 long remaining = deadline - System.nanoTime();
-                if (remaining > 0)
-                {
+                if (remaining > 0) {
                     // Wait up to that much and then try again
                     long ms = remaining / ElapsedTime.MILLIS_IN_NANO;
                     long ns = remaining - ms * ElapsedTime.MILLIS_IN_NANO;
-                    theLock.wait(ms, (int)ns);
-                }
-                else
+                    theLock.wait(ms, (int) ns);
+                } else
                     return null;
             }
         }
@@ -172,48 +159,45 @@ public class EvictingBlockingQueue<E> extends AbstractQueue<E> implements Blocki
     // Remaining parts
     //----------------------------------------------------------------------------------------------
 
-    @Override public E poll()
-    {
-        synchronized (theLock)
-        {
+    @Override
+    public E poll() {
+        synchronized (theLock) {
             return targetQueue.poll();
         }
     }
 
-    @Override public E peek()
-    {
+    @Override
+    public E peek() {
         return targetQueue.peek();
     }
 
-    @Override public void put(E e) throws InterruptedException
-    {
+    @Override
+    public void put(E e) throws InterruptedException {
         offer(e);
     }
 
-    @Override public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException
-    {
+    @Override
+    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
         // We will never block because we're full, so the timeouts are unnecessary
         return offer(e);
     }
 
-    @Override public int remainingCapacity()
-    {
+    @Override
+    public int remainingCapacity() {
         // We *always* have capacity
         return Math.max(targetQueue.remainingCapacity(), 1);
     }
 
-    @Override public int drainTo(Collection<? super E> c)
-    {
-        synchronized (theLock)
-        {
+    @Override
+    public int drainTo(Collection<? super E> c) {
+        synchronized (theLock) {
             return targetQueue.drainTo(c);
         }
     }
 
-    @Override public int drainTo(Collection<? super E> c, int maxElements)
-    {
-        synchronized (theLock)
-        {
+    @Override
+    public int drainTo(Collection<? super E> c, int maxElements) {
+        synchronized (theLock) {
             return targetQueue.drainTo(c, maxElements);
         }
     }

@@ -7,15 +7,11 @@ import java.awt.*;
 
 public class FileAlreadyExists {
 
+    public static volatile boolean alreadyOpened = false;
     public volatile JDialog fileAlreadyExists = null;
     public volatile JPanel contentsPanel = new JPanel();
-
-    public static volatile boolean alreadyOpened = false;
-    EOCVSim eocvSim = null;
-
     public volatile UserChoice userChoice;
-
-    public enum UserChoice { NA, REPLACE, CANCEL }
+    EOCVSim eocvSim = null;
 
     public FileAlreadyExists(JFrame parent, EOCVSim eocvSim) {
 
@@ -67,10 +63,12 @@ public class FileAlreadyExists {
         fileAlreadyExists.setLocationRelativeTo(null);
         fileAlreadyExists.setVisible(true);
 
-        while(userChoice == UserChoice.NA);
+        while (userChoice == UserChoice.NA) ;
 
         return userChoice;
 
     }
+
+    public enum UserChoice {NA, REPLACE, CANCEL}
 
 }

@@ -1,4 +1,3 @@
-
 /* Copyright (c) 2014, 2015 Qualcomm Technologies Inc
 All rights reserved.
 Redistribution and use in source and binary forms, with or without modification,
@@ -38,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * or {@link #milliseconds()} methods. The timer has nanosecond internal accuracy. The precision
  * reported by the {@link #time()} method is either seconds or milliseconds, depending on how the
  * timer is initially constructed.
- *
+ * <p>
  * This class is thread-safe.
  */
 @SuppressWarnings("WeakerAccess")
@@ -49,34 +48,23 @@ public class ElapsedTime {
     //------------------------------------------------------------------------------------------------
 
     /**
-     * An indicator of the resolution of a timer.
-     * @see ElapsedTime#ElapsedTime(Resolution)
+     * the number of nanoseconds in a second
      */
-    public enum Resolution {
-        SECONDS,
-        MILLISECONDS
-    }
-
-    /** the number of nanoseconds in a second */
     public static final long SECOND_IN_NANO = 1000000000;
-
-    /** the number of nanoseconds in a millisecond */
+    /**
+     * the number of nanoseconds in a millisecond
+     */
     public static final long MILLIS_IN_NANO = 1000000;
+    protected final double resolution;
 
     //------------------------------------------------------------------------------------------------
     // State
     //------------------------------------------------------------------------------------------------
-
     protected volatile long nsStartTime;
-    protected final double resolution;
-
-    //------------------------------------------------------------------------------------------------
-    // Construction
-    //------------------------------------------------------------------------------------------------
-
     /**
      * Creates a timer with resolution {@link com.qualcomm.robotcore.util.ElapsedTime.Resolution#SECONDS Resolution.Seconds}
      * that is initialized with the now-current time.
+     *
      * @see #ElapsedTime(long)
      * @see #ElapsedTime(Resolution)
      */
@@ -84,6 +72,10 @@ public class ElapsedTime {
         reset();
         this.resolution = SECOND_IN_NANO;
     }
+
+    //------------------------------------------------------------------------------------------------
+    // Construction
+    //------------------------------------------------------------------------------------------------
 
     /**
      * Creates a timer with resolution {@link com.qualcomm.robotcore.util.ElapsedTime.Resolution#SECONDS Resolution.Seconds}.
@@ -102,6 +94,7 @@ public class ElapsedTime {
      * Creates a timer with a resolution of seconds or milliseconds. The resolution
      * affects the units in which the {@link #time()} method reports. The timer is initialized
      * with the current time.
+     *
      * @param resolution the resolution of the new timer
      * @see #ElapsedTime()
      */
@@ -118,18 +111,19 @@ public class ElapsedTime {
         }
     }
 
-    //------------------------------------------------------------------------------------------------
-    // Operations
-    //------------------------------------------------------------------------------------------------
-
     protected long nsNow() {
         return System.nanoTime();
     }
 
+    //------------------------------------------------------------------------------------------------
+    // Operations
+    //------------------------------------------------------------------------------------------------
+
     /**
      * Returns the current time on the clock used by the timer
-     * @param unit  the time unit in which the current time should be returned
-     * @return      the current time on the clock used by the timer
+     *
+     * @param unit the time unit in which the current time should be returned
+     * @return the current time on the clock used by the timer
      */
     public long now(TimeUnit unit) {
         return unit.convert(nsNow(), TimeUnit.NANOSECONDS);
@@ -138,6 +132,7 @@ public class ElapsedTime {
     /**
      * Resets the internal state of the timer to reflect the current time. Instantaneously following
      * this reset, {@link #time()} will report as zero.
+     *
      * @see #time()
      */
     public void reset() {
@@ -146,6 +141,7 @@ public class ElapsedTime {
 
     /**
      * Returns, in resolution-dependent units, the time at which this timer was last reset.
+     *
      * @return the reset time of the timer
      */
     public double startTime() {
@@ -154,6 +150,7 @@ public class ElapsedTime {
 
     /**
      * Returns the time at which the timer was last reset, in units of nanoseconds
+     *
      * @return the time at which the timer was last reset, in units of nanoseconds
      */
     public long startTimeNanoseconds() {
@@ -164,6 +161,7 @@ public class ElapsedTime {
      * Returns the duration that has elapsed since the last reset of this timer.
      * Units used are either seconds or milliseconds, depending on the resolution with
      * which the timer was instantiated.
+     *
      * @return time duration since last timer reset
      * @see #ElapsedTime()
      * @see #ElapsedTime(Resolution)
@@ -177,7 +175,8 @@ public class ElapsedTime {
     /**
      * Returns the duration that has elapsed since the last reset of this timer
      * as an integer in the units requested.
-     * @param unit  the units in which to return the answer
+     *
+     * @param unit the units in which to return the answer
      * @return time duration since last timer reset
      */
     public long time(TimeUnit unit) {
@@ -186,15 +185,17 @@ public class ElapsedTime {
 
     /**
      * Returns the duration that has elapsed since the last reset of this timer in seconds
+     *
      * @return time duration since last timer reset
      * @see #time()
      */
     public double seconds() {
-        return nanoseconds() / ((double)(SECOND_IN_NANO));
+        return nanoseconds() / ((double) (SECOND_IN_NANO));
     }
 
     /**
      * Returns the duration that has elapsed since the last reset of this timer in milliseconds
+     *
      * @return time duration since last timer reset
      * @see #time()
      */
@@ -204,6 +205,7 @@ public class ElapsedTime {
 
     /**
      * Returns the duration that has elapsed since the last reset of this timer in nanoseconds
+     *
      * @return time duration since last timer reset
      * @see #time()
      */
@@ -213,6 +215,7 @@ public class ElapsedTime {
 
     /**
      * Returns the resolution with which the timer was instantiated.
+     *
      * @return the resolution of the timer
      */
     public Resolution getResolution() {
@@ -221,10 +224,6 @@ public class ElapsedTime {
         else
             return Resolution.SECONDS;
     }
-
-    //------------------------------------------------------------------------------------------------
-    // Utility
-    //------------------------------------------------------------------------------------------------
 
     private String resolutionStr() {
         if (resolution == SECOND_IN_NANO) {
@@ -235,6 +234,10 @@ public class ElapsedTime {
             return "unknown units";
         }
     }
+
+    //------------------------------------------------------------------------------------------------
+    // Utility
+    //------------------------------------------------------------------------------------------------
 
     /**
      * Log a message stating how long the timer has been running
@@ -249,5 +252,15 @@ public class ElapsedTime {
     @Override
     public String toString() {
         return String.format("%1.4f %s", time(), resolutionStr());
+    }
+
+    /**
+     * An indicator of the resolution of a timer.
+     *
+     * @see ElapsedTime#ElapsedTime(Resolution)
+     */
+    public enum Resolution {
+        SECONDS,
+        MILLISECONDS
     }
 }
