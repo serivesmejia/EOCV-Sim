@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.github.serivesmejia.eocvsim.config.ConfigManager;
 import com.github.serivesmejia.eocvsim.tuner.TunerManager;
+import com.github.serivesmejia.eocvsim.util.FpsLimiter;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
@@ -27,6 +28,8 @@ public class EOCVSim {
 	public InputSourceManager inputSourceManager = new InputSourceManager(this);
 	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
 	public TunerManager tunerManager = new TunerManager(this);
+
+	public FpsLimiter fpsLimiter = new FpsLimiter(60);
 
 	public static String VERSION = "2.0.0";
 
@@ -83,10 +86,10 @@ public class EOCVSim {
 		Log.white();
 
 		inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
-		int count =0;
+
+		int count = 0;
+
 		while(!Thread.interrupted()) {
-
-
 
 			Telemetry telemetry = pipelineManager.currentTelemetry;
 
@@ -115,16 +118,6 @@ public class EOCVSim {
 					telemetry.errItem.setCaption("");
 					telemetry.errItem.setValue("");
 				}
-				try{
-					Thread.sleep(30);
-					count++;
-				}catch (Exception e){
-					e.printStackTrace();
-				}
-				if(count==100){
-					System.gc();
-					count=0;
-				}
 
 			} catch(Exception ex) {
 
@@ -140,6 +133,19 @@ public class EOCVSim {
 
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
+			if(count == 100) { //run garbage collector every 100 frames
+				System.gc();
+				count = 0;
+			} else {
+				count++;
+			}
+
+			try {
+				fpsLimiter.sync();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
 
 		}
 
@@ -150,8 +156,8 @@ public class EOCVSim {
 	public void destroy(DestroyReason reason) {
 
 		String hexCode = Integer.toHexString(this.hashCode());
-		Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
 
+		Log.warn("EOCVSim", "Destroying current EOCVSim (" + hexCode + ") due to " + reason.toString());
 		Log.info("EOCVSim", "Trying to save config file...");
 
 		configManager.saveToFile();

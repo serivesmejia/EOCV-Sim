@@ -16,13 +16,8 @@ public class ImageX extends JLabel {
 
     public synchronized void setImage(BufferedImage img) {
 
-        if (icon != null) {
+        if (icon != null)
             icon.getImage().flush(); //flush old image :p
-        } else {
-            icon = null;
-            setIcon(icon);
-            return;
-        }
 
         icon = new ImageIcon(img);
 
