@@ -17,7 +17,9 @@ public abstract class InputSource {
 	public void reset(){}
 	public void close(){}
 
-	public void onPause(){}
+	public void onPause(){
+		System.gc();
+	}
 	public void onResume(){}
 
 	public Mat update() { return null; }
