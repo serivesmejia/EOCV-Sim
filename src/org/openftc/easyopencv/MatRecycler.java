@@ -31,27 +31,22 @@ import java.util.concurrent.ArrayBlockingQueue;
  * of constantly allocating new Mats and then freeing
  * them after use.
  */
-public class MatRecycler
-{
-    private volatile RecyclableMat[] mats;
-    private volatile ArrayBlockingQueue<RecyclableMat> availableMats;
+public class MatRecycler {
+    private final RecyclableMat[] mats;
+    private final ArrayBlockingQueue<RecyclableMat> availableMats;
 
-    public MatRecycler(int num)
-    {
+    public MatRecycler(int num) {
         mats = new RecyclableMat[num];
         availableMats = new ArrayBlockingQueue<>(num);
 
-        for(int i = 0; i < mats.length; i++)
-        {
+        for (int i = 0; i < mats.length; i++) {
             mats[i] = new RecyclableMat(i);
             availableMats.add(mats[i]);
         }
     }
 
-    public synchronized RecyclableMat takeMat()
-    {
-        if(availableMats.size() == 0)
-        {
+    public synchronized RecyclableMat takeMat() {
+        if (availableMats.size() == 0) {
             throw new RuntimeException("All mats have been checked out!");
         }
 
@@ -67,32 +62,26 @@ public class MatRecycler
 
     }
 
-    public synchronized void returnMat(RecyclableMat mat)
-    {
-        if(mat != mats[mat.idx])
-        {
+    public synchronized void returnMat(RecyclableMat mat) {
+        if (mat != mats[mat.idx]) {
             throw new IllegalArgumentException("This mat does not belong to this recycler!");
         }
 
-        if(mat.checkedOut)
-        {
+        if (mat.checkedOut) {
             mat.checkedOut = false;
             availableMats.add(mat);
-        }
-        else
-        {
+        } else {
             throw new IllegalArgumentException("This mat has already been returned!");
         }
     }
 
     public void releaseAll() {
-        for(Mat mat : mats) {
+        for (Mat mat : mats) {
             mat.release();
         }
     }
 
-    public final class RecyclableMat extends Mat
-    {
+    public final class RecyclableMat extends Mat {
         private int idx = -1;
         private volatile boolean checkedOut = false;
 

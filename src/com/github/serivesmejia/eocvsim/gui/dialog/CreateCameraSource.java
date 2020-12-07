@@ -3,14 +3,12 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.CameraSource;
-import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,13 +23,10 @@ public class CreateCameraSource {
     public JTextField heightTextField = null;
 
     public JTextField nameTextField = null;
-
+    public boolean wasCancelled = false;
     private boolean validCameraIdNumber = true;
     private boolean validCameraSizeNumbers = true;
-
-    public boolean wasCancelled = false;
-
-    private EOCVSim eocvSim;
+    private final EOCVSim eocvSim;
 
     public CreateCameraSource(JFrame parent, EOCVSim eocvSim) {
 
@@ -60,7 +55,7 @@ public class CreateCameraSource {
         JLabel idLabel = new JLabel("Camera ID: ");
         idLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        cameraIdField = new JTextField("0",4);
+        cameraIdField = new JTextField("0", 4);
 
         idPanel.add(idLabel);
         idPanel.add(cameraIdField);
@@ -73,7 +68,7 @@ public class CreateCameraSource {
 
         JLabel nameLabel = new JLabel("Source name: ");
 
-        nameTextField = new JTextField("CameraSource-" + (eocvSim.inputSourceManager.sources.size() + 1),15);
+        nameTextField = new JTextField("CameraSource-" + (eocvSim.inputSourceManager.sources.size() + 1), 15);
 
         namePanel.add(nameLabel);
         namePanel.add(nameTextField);
@@ -87,7 +82,7 @@ public class CreateCameraSource {
         JLabel sizeLabel = new JLabel("Size: ");
         sizeLabel.setHorizontalAlignment(JLabel.LEFT);
 
-        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH),4);
+        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH), 4);
 
         sizePanel.add(sizeLabel);
         sizePanel.add(widthTextField);
@@ -143,15 +138,24 @@ public class CreateCameraSource {
         GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, EOCVSim.DEFAULT_EOCV_HEIGHT);
 
         DocumentListener validSizeNumberListener = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { changed(e); }
-            public void removeUpdate(DocumentEvent e) { changed(e); }
-            public void insertUpdate(DocumentEvent e) { changed(e); }
+            public void changedUpdate(DocumentEvent e) {
+                changed(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                changed(e);
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                changed(e);
+            }
+
             public void changed(DocumentEvent e) {
                 try {
                     Integer.parseInt(widthTextField.getText());
                     Integer.parseInt(heightTextField.getText());
                     validCameraSizeNumbers = true;
-                } catch(Throwable ex) {
+                } catch (Throwable ex) {
                     validCameraSizeNumbers = false;
                 }
                 updateCreateBtt();
@@ -174,9 +178,9 @@ public class CreateCameraSource {
                 createButton.setEnabled(false);
 
                 eocvSim.runOnMainThread(() -> {
-                    if(testCamera(camId)) {
+                    if (testCamera(camId)) {
                         close();
-                        if(wasCancelled) return;
+                        if (wasCancelled) return;
                         createSource(nameTextField.getText(), camId, new Size(width, height));
                         eocvSim.visualizer.updateSourcesList();
                     } else {
@@ -190,14 +194,23 @@ public class CreateCameraSource {
         });
 
         cameraIdField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { changed(); }
-            public void removeUpdate(DocumentEvent e) { changed(); }
-            public void insertUpdate(DocumentEvent e) { changed(); }
+            public void changedUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                changed();
+            }
+
             public void changed() {
                 try {
                     Integer.parseInt(cameraIdField.getText());
                     validCameraIdNumber = true;
-                } catch(Throwable ex) {
+                } catch (Throwable ex) {
                     validCameraIdNumber = false;
                 }
                 updateCreateBtt();
@@ -205,9 +218,18 @@ public class CreateCameraSource {
         });
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) { changed(); }
-            public void removeUpdate(DocumentEvent e) { changed(); }
-            public void insertUpdate(DocumentEvent e) { changed(); }
+            public void changedUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                changed();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                changed();
+            }
+
             public void changed() {
                 updateCreateBtt();
             }
@@ -252,8 +274,8 @@ public class CreateCameraSource {
 
     public void updateCreateBtt() {
         createButton.setEnabled(!nameTextField.getText().trim().equals("")
-                                && validCameraIdNumber
-                                && validCameraSizeNumbers);
+                && validCameraIdNumber
+                && validCameraSizeNumbers);
     }
 
 }

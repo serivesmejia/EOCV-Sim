@@ -30,7 +30,7 @@ public class BooleanField extends TunableField<Boolean> {
 
         hasChanged = value != lastVal;
 
-        if(hasChanged) { //update values in GUI if they changed since last check
+        if (hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
@@ -56,7 +56,9 @@ public class BooleanField extends TunableField<Boolean> {
     }
 
     @Override
-    public Boolean getValue() { return value; }
+    public Boolean getValue() {
+        return value;
+    }
 
     @Override
     public Object getGuiFieldValue(int index) {
@@ -65,7 +67,7 @@ public class BooleanField extends TunableField<Boolean> {
 
     @Override
     public Object[] getGuiComboBoxValues(int index) {
-        return new Boolean[] { value, !value };
+        return new Boolean[]{value, !value};
     }
 
     @Override

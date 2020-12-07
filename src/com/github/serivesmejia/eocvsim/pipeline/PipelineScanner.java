@@ -39,10 +39,11 @@ public class PipelineScanner {
 
             while (superClass != null) {
 
-                if(superClass == OpenCvPipeline.class){ //Yay we found a pipeline
+                if (superClass == OpenCvPipeline.class) { //Yay we found a pipeline
 
                     Log.info("PipelineScanner", "Found pipeline " + routeClassInfo.getName());
-                    if(lookForPipelineAPWD != null) lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName());
+                    if (lookForPipelineAPWD != null)
+                        lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName());
 
                     pipelineManager.addPipelineClass(foundClass);
                     break;

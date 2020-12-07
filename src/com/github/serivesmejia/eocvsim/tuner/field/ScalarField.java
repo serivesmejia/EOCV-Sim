@@ -35,7 +35,7 @@ public class ScalarField extends TunableField<Scalar> {
 
         hasChanged = !Arrays.equals(scalar.val, lastVal);
 
-        if(hasChanged) { //update values in GUI if they changed since last check
+        if (hasChanged) { //update values in GUI if they changed since last check
             updateGuiFieldValues();
         }
 
@@ -45,7 +45,7 @@ public class ScalarField extends TunableField<Scalar> {
 
     @Override
     public void updateGuiFieldValues() {
-        for(int i = 0 ; i < scalar.val.length ; i++) {
+        for (int i = 0; i < scalar.val.length; i++) {
             fieldPanel.setFieldValue(i, scalar.val[i]);
         }
     }
@@ -53,15 +53,15 @@ public class ScalarField extends TunableField<Scalar> {
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
 
-       try {
-           scalar.val[index] = Double.parseDouble(newValue);
-       } catch(NumberFormatException ex) {
-                throw new IllegalArgumentException("Parameter should be a valid numeric String");
-       }
+        try {
+            scalar.val[index] = Double.parseDouble(newValue);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Parameter should be a valid numeric String");
+        }
 
-       setPipelineFieldValue(scalar);
+        setPipelineFieldValue(scalar);
 
-       lastVal = scalar.val.clone();
+        lastVal = scalar.val.clone();
 
     }
 

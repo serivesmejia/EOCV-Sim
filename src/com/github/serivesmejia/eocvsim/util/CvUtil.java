@@ -1,13 +1,5 @@
 package com.github.serivesmejia.eocvsim.util;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Size;
@@ -15,83 +7,87 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 public class CvUtil {
 
-	 public static BufferedImage matToBufferedImage(Mat m) {
+    public static BufferedImage matToBufferedImage(Mat m) {
 
-		 // Fastest code
-		 // output can be assigned either to a BufferedImage or to an Image
-		 int type = BufferedImage.TYPE_BYTE_GRAY;
-		 if ( m.channels() > 1 ) {
-			 type = BufferedImage.TYPE_3BYTE_BGR;
-		 }
-		 
-		 // Create an empty image in matching format
-		 BufferedImage buffImg = new BufferedImage(m.width(), m.height(), type);
+        // Fastest code
+        // output can be assigned either to a BufferedImage or to an Image
+        int type = BufferedImage.TYPE_BYTE_GRAY;
+        if (m.channels() > 1) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
+        }
 
-		 // Get the BufferedImage's backing array and copy the pixels directly into it
-		 byte[] data = ((DataBufferByte) buffImg.getRaster().getDataBuffer()).getData();
-		 m.get(0, 0, data);
-		 
-		 return buffImg;
-		 
-	}
+        // Create an empty image in matching format
+        BufferedImage buffImg = new BufferedImage(m.width(), m.height(), type);
 
-	public static BufferedImage Mat2BufferedImage(Mat mat) throws IOException {
+        // Get the BufferedImage's backing array and copy the pixels directly into it
+        byte[] data = ((DataBufferByte) buffImg.getRaster().getDataBuffer()).getData();
+        m.get(0, 0, data);
 
-	 	Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
+        return buffImg;
 
-	 	MatOfByte mob = new MatOfByte();
-		Imgcodecs.imencode(".jpg", mat, mob);
+    }
 
-		BufferedImage bi = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
+    public static BufferedImage Mat2BufferedImage(Mat mat) throws IOException {
 
-		mob.release();
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
 
-		return bi;
+        MatOfByte mob = new MatOfByte();
+        Imgcodecs.imencode(".jpg", mat, mob);
 
-	}
+        BufferedImage bi = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
 
-	public static boolean checkImageValid(String imagePath) {
+        mob.release();
 
-		try {
+        return bi;
 
-			//test if image is valid
-			Mat img = Imgcodecs.imread(imagePath);
+    }
 
-			if(img != null && !img.empty()) { //image is valid
-				img.release();
-				return true;
-			} else { //image is not valid
-				return false;
-			}
+    public static boolean checkImageValid(String imagePath) {
 
-		} catch(Throwable ex) {
-			return false;
-		}
+        try {
 
-	}
+            //test if image is valid
+            Mat img = Imgcodecs.imread(imagePath);
 
-	public static Size getImageSize(String imagePath) {
+            if (img != null && !img.empty()) { //image is valid
+                img.release();
+                return true;
+            } else { //image is not valid
+                return false;
+            }
 
-		try {
+        } catch (Throwable ex) {
+            return false;
+        }
 
-			//test if image is valid
-			Mat img = Imgcodecs.imread(imagePath);
+    }
 
-			if(img != null && !img.empty()) { //image is valid
-				Size size = img.size();
-				img.release();
-				return size;
-			} else { //image is not valid
-				return new Size(0, 0);
-			}
+    public static Size getImageSize(String imagePath) {
 
-		} catch(Throwable ex) {
-			return new Size(0, 0);
-		}
+        try {
 
-	}
-	
+            //test if image is valid
+            Mat img = Imgcodecs.imread(imagePath);
+
+            if (img != null && !img.empty()) { //image is valid
+                Size size = img.size();
+                img.release();
+                return size;
+            } else { //image is not valid
+                return new Size(0, 0);
+            }
+
+        } catch (Throwable ex) {
+            return new Size(0, 0);
+        }
+
+    }
+
 }

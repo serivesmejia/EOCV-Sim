@@ -19,7 +19,7 @@ public class NumericField extends TunableField<Number> {
     @Override
     public void update() {
 
-        if(value == null) return;
+        if (value == null) return;
 
         try {
             value = (Number) reflectionField.get(pipeline);
@@ -29,7 +29,7 @@ public class NumericField extends TunableField<Number> {
 
         hasChanged = hasChanged();
 
-        if(hasChanged) {
+        if (hasChanged) {
             updateGuiFieldValues();
         }
 
@@ -41,7 +41,8 @@ public class NumericField extends TunableField<Number> {
     }
 
     @Override
-    public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException { }
+    public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
+    }
 
     @Override
     public Number getValue() {

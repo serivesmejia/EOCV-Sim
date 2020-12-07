@@ -1,6 +1,5 @@
 package com.github.serivesmejia.eocvsim.config;
 
-import com.github.serivesmejia.eocvsim.input.InputSourceLoader;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 import com.google.gson.Gson;
@@ -11,21 +10,20 @@ import java.io.FileNotFoundException;
 
 public class ConfigLoader {
 
-    static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
     public static String CONFIG_SAVEFILE_NAME = "eocvsim_config.json";
     public static File CONFIG_SAVEFILE = new File(SysUtil.getAppData() + File.separator + CONFIG_SAVEFILE_NAME);
+    static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public Config loadFromFile(File file) throws FileNotFoundException {
 
-        if(!file.exists()) throw new FileNotFoundException();
+        if (!file.exists()) throw new FileNotFoundException();
 
         String jsonConfig = SysUtil.loadFileStr(file);
-        if(jsonConfig.trim().equals("")) return null;
+        if (jsonConfig.trim().equals("")) return null;
 
         try {
             return gson.fromJson(jsonConfig, Config.class);
-        } catch(Throwable ex) {
+        } catch (Throwable ex) {
             Log.info("ConfigLoader", "Gson exception while parsing config file", ex);
             return null;
         }

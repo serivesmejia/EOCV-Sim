@@ -20,7 +20,7 @@ public class FloatField extends NumericField {
 
         try {
             value = Float.parseFloat(newValue);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
 

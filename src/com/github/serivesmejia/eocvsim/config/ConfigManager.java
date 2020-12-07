@@ -2,8 +2,6 @@ package com.github.serivesmejia.eocvsim.config;
 
 import com.github.serivesmejia.eocvsim.util.Log;
 
-import java.io.FileNotFoundException;
-
 public class ConfigManager {
 
     public final ConfigLoader configLoader = new ConfigLoader();
@@ -15,7 +13,7 @@ public class ConfigManager {
 
         try {
             config = configLoader.loadFromFile();
-            if(config == null) {
+            if (config == null) {
                 Log.error("ConfigManager", "Error while parsing config file, it will be replaced and fixed, but the user configurations will be reset");
                 throw new NullPointerException(); //for it to be caught later and handle the creation of a new config
             } else {

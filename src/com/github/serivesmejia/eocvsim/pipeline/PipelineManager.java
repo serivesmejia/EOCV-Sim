@@ -1,263 +1,254 @@
 package com.github.serivesmejia.eocvsim.pipeline;
 
-import java.awt.*;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-
+import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
+import com.github.serivesmejia.eocvsim.util.Log;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
-import com.github.serivesmejia.eocvsim.util.Log;
+import java.awt.*;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 
 public class PipelineManager {
 
-	public volatile ArrayList<Class<? extends OpenCvPipeline>> pipelines = new ArrayList<>();
-	
-	public OpenCvPipeline currentPipeline = null;
-	public String currentPipelineName = "";
-	public int currentPipelineIndex = -1;
+    private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
+    private final ArrayList<Runnable> runnsOnChange = new ArrayList<>();
+    private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
+    private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
+    public volatile ArrayList<Class<? extends OpenCvPipeline>> pipelines = new ArrayList<>();
+    public OpenCvPipeline currentPipeline = null;
+    public String currentPipelineName = "";
+    public int currentPipelineIndex = -1;
+    public Telemetry currentTelemetry = null;
+    public volatile Mat lastOutputMat = new Mat();
+    public EOCVSim eocvSim;
+    private int lastFPS = 0;
+    private int fpsCount = 0;
+    private final ElapsedTime fpsElapsedTime = new ElapsedTime();
+    private volatile boolean isPaused = false;
+    private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
 
-	public Telemetry currentTelemetry = null;
+    public PipelineManager(EOCVSim eocvSim) {
+        this.eocvSim = eocvSim;
+    }
 
-	public volatile Mat lastOutputMat = new Mat();
+    public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
 
-	private int lastFPS = 0;
-	private int fpsCount = 0;
+        Log.info("PipelineManager", "Initializing...");
 
-	private ElapsedTime fpsElapsedTime = new ElapsedTime();
+        //add default pipeline
+        addPipelineClass(DefaultPipeline.class);
 
-	private volatile boolean isPaused = false;
-	private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
+        //scan for pipelines
+        new PipelineScanner(this).lookForPipelines(lookForPipelineAPWD);
 
-	private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
-	private final ArrayList<Runnable> runnsOnChange = new ArrayList<>();
-	private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
-	private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
+        Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
+        Log.white();
 
-	public EOCVSim eocvSim;
+        requestChangePipeline(0); //change to the default pipeline
 
-	public enum PauseReason { USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED }
+    }
 
-	public PipelineManager(EOCVSim eocvSim) {
-		this.eocvSim = eocvSim;
-	}
+    public void addPipelineClass(Class<?> C) {
+        try {
+            pipelines.add((Class<OpenCvPipeline>) C);
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            Log.error("PipelineManager", "Unable to cast " + C.getName() + " to OpenCvPipeline class.");
+            Log.error("PipelineManager", "Remember that the pipeline class should extend OpenCvPipeline");
+        }
+    }
 
-	public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
-		
-		Log.info("PipelineManager", "Initializing...");
+    public void update(Mat inputMat) {
 
-		//add default pipeline
-		addPipelineClass(DefaultPipeline.class);
+        //run all pending requested runnables
+        for (Runnable runn : runnsOnUpdate.toArray(new Runnable[0])) {
+            runn.run();
+            runnsOnUpdate.remove(runn);
+        }
 
-		//scan for pipelines
-		new PipelineScanner(this).lookForPipelines(lookForPipelineAPWD);
+        if (isPaused) {
+            if (lastOutputMat == null || lastOutputMat.empty())
+                lastOutputMat = inputMat;
+            return;
+        }
 
-		Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
-		Log.white();
+        if (currentPipeline != null) {
+            lastOutputMat = currentPipeline.processFrame(inputMat);
+        } else {
+            lastOutputMat = inputMat;
+        }
 
-		requestChangePipeline(0); //change to the default pipeline
+        calcFPS();
 
-	}
-	
-	public void addPipelineClass(Class<?> C) {
-		try {
-			pipelines.add((Class<OpenCvPipeline>) C);
-		} catch (Throwable ex) {
-			ex.printStackTrace();
-			Log.error("PipelineManager", "Unable to cast " + C.getName() + " to OpenCvPipeline class.");
-			Log.error("PipelineManager", "Remember that the pipeline class should extend OpenCvPipeline");
-		}
-	}
-	
-	public void update(Mat inputMat) {
+    }
 
-		//run all pending requested runnables
-		for(Runnable runn : runnsOnUpdate.toArray(new Runnable[0])) {
-			runn.run();
-			runnsOnUpdate.remove(runn);
-		}
+    private void calcFPS() {
+        fpsCount++;
+        //update and reset the fps count if a second has passed since the last update
+        if (fpsElapsedTime.seconds() >= 1) {
+            lastFPS = fpsCount;
+            fpsCount = 0;
+            fpsElapsedTime.reset();
+        }
+    }
 
-		if(isPaused) {
-			if(lastOutputMat == null || lastOutputMat.empty())
-				lastOutputMat = inputMat;
-			return;
-		}
+    public void changePipeline(int index) {
 
-		if(currentPipeline != null) {
-			lastOutputMat = currentPipeline.processFrame(inputMat);
-		} else {
-			lastOutputMat = inputMat;
-		}
+        if (index == currentPipelineIndex) return;
 
-		calcFPS();
+        OpenCvPipeline nextPipeline = null;
+        Telemetry nextTelemetry;
 
-	}
-	
-	private void calcFPS() {
-		fpsCount++;
-		//update and reset the fps count if a second has passed since the last update
-		if(fpsElapsedTime.seconds() >= 1) {
-			lastFPS = fpsCount;
-			fpsCount = 0;
-			fpsElapsedTime.reset();
-		}
-	}
-	
-	public void changePipeline(int index) {
+        Class<? extends OpenCvPipeline> pipelineClass = pipelines.get(index);
 
-		if(index == currentPipelineIndex) return;
+        Log.info("PipelineManager", "Changing to pipeline " + pipelineClass.getName());
 
-		OpenCvPipeline nextPipeline = null;
-		Telemetry nextTelemetry;
-		
-		Class<? extends OpenCvPipeline> pipelineClass = pipelines.get(index);
-	
-		Log.info("PipelineManager", "Changing to pipeline " + pipelineClass.getName());
-		
-		Constructor<?> constructor;
-		try {
+        Constructor<?> constructor;
+        try {
 
-			constructor = pipelineClass.getConstructor();
-			nextPipeline = (OpenCvPipeline) constructor.newInstance();
+            constructor = pipelineClass.getConstructor();
+            nextPipeline = (OpenCvPipeline) constructor.newInstance();
 
-			nextTelemetry = new Telemetry();
-			nextPipeline.telemetry = nextTelemetry;
+            nextTelemetry = new Telemetry();
+            nextPipeline.telemetry = nextTelemetry;
 
-			Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
+            Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
 
-			nextPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
+            nextPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
 
-		} catch(Throwable ex) {
+        } catch (Throwable ex) {
 
-			eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
-													 "Close", new Dimension(300, 150), true, true);
+            eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
+                    "Close", new Dimension(300, 150), true, true);
 
-			Log.error("InputSourceManager", "Error while initializing requested pipeline ("+ pipelineClass.getSimpleName() + ")", ex);
-			Log.white();
+            Log.error("InputSourceManager", "Error while initializing requested pipeline (" + pipelineClass.getSimpleName() + ")", ex);
+            Log.white();
 
-			eocvSim.visualizer.pipelineSelector.setSelectedIndex(currentPipelineIndex);
+            eocvSim.visualizer.pipelineSelector.setSelectedIndex(currentPipelineIndex);
 
-			return;
+            return;
 
-		}
+        }
 
-		Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.getName());
-		Log.white();
+        Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.getName());
+        Log.white();
 
-		currentPipeline = nextPipeline;
-		currentTelemetry = nextTelemetry;
+        currentPipeline = nextPipeline;
+        currentTelemetry = nextTelemetry;
 
-		currentPipelineIndex = index;
-		currentPipelineName = currentPipeline.getClass().getSimpleName();
+        currentPipelineIndex = index;
+        currentPipelineName = currentPipeline.getClass().getSimpleName();
 
-		//if pause on images option is turned on by user
-		if(eocvSim.configManager.getConfig().pauseOnImages)
-			eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
+        //if pause on images option is turned on by user
+        if (eocvSim.configManager.getConfig().pauseOnImages)
+            eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
 
-		for(Runnable runn : runnsOnChange.toArray(new Runnable[0])) {
-			runn.run();
-		}
+        for (Runnable runn : runnsOnChange.toArray(new Runnable[0])) {
+            runn.run();
+        }
 
-	}
+    }
 
-	public int getFPS() {
-		return lastFPS;
-	}
+    public int getFPS() {
+        return lastFPS;
+    }
 
-	public void requestChangePipeline(int index) {
-		runOnUpdate(() -> changePipeline(index));
-	}
+    public void requestChangePipeline(int index) {
+        runOnUpdate(() -> changePipeline(index));
+    }
 
-	public void runThenPause() {
+    public void runThenPause() {
 
-		setPaused(false);
+        setPaused(false);
 
-		eocvSim.runOnMainThread(() -> setPaused(true));
+        eocvSim.runOnMainThread(() -> setPaused(true));
 
-	}
+    }
 
-	public void runOnChange(Runnable runn) {
-		runnsOnChange.add(runn);
-	}
+    public void runOnChange(Runnable runn) {
+        runnsOnChange.add(runn);
+    }
 
-	public void runOnPause(Runnable runn) {
-		runnsOnPause.add(runn);
-	}
+    public void runOnPause(Runnable runn) {
+        runnsOnPause.add(runn);
+    }
 
-	public void runOnResume(Runnable runn) {
-		runnsOnResume.add(runn);
-	}
+    public void runOnResume(Runnable runn) {
+        runnsOnResume.add(runn);
+    }
 
-	public void runOnUpdate(Runnable runn) {
-		runnsOnUpdate.add(runn);
-	}
+    public void runOnUpdate(Runnable runn) {
+        runnsOnUpdate.add(runn);
+    }
 
-	public void setPaused(boolean paused) {
-		setPaused(paused, PauseReason.USER_REQUESTED);
-	}
+    public void setPaused(boolean paused, PauseReason pauseReason) {
 
-	public void setPaused(boolean paused, PauseReason pauseReason) {
+        isPaused = paused;
 
-		isPaused = paused;
+        if (isPaused) {
+            lastPauseReason = pauseReason;
+        } else {
+            lastPauseReason = PauseReason.NOT_PAUSED;
+        }
 
-		if(isPaused) {
-			lastPauseReason = pauseReason;
-		} else {
-			lastPauseReason = PauseReason.NOT_PAUSED;
-		}
+        eocvSim.visualizer.pipelinePauseBtt.setSelected(isPaused);
+        executeRunnsOnPauseOrResume();
 
-		eocvSim.visualizer.pipelinePauseBtt.setSelected(isPaused);
-		executeRunnsOnPauseOrResume();
+    }
 
-	}
+    public void togglePause() {
+        setPaused(!isPaused);
+        executeRunnsOnPauseOrResume();
+    }
 
-	public void togglePause() {
-		setPaused(!isPaused);
-		executeRunnsOnPauseOrResume();
-	}
+    public void requestSetPaused(boolean paused, PauseReason pauseReason) {
+        eocvSim.runOnMainThread(() -> setPaused(paused, pauseReason));
+    }
 
-	public void requestSetPaused(boolean paused, PauseReason pauseReason) {
-		eocvSim.runOnMainThread(() -> setPaused(paused, pauseReason));
-	}
+    public void requestSetPaused(boolean paused) {
+        requestSetPaused(paused, PauseReason.USER_REQUESTED);
+    }
 
-	public void requestSetPaused(boolean paused) {
-		requestSetPaused(paused, PauseReason.USER_REQUESTED);
-	}
+    public boolean isPaused() {
+        if (!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
+        return isPaused;
+    }
 
-	public boolean isPaused() {
-		if(!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
-		return isPaused;
-	}
+    public void setPaused(boolean paused) {
+        setPaused(paused, PauseReason.USER_REQUESTED);
+    }
 
-	public PauseReason getPauseReason() {
-		if(!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
-		return lastPauseReason;
-	}
+    public PauseReason getPauseReason() {
+        if (!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
+        return lastPauseReason;
+    }
 
-	private void executeRunnsOnPauseOrResume() {
-		if(isPaused) {
-			executeRunnsOnPause();
-		} else {
-			executeRunnsOnResume();
-		}
-	}
+    private void executeRunnsOnPauseOrResume() {
+        if (isPaused) {
+            executeRunnsOnPause();
+        } else {
+            executeRunnsOnResume();
+        }
+    }
 
-	private void executeRunnsOnPause() {
-		//run all pending requested runnables
-		for(Runnable runn : runnsOnPause.toArray(new Runnable[0])) {
-			runn.run();
-		}
-	}
+    private void executeRunnsOnPause() {
+        //run all pending requested runnables
+        for (Runnable runn : runnsOnPause.toArray(new Runnable[0])) {
+            runn.run();
+        }
+    }
 
-	private void executeRunnsOnResume() {
-		//run all pending requested runnables
-		for(Runnable runn : runnsOnResume.toArray(new Runnable[0])) {
-			runn.run();
-		}
-	}
+    private void executeRunnsOnResume() {
+        //run all pending requested runnables
+        for (Runnable runn : runnsOnResume.toArray(new Runnable[0])) {
+            runn.run();
+        }
+    }
+
+    public enum PauseReason {USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED}
 
 }

@@ -2,13 +2,12 @@ package com.github.serivesmejia.eocvsim.gui.util;
 
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import javax.swing.*;
-
-import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.*;
+import static com.github.serivesmejia.eocvsim.gui.util.GuiUtil.scaleImage;
 
 public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
@@ -19,7 +18,7 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
     public SourcesListIconRenderer(InputSourceManager sourceManager, boolean isDarkTheme) throws IOException {
 
-        if(isDarkTheme) {
+        if (isDarkTheme) {
 
             BufferedImage ICON_IMG_BI = GuiUtil.loadBufferedImage("/resources/images/icon/ico_img.png");
             BufferedImage ICON_WEBCAM_BI = GuiUtil.loadBufferedImage("/resources/images/icon/ico_cam.png");
@@ -49,9 +48,9 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
         // Get the renderer component from parent class
         JLabel label = (JLabel) super.getListCellRendererComponent(list,
-                        value, index, isSelected, cellHasFocus);
+                value, index, isSelected, cellHasFocus);
 
-        switch(sourceManager.getSourceType((String)value)) {
+        switch (sourceManager.getSourceType((String) value)) {
             case IMAGE:
                 label.setIcon(ICON_IMG);
                 break;

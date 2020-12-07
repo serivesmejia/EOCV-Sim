@@ -13,7 +13,7 @@ public class BufferedImageHolder {
         allHolders = new BufferedImageHold[holderAmount];
         availableHolders = new ArrayBlockingQueue<>(holderAmount);
 
-        for(int i = 0; i < allHolders.length; i++) {
+        for (int i = 0; i < allHolders.length; i++) {
             allHolders[i] = new BufferedImageHold(i);
             availableHolders.add(allHolders[i]);
         }
@@ -22,7 +22,7 @@ public class BufferedImageHolder {
 
     public BufferedImageHold hold(BufferedImage img) {
 
-        if(!hasSpace()) {
+        if (!hasSpace()) {
             throw new RuntimeException("No more space for holding new BufferedImage!");
         }
 
@@ -33,7 +33,7 @@ public class BufferedImageHolder {
             Thread.currentThread().interrupt();
         }
 
-        if(holder != null) {
+        if (holder != null) {
             holder.image = img;
         }
 
@@ -43,11 +43,11 @@ public class BufferedImageHolder {
 
     public synchronized void returnHold(BufferedImageHold holder) {
 
-        if(holder != allHolders[holder.idx]) {
+        if (holder != allHolders[holder.idx]) {
             throw new IllegalArgumentException("This holder does not belong here!");
         }
 
-        if(holder.isCheckedOut) {
+        if (holder.isCheckedOut) {
             holder.isCheckedOut = false;
             holder.flush();
             holder.image = null; //remove reference to image (pls gc free this memory)
@@ -55,7 +55,7 @@ public class BufferedImageHolder {
         } else {
             try {
                 throw new IllegalArgumentException("This holder was already returned!");
-            } catch(IllegalArgumentException ex) {
+            } catch (IllegalArgumentException ex) {
                 Log.error("BufferedImageHolder", ex);
             }
         }
@@ -63,7 +63,7 @@ public class BufferedImageHolder {
     }
 
     public synchronized void flushAll() {
-        for(BufferedImageHold holder : allHolders) {
+        for (BufferedImageHold holder : allHolders) {
             holder.flush();
         }
     }
@@ -74,13 +74,12 @@ public class BufferedImageHolder {
 
     public static class BufferedImageHold {
 
+        protected final int idx;
         protected volatile BufferedImage image;
         protected volatile boolean isCheckedOut = false;
 
-        protected final int idx;
-
         protected BufferedImageHold(int idx) {
-           this.idx = idx;
+            this.idx = idx;
         }
 
         public BufferedImage getBufferedImage() {
@@ -88,7 +87,7 @@ public class BufferedImageHolder {
         }
 
         public void flush() {
-            if(image != null) image.flush();
+            if (image != null) image.flush();
         }
 
         public boolean isReturned() {

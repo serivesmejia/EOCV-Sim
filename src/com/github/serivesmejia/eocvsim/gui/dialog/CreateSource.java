@@ -2,23 +2,17 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager.SourceType;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Objects;
 
 public class CreateSource {
 
-    public volatile JDialog chooseSource = null;
-
-    private volatile JFrame parent = null;
-
     public static volatile boolean alreadyOpened = false;
+    public volatile JDialog chooseSource = null;
     EOCVSim eocvSim = null;
+    private volatile JFrame parent = null;
 
     public CreateSource(JFrame parent, EOCVSim eocvSim) {
 
@@ -46,9 +40,9 @@ public class CreateSource {
         JPanel dropDownPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         SourceType[] sourceTypes = SourceType.values();
-        String[] sourceTypesStr = new String[sourceTypes.length-1];
+        String[] sourceTypesStr = new String[sourceTypes.length - 1];
 
-        for(int i = 0 ; i < sourceTypes.length-1 ; i++) {
+        for (int i = 0; i < sourceTypes.length - 1; i++) {
             sourceTypesStr[i] = sourceTypes[i].toString();
         }
 
@@ -80,7 +74,7 @@ public class CreateSource {
         chooseSource.setResizable(false);
         chooseSource.setLocationRelativeTo(null);
         chooseSource.setVisible(true);
-        
+
     }
 
     public void close() {

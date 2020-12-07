@@ -15,7 +15,7 @@ public class TunableFieldPanel extends JPanel {
 
     private boolean isOnlyNumbers = false;
 
-    private EOCVSim eocvSim;
+    private final EOCVSim eocvSim;
 
     public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
 
@@ -44,7 +44,7 @@ public class TunableFieldPanel extends JPanel {
 
         fields = new JTextField[tunableField.getGuiFieldAmount()];
 
-        for(int i = 0 ; i < fields.length ; i++) {
+        for (int i = 0; i < fields.length; i++) {
 
             TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
 
@@ -57,7 +57,7 @@ public class TunableFieldPanel extends JPanel {
 
         comboBoxes = new JComboBox[tunableField.getGuiComboBoxAmount()];
 
-        for(int i = 0 ; i < comboBoxes.length ; i++) {
+        for (int i = 0; i < comboBoxes.length; i++) {
 
             TunableComboBox comboBox = new TunableComboBox(i, tunableField, eocvSim);
             add(comboBox);

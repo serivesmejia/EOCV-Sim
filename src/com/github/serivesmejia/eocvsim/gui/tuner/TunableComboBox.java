@@ -10,7 +10,7 @@ public class TunableComboBox extends JComboBox<String> {
     private final TunableField tunableField;
     private final int index;
 
-    private EOCVSim eocvSim;
+    private final EOCVSim eocvSim;
 
     public TunableComboBox(int index, TunableField tunableField, EOCVSim eocvSim) {
 
@@ -26,7 +26,7 @@ public class TunableComboBox extends JComboBox<String> {
 
     private void init() {
 
-        for(Object obj : tunableField.getGuiComboBoxValues(index)) {
+        for (Object obj : tunableField.getGuiComboBoxValues(index)) {
             this.addItem(obj.toString());
         }
 
@@ -38,7 +38,7 @@ public class TunableComboBox extends JComboBox<String> {
                 ex.printStackTrace();
             }
 
-            if(eocvSim.pipelineManager.isPaused()) {
+            if (eocvSim.pipelineManager.isPaused()) {
                 eocvSim.pipelineManager.requestSetPaused(false);
             }
 
