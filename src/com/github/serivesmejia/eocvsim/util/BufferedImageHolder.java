@@ -5,8 +5,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class BufferedImageHolder {
 
-    private volatile BufferedImageHold[] allHolders;
-    private volatile ArrayBlockingQueue<BufferedImageHold> availableHolders;
+    private final BufferedImageHold[] allHolders;
+    private final ArrayBlockingQueue<BufferedImageHold> availableHolders;
 
     public BufferedImageHolder(int holderAmount) {
 
@@ -22,7 +22,7 @@ public class BufferedImageHolder {
 
     public BufferedImageHold hold(BufferedImage img) {
 
-        if(hasSpace()) {
+        if(!hasSpace()) {
             throw new RuntimeException("No more space for holding new BufferedImage!");
         }
 
@@ -49,12 +49,14 @@ public class BufferedImageHolder {
 
         if(holder.isCheckedOut) {
             holder.isCheckedOut = false;
+            holder.flush();
+            holder.image = null; //remove reference to image (pls gc free this memory)
             availableHolders.add(holder);
         } else {
             try {
                 throw new IllegalArgumentException("This holder was already returned!");
             } catch(IllegalArgumentException ex) {
-                Log.error("BufferedImageHolder", "Holder was already returned", ex);
+                Log.error("BufferedImageHolder", ex);
             }
         }
 
@@ -87,6 +89,10 @@ public class BufferedImageHolder {
 
         public void flush() {
             if(image != null) image.flush();
+        }
+
+        public boolean isReturned() {
+            return !isCheckedOut;
         }
 
     }

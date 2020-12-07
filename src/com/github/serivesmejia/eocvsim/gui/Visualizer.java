@@ -22,6 +22,7 @@ import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
+import com.github.serivesmejia.eocvsim.util.BufferedImageHolder;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -92,7 +93,6 @@ public class Visualizer {
 
     private volatile Mat lastScaledMat;
 	private volatile Mat lastPostedMat;
-    private volatile BufferedImage lastMatBufferedImage;
 
     public MatPoster matPoster;
 
@@ -421,10 +421,10 @@ public class Visualizer {
 
 		//listener for updating visualized image on post by MatPoster
 		matPoster.addPostable((mat) -> {
-			Log.info("Posted mat brrrrr");
             mat.copyTo(lastPostedMat);
             try {
                 this.visualizeScaleMat(lastPostedMat);
+				Log.info("Posted mat brrrrr");
             } catch(Throwable ex) {
                 Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
             }
@@ -596,18 +596,16 @@ public class Visualizer {
     //scale img
     private synchronized void visualizeScaleMat(Mat mat) {
 
-		if(scale < 0) scale = 0.2;
+		if(scale <= 0) scale = 0.2;
 		else if(scale > 2) scale = 2;
 
 		Size size = new Size(mat.width() * scale, mat.height() * scale);
 		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
 
-		lastMatBufferedImage = CvUtil.matToBufferedImage(lastScaledMat); //convert resized mat to buffered image
-
-		img.setImage(lastMatBufferedImage);
+		img.setImageMat(lastScaledMat);
 
 		Config config = eocvSim.configManager.getConfig();
-        if(config.storeZoom) config.zoom = scale; //store lastest scale if store setting turned on
+        if(config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
 
     }
 	
