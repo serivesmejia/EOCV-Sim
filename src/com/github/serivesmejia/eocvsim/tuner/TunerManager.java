@@ -2,8 +2,14 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.tuner.field.numeric.*;
-import com.github.serivesmejia.eocvsim.tuner.field.*;
+import com.github.serivesmejia.eocvsim.tuner.field.BooleanField;
+import com.github.serivesmejia.eocvsim.tuner.field.PointField;
+import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
+import com.github.serivesmejia.eocvsim.tuner.field.StringField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.DoubleField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.FloatField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.IntegerField;
+import com.github.serivesmejia.eocvsim.tuner.field.numeric.LongField;
 import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -28,12 +34,12 @@ public class TunerManager {
 
     public void init() {
 
-        if(firstInit) {
+        if (firstInit) {
             eocvSim.pipelineManager.runOnChange(this::reset);
             firstInit = false;
         }
 
-        if(eocvSim.pipelineManager.currentPipeline == null) return;
+        if (eocvSim.pipelineManager.currentPipeline == null) return;
 
         addFieldsFrom(eocvSim.pipelineManager.currentPipeline);
         eocvSim.visualizer.updateTunerFields(getTunableFieldPanels());
@@ -42,7 +48,7 @@ public class TunerManager {
 
     public void update() {
         //update all fields
-        for(TunableField field : fields) {
+        for (TunableField field : fields) {
             field.update();
         }
     }
@@ -54,17 +60,17 @@ public class TunerManager {
 
     public void addFieldsFrom(OpenCvPipeline pipeline) {
 
-        if(pipeline == null) return;
+        if (pipeline == null) return;
 
         Field[] fields = pipeline.getClass().getFields();
 
-        for(Field field : fields) {
+        for (Field field : fields) {
 
             TunableField toAddField = null; //for code simplicity
 
             try {
 
-                if(!field.canAccess(pipeline) || Modifier.isFinal(field.getModifiers())) continue;
+                if (!field.canAccess(pipeline) || Modifier.isFinal(field.getModifiers())) continue;
 
                 if (field.getType() == int.class) {
                     toAddField = new IntegerField(pipeline, field, eocvSim);
@@ -88,7 +94,9 @@ public class TunerManager {
                 Log.error("TunerManager", "Reflection error while processing field: " + field.getName(), ex);
             }
 
-            if(toAddField != null) { this.fields.add(toAddField); }
+            if (toAddField != null) {
+                this.fields.add(toAddField);
+            }
 
         }
 
@@ -98,7 +106,7 @@ public class TunerManager {
 
         List<TunableFieldPanel> panels = new ArrayList<>();
 
-        for(TunableField field : fields) {
+        for (TunableField field : fields) {
             panels.add(new TunableFieldPanel(field, eocvSim));
         }
 

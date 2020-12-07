@@ -12,7 +12,7 @@ public class FpsLimiter {
 
     public void sync() throws InterruptedException {
 
-        wait = 1d / ((double)fps/1000d);
+        wait = 1d / ((double) fps / 1000d);
 
         diff = System.currentTimeMillis() - start;
         if (diff < wait) {

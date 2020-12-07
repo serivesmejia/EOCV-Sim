@@ -9,8 +9,7 @@ import java.awt.*;
 
 public class Configuration {
 
-    JDialog configuration;
-
+    private final EOCVSim eocvSim;
     public JPanel contents = new JPanel(new GridLayout(4, 1));
     public JComboBox<String> themeComboBox = new JComboBox<>();
 
@@ -18,8 +17,7 @@ public class Configuration {
 
     public JCheckBox storeZoomCheckBox = new JCheckBox();
     public JCheckBox pauseOnImageCheckBox = new JCheckBox();
-
-    private final EOCVSim eocvSim;
+    JDialog configuration;
 
     public Configuration(JFrame parent, EOCVSim eocvSim) {
 
@@ -48,7 +46,7 @@ public class Configuration {
         themeLabel.setHorizontalAlignment(JLabel.CENTER);
 
         //add all themes to combo box
-        for(Theme theme : Theme.values()) {
+        for (Theme theme : Theme.values()) {
             themeComboBox.addItem(theme.toString().replace("_", " "));
         }
 
@@ -117,7 +115,7 @@ public class Configuration {
 
         eocvSim.configManager.saveToFile(); //update config file
 
-        if(userSelectedTheme != beforeTheme)
+        if (userSelectedTheme != beforeTheme)
             eocvSim.restart();
 
     }

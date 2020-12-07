@@ -20,7 +20,7 @@ public class IntegerField extends NumericField {
 
         try {
             value = Integer.parseInt(newValue);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
 

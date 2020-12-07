@@ -1,15 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.*;
-
+import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
@@ -22,104 +13,90 @@ import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
-import com.github.serivesmejia.eocvsim.util.BufferedImageHolder;
+import com.github.serivesmejia.eocvsim.util.Log;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.util.CvUtil;
-import com.github.serivesmejia.eocvsim.util.Log;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Visualizer {
 
-	public JFrame frame = null;
-	public volatile ImageX img = null;
+    public static ImageIcon ICO_EOCVSIM = null;
 
-	public JMenuBar menuBar = null;
-	public JMenu fileMenu = null;
-	public JMenu editMenu = null;
+    static {
+        try {
+            ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public JPanel tunerMenuPanel = new JPanel();
-
-	public JScrollPane imgScrollPane = null;
-	public JPanel imgScrollContainer = new JPanel();
-
-	public JPanel rightContainer = null;
-
-	public JSplitPane globalSplitPane = null;
-	public JSplitPane imageTunerSplitPane = null;
-
-	public JPanel pipelineSelectorContainer = null;
-	public volatile JList<String> pipelineSelector = null;
-	public JScrollPane pipelineSelectorScroll = null;
-	public JPanel pipelineButtonsContainer = null;
-	public JToggleButton pipelinePauseBtt = null;
-
-	public JPanel sourceSelectorContainer = null;
-	public volatile JList<String> sourceSelector = null;
-	public JScrollPane sourceSelectorScroll = null;
-	public JPanel sourceSelectorButtonsContainer = null;
-	public JButton sourceSelectorCreateBtt = null;
-	public JButton sourceSelectorDeleteBtt = null;
-
-	public JPanel telemetryContainer = null;
+    public final ArrayList<AsyncPleaseWaitDialog> pleaseWaitDialogs = new ArrayList<>();
+    public final ArrayList<JFrame> childFrames = new ArrayList<>();
+    public final ArrayList<JDialog> childDialogs = new ArrayList<>();
+    private final EOCVSim eocvSim;
+    private final ThemeInstaller themeInstaller = new ThemeInstaller();
+    public JFrame frame = null;
+    public volatile ImageX img = null;
+    public JMenuBar menuBar = null;
+    public JMenu fileMenu = null;
+    public JMenu editMenu = null;
+    public JPanel tunerMenuPanel = new JPanel();
+    public JScrollPane imgScrollPane = null;
+    public JPanel imgScrollContainer = new JPanel();
+    public JPanel rightContainer = null;
+    public JSplitPane globalSplitPane = null;
+    public JSplitPane imageTunerSplitPane = null;
+    public JPanel pipelineSelectorContainer = null;
+    public volatile JList<String> pipelineSelector = null;
+    public JScrollPane pipelineSelectorScroll = null;
+    public JPanel pipelineButtonsContainer = null;
+    public JToggleButton pipelinePauseBtt = null;
+    public JPanel sourceSelectorContainer = null;
+    public volatile JList<String> sourceSelector = null;
+    public JScrollPane sourceSelectorScroll = null;
+    public JPanel sourceSelectorButtonsContainer = null;
+    public JButton sourceSelectorCreateBtt = null;
+    public JButton sourceSelectorDeleteBtt = null;
+    public JPanel telemetryContainer = null;
     public JScrollPane telemetryScroll = null;
     public volatile JList<String> telemetryList = null;
-
-	private final EOCVSim eocvSim;
-	private final ThemeInstaller themeInstaller = new ThemeInstaller();
-
-	public final ArrayList<AsyncPleaseWaitDialog> pleaseWaitDialogs = new ArrayList<>();
-	public final ArrayList<JFrame> childFrames = new ArrayList<>();
-    public final ArrayList<JDialog> childDialogs = new ArrayList<>();
-
-	private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
-	private String titleMsg = "No pipeline";
-	
-	private String beforeTitle = "";
-	private String beforeTitleMsg = "";
-
-	private String beforeSelectedSource = "";
-	private int beforeSelectedSourceIndex = 0;
-
-	private int beforeSelectedPipeline = -1;
-
-	//stuff for zooming handling
-	private volatile double scale = 1f;
-    private volatile boolean isCtrlPressed = false;
-
-    private volatile Mat lastScaledMat;
-	private volatile Mat lastPostedMat;
-
     public MatPoster matPoster;
-
+    public Thread asyncVisualizerThread;
+    private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
+    private String titleMsg = "No pipeline";
+    private String beforeTitle = "";
+    private String beforeTitleMsg = "";
+    private String beforeSelectedSource = "";
+    private int beforeSelectedSourceIndex = 0;
+    private int beforeSelectedPipeline = -1;
+    //stuff for zooming handling
+    private volatile double scale = 1f;
+    private volatile boolean isCtrlPressed = false;
+    private volatile Mat lastScaledMat;
+    private volatile Mat lastPostedMat;
     private volatile boolean hasFinishedInitializing = false;
-	public Thread asyncVisualizerThread;
 
-	public static ImageIcon ICO_EOCVSIM = null;
+    public Visualizer(EOCVSim eocvSim) {
+        this.eocvSim = eocvSim;
+    }
 
-	static {
-		try {
-			ICO_EOCVSIM = GuiUtil.loadImageIcon("/resources/images/icon/ico_eocvsim.png");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public void init(Theme theme) {
 
-	public Visualizer(EOCVSim eocvSim) {
-		this.eocvSim = eocvSim;
-	}
-	
-	public void init(Theme theme) {
-
-		//instantiate opencv stuff here to make sure
-		//native lib has already been loaded
-		lastScaledMat = new Mat();
-		lastPostedMat = new Mat();
-		this.matPoster = new MatPoster(10);
+        //instantiate opencv stuff here to make sure
+        //native lib has already been loaded
+        lastScaledMat = new Mat();
+        lastPostedMat = new Mat();
+        this.matPoster = new MatPoster(10);
 
         try {
             themeInstaller.installTheme(theme);
@@ -129,61 +106,61 @@ public class Visualizer {
 
         scale = eocvSim.configManager.getConfig().zoom;
 
-		//instantiate all swing elements after theme installation
-		frame = new JFrame();
-		img = new ImageX();
+        //instantiate all swing elements after theme installation
+        frame = new JFrame();
+        img = new ImageX();
 
-		menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
 
-		tunerMenuPanel = new JPanel();
-		imgScrollContainer = new JPanel();
+        tunerMenuPanel = new JPanel();
+        imgScrollContainer = new JPanel();
 
-		pipelineSelectorContainer = new JPanel();
-		pipelineSelector = new JList<>();
-		pipelineSelectorScroll = new JScrollPane();
-		pipelineButtonsContainer = new JPanel();
-		pipelinePauseBtt =  new JToggleButton("Pause");
+        pipelineSelectorContainer = new JPanel();
+        pipelineSelector = new JList<>();
+        pipelineSelectorScroll = new JScrollPane();
+        pipelineButtonsContainer = new JPanel();
+        pipelinePauseBtt = new JToggleButton("Pause");
 
-		sourceSelectorContainer = new JPanel();
-		sourceSelector = new JList<>();
-		sourceSelectorScroll = new JScrollPane();
-		sourceSelectorButtonsContainer = new JPanel();
-		sourceSelectorCreateBtt = new JButton("Create");
-		sourceSelectorDeleteBtt = new JButton("Delete");
+        sourceSelectorContainer = new JPanel();
+        sourceSelector = new JList<>();
+        sourceSelectorScroll = new JScrollPane();
+        sourceSelectorButtonsContainer = new JPanel();
+        sourceSelectorCreateBtt = new JButton("Create");
+        sourceSelectorDeleteBtt = new JButton("Delete");
 
-		telemetryContainer = new JPanel();
-		telemetryScroll = new JScrollPane();
-		telemetryList = new JList<>();
+        telemetryContainer = new JPanel();
+        telemetryScroll = new JScrollPane();
+        telemetryList = new JList<>();
 
-		rightContainer = new JPanel();
+        rightContainer = new JPanel();
 
-		/*
-		* TOP MENU BAR
-		*/
+        /*
+         * TOP MENU BAR
+         */
 
-		fileMenu = new JMenu("File");
+        fileMenu = new JMenu("File");
 
-		JMenu fileNewSubmenu = new JMenu("New");
-		fileMenu.add(fileNewSubmenu);
+        JMenu fileNewSubmenu = new JMenu("New");
+        fileMenu.add(fileNewSubmenu);
 
-		JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
-		fileNewSubmenu.add(fileNewInputSourceSubmenu);
+        JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
+        fileNewSubmenu.add(fileNewInputSourceSubmenu);
 
-		JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
+        JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
 
-		fileNewInputSourceImageItem.addActionListener(e ->
-			new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.IMAGE)
-		);
+        fileNewInputSourceImageItem.addActionListener(e ->
+                new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.IMAGE)
+        );
 
-		fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
+        fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
 
-		JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
+        JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
 
-		fileNewInputSourceCameraItem.addActionListener(e ->
-			new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.CAMERA)
-		);
+        fileNewInputSourceCameraItem.addActionListener(e ->
+                new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.CAMERA)
+        );
 
-		fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
+        fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
 
         JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
 
@@ -195,167 +172,168 @@ public class Visualizer {
 
         fileMenu.addSeparator();
 
-		JMenuItem fileRestart = new JMenuItem("Restart");
+        JMenuItem fileRestart = new JMenuItem("Restart");
 
-		fileRestart.addActionListener((e) ->
-			eocvSim.runOnMainThread(eocvSim::restart)
-		);
+        fileRestart.addActionListener((e) ->
+                eocvSim.runOnMainThread(eocvSim::restart)
+        );
 
-		fileMenu.add(fileRestart);
+        fileMenu.add(fileRestart);
 
-		menuBar.add(fileMenu);
+        menuBar.add(fileMenu);
 
-		editMenu = new JMenu("Edit");
+        editMenu = new JMenu("Edit");
 
-		JMenuItem editSettings = new JMenuItem("Settings");
+        JMenuItem editSettings = new JMenuItem("Settings");
 
-		editSettings.addActionListener(e ->
-				new DialogFactory(eocvSim).createConfigDialog()
-		);
+        editSettings.addActionListener(e ->
+                new DialogFactory(eocvSim).createConfigDialog()
+        );
 
-		editMenu.add(editSettings);
+        editMenu.add(editSettings);
 
-		menuBar.add(editMenu);
+        menuBar.add(editMenu);
 
-		frame.setJMenuBar(menuBar);
+        frame.setJMenuBar(menuBar);
 
-		/*
-		* IMG VISUALIZER & SCROLL PANE
-		*/
+        /*
+         * IMG VISUALIZER & SCROLL PANE
+         */
 
-		imgScrollContainer = new JPanel();
-		imgScrollPane = new JScrollPane(imgScrollContainer);
+        imgScrollContainer = new JPanel();
+        imgScrollPane = new JScrollPane(imgScrollContainer);
 
-		imgScrollContainer.setLayout(new GridBagLayout());
+        imgScrollContainer.setLayout(new GridBagLayout());
 
-		imgScrollContainer.add(img, new GridBagConstraints());
+        imgScrollContainer.add(img, new GridBagConstraints());
 
-		imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-		imgScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
-		imgScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        imgScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+        imgScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-		rightContainer.setLayout(new GridLayout(3, 1));
+        rightContainer.setLayout(new GridLayout(3, 1));
 
-		/*
-		* PIPELINE SELECTOR
-		*/
+        /*
+         * PIPELINE SELECTOR
+         */
 
-		pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-		//pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
+        pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+        //pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
 
-		JLabel pipelineSelectorLabel = new JLabel("Pipelines");
+        JLabel pipelineSelectorLabel = new JLabel("Pipelines");
 
-		pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
+        pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
 
-		pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
-		pipelineSelectorContainer.add(pipelineSelectorLabel);
+        pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
+        pipelineSelectorContainer.add(pipelineSelectorLabel);
 
-		pipelineSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        pipelineSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		JPanel pipelineSelectorScrollContainer = new JPanel();
-		pipelineSelectorScrollContainer.setLayout(new GridLayout());
-		pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        JPanel pipelineSelectorScrollContainer = new JPanel();
+        pipelineSelectorScrollContainer.setLayout(new GridLayout());
+        pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
 
-		pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
+        pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
 
-		pipelineSelectorScroll.setViewportView(pipelineSelector);
-		pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        pipelineSelectorScroll.setViewportView(pipelineSelector);
+        pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-		pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
+        pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
 
-		pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-		pipelineButtonsContainer.add(pipelinePauseBtt);
+        pipelineButtonsContainer.add(pipelinePauseBtt);
 
-		pipelineSelectorContainer.add(pipelineButtonsContainer);
+        pipelineSelectorContainer.add(pipelineButtonsContainer);
 
-		rightContainer.add(pipelineSelectorContainer);
+        rightContainer.add(pipelineSelectorContainer);
 
-		/*
-		* SOURCE SELECTOR
-		*/
+        /*
+         * SOURCE SELECTOR
+         */
 
-		sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-		//sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
+        sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+        //sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
 
-		JLabel sourceSelectorLabel = new JLabel("Sources");
+        JLabel sourceSelectorLabel = new JLabel("Sources");
 
-		sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
+        sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
 
-		sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
+        sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
 
-		sourceSelectorContainer.add(sourceSelectorLabel);
+        sourceSelectorContainer.add(sourceSelectorLabel);
 
-		JPanel sourceSelectorScrollContainer = new JPanel();
-		sourceSelectorScrollContainer.setLayout(new GridLayout());
-		sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        JPanel sourceSelectorScrollContainer = new JPanel();
+        sourceSelectorScrollContainer.setLayout(new GridLayout());
+        sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
 
-		sourceSelectorScrollContainer.add(sourceSelectorScroll);
+        sourceSelectorScrollContainer.add(sourceSelectorScroll);
 
-		sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		sourceSelectorScroll.setViewportView(sourceSelector);
-		sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        sourceSelectorScroll.setViewportView(sourceSelector);
+        sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-		try {
-			sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        try {
+            sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-		sourceSelectorCreateBtt.addActionListener(e -> {
-			if(CreateSource.alreadyOpened) return;
-			new DialogFactory(eocvSim).createSourceDialog();
-		});
+        sourceSelectorCreateBtt.addActionListener(e -> {
+            if (CreateSource.alreadyOpened) return;
+            new DialogFactory(eocvSim).createSourceDialog();
+        });
 
-		sourceSelectorContainer.add(sourceSelectorScrollContainer);
+        sourceSelectorContainer.add(sourceSelectorScrollContainer);
 
-		sourceSelectorButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        sourceSelectorButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-		sourceSelectorButtonsContainer.add(sourceSelectorCreateBtt);
-		sourceSelectorButtonsContainer.add(sourceSelectorDeleteBtt);
+        sourceSelectorButtonsContainer.add(sourceSelectorCreateBtt);
+        sourceSelectorButtonsContainer.add(sourceSelectorDeleteBtt);
 
-		sourceSelectorContainer.add(sourceSelectorButtonsContainer);
+        sourceSelectorContainer.add(sourceSelectorButtonsContainer);
 
-		rightContainer.add(sourceSelectorContainer);
+        rightContainer.add(sourceSelectorContainer);
 
-		/*
-		 * TELEMETRY
-		 */
+        /*
+         * TELEMETRY
+         */
 
-		telemetryContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
+        telemetryContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-		JLabel telemetryLabel = new JLabel("Telemetry");
+        JLabel telemetryLabel = new JLabel("Telemetry");
 
-		telemetryLabel.setFont(telemetryLabel.getFont().deriveFont(20.0f));
-		telemetryLabel.setHorizontalAlignment(JLabel.CENTER);
+        telemetryLabel.setFont(telemetryLabel.getFont().deriveFont(20.0f));
+        telemetryLabel.setHorizontalAlignment(JLabel.CENTER);
 
-		telemetryContainer.add(telemetryLabel);
+        telemetryContainer.add(telemetryLabel);
 
         telemetryScroll.setViewportView(telemetryList);
         telemetryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         //tooltips for the telemetry list items (thnx stackoverflow)
-		telemetryList.addMouseMotionListener(new MouseMotionListener() {
+        telemetryList.addMouseMotionListener(new MouseMotionListener() {
 
-			@Override
-			public void mouseDragged(MouseEvent e) {}
+            @Override
+            public void mouseDragged(MouseEvent e) {
+            }
 
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				JList l = (JList) e.getSource();
-				ListModel m = l.getModel();
-				int index = l.locationToIndex(e.getPoint());
-				if (index > -1) {
-					l.setToolTipText(m.getElementAt(index).toString());
-				}
-			}
-		});
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JList l = (JList) e.getSource();
+                ListModel m = l.getModel();
+                int index = l.locationToIndex(e.getPoint());
+                if (index > -1) {
+                    l.setToolTipText(m.getElementAt(index).toString());
+                }
+            }
+        });
 
         telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
@@ -367,97 +345,97 @@ public class Visualizer {
 
         telemetryContainer.add(telemetryScrollContainer);
 
-		rightContainer.add(telemetryContainer);
+        rightContainer.add(telemetryContainer);
 
-		/*
-		 * SPLIT
-		 */
+        /*
+         * SPLIT
+         */
 
-		//left side, image scroll & tuner menu split panel
-		imageTunerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgScrollPane, tunerMenuPanel);
+        //left side, image scroll & tuner menu split panel
+        imageTunerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgScrollPane, tunerMenuPanel);
 
-		imageTunerSplitPane.setResizeWeight(1);
-		imageTunerSplitPane.setOneTouchExpandable(false);
-		imageTunerSplitPane.setContinuousLayout(true);
+        imageTunerSplitPane.setResizeWeight(1);
+        imageTunerSplitPane.setOneTouchExpandable(false);
+        imageTunerSplitPane.setContinuousLayout(true);
 
-		//global
-		globalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imageTunerSplitPane, rightContainer);
+        //global
+        globalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imageTunerSplitPane, rightContainer);
 
-		globalSplitPane.setResizeWeight(1);
-		globalSplitPane.setOneTouchExpandable(false);
-		globalSplitPane.setContinuousLayout(true);
+        globalSplitPane.setResizeWeight(1);
+        globalSplitPane.setOneTouchExpandable(false);
+        globalSplitPane.setContinuousLayout(true);
 
-		frame.add(globalSplitPane, BorderLayout.CENTER);
+        frame.add(globalSplitPane, BorderLayout.CENTER);
 
-		//initialize other various stuff of the frame
-		frame.setSize(780, 645);
-		frame.setMinimumSize(frame.getSize());
-		frame.setTitle("EasyOpenCV Simulator - No Pipeline");
+        //initialize other various stuff of the frame
+        frame.setSize(780, 645);
+        frame.setMinimumSize(frame.getSize());
+        frame.setTitle("EasyOpenCV Simulator - No Pipeline");
 
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-		frame.setIconImage(ICO_EOCVSIM.getImage());
+        frame.setIconImage(ICO_EOCVSIM.getImage());
 
-	    frame.setLocationRelativeTo(null);
-	    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		globalSplitPane.setDividerLocation(1070);
+        globalSplitPane.setDividerLocation(1070);
 
-		frame.setVisible(true);
+        frame.setVisible(true);
 
-		registerListeners();
+        registerListeners();
 
-		hasFinishedInitializing = true;
+        hasFinishedInitializing = true;
 
-	}
+    }
 
-	public void initAsync(Theme simTheme) {
-		asyncVisualizerThread = new Thread(() -> init(simTheme), "Visualizer-Thread");
-		asyncVisualizerThread.start();
-	}
+    public void initAsync(Theme simTheme) {
+        asyncVisualizerThread = new Thread(() -> init(simTheme), "Visualizer-Thread");
+        asyncVisualizerThread.start();
+    }
 
-	private void registerListeners() {
+    private void registerListeners() {
 
-		//listener for updating visualized image on post by MatPoster
-		matPoster.addPostable((mat) -> {
+        //listener for updating visualized image on post by MatPoster
+        matPoster.addPostable((mat) -> {
 
-			Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR); //change mat color space to be compatible with BufferedImages
-			mat.copyTo(lastPostedMat);
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR); //change mat color space to be compatible with BufferedImages
+            mat.copyTo(lastPostedMat);
 
             try {
                 this.visualizeScaleMat(lastPostedMat);
-				Log.info("Posted mat brrrrr");
-            } catch(Exception ex) {
+                Log.info("Posted mat brrrrr");
+            } catch (Exception ex) {
                 Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
             }
 
         });
 
-        frame.addWindowListener(new WindowAdapter(){
-            public void windowClosing(WindowEvent e){
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
                 eocvSim.runOnMainThread(eocvSim::destroy);
             }
         });
 
-		//listener for changing pause state
-		pipelinePauseBtt.addActionListener(e -> {
+        //listener for changing pause state
+        pipelinePauseBtt.addActionListener(e -> {
             boolean selected = pipelinePauseBtt.isSelected();
             eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
         });
 
-		//listener for changing pipeline
-		pipelineSelector.addListSelectionListener(evt -> {
-            if(pipelineSelector.getSelectedIndex() != -1) {
+        //listener for changing pipeline
+        pipelineSelector.addListSelectionListener(evt -> {
+            if (pipelineSelector.getSelectedIndex() != -1) {
 
                 int pipeline = pipelineSelector.getSelectedIndex();
 
-                if (!evt.getValueIsAdjusting() &&  pipeline != beforeSelectedPipeline) {
-                    if(!eocvSim.pipelineManager.isPaused()) {
+                if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
+                    if (!eocvSim.pipelineManager.isPaused()) {
                         eocvSim.pipelineManager.requestChangePipeline(pipeline);
                         beforeSelectedPipeline = pipeline;
                     } else {
-                        if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+                        if (eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
                             pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
                         } else { //handling pausing
                             eocvSim.pipelineManager.requestSetPaused(false);
@@ -472,111 +450,112 @@ public class Visualizer {
             }
         });
 
-		//listener for changing input sources
-		sourceSelector.addListSelectionListener(evt -> {
+        //listener for changing input sources
+        sourceSelector.addListSelectionListener(evt -> {
 
-			try {
-				if(sourceSelector.getSelectedIndex() != -1) {
+            try {
+                if (sourceSelector.getSelectedIndex() != -1) {
 
-					ListModel<String> model = sourceSelector.getModel();
-					String source = model.getElementAt(sourceSelector.getSelectedIndex());
+                    ListModel<String> model = sourceSelector.getModel();
+                    String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
-					if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
-						if(!eocvSim.pipelineManager.isPaused()) {
+                    if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
+                        if (!eocvSim.pipelineManager.isPaused()) {
 
-							eocvSim.inputSourceManager.requestSetInputSource(source);
-							beforeSelectedSource = source;
-							beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
+                            eocvSim.inputSourceManager.requestSetInputSource(source);
+                            beforeSelectedSource = source;
+                            beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
 
-						} else {
+                        } else {
 
-							//check if the user requested the pause or if it was due to one shoot analysis when selecting images
-							if(eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
-								sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
-							} else { //handling pausing
-								eocvSim.pipelineManager.requestSetPaused(false);
-								eocvSim.inputSourceManager.requestSetInputSource(source);
-								beforeSelectedSource = source;
-								beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-							}
+                            //check if the user requested the pause or if it was due to one shoot analysis when selecting images
+                            if (eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
+                                sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
+                            } else { //handling pausing
+                                eocvSim.pipelineManager.requestSetPaused(false);
+                                eocvSim.inputSourceManager.requestSetInputSource(source);
+                                beforeSelectedSource = source;
+                                beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
+                            }
 
-						}
-					}
+                        }
+                    }
 
-				} else {
-					sourceSelector.setSelectedIndex(1);
-				}
-			} catch(ArrayIndexOutOfBoundsException ignored) { }
+                } else {
+                    sourceSelector.setSelectedIndex(1);
+                }
+            } catch (ArrayIndexOutOfBoundsException ignored) {
+            }
 
-		});
+        });
 
-		//handling onViewportTapped evts
-		img.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				eocvSim.pipelineManager.currentPipeline.onViewportTapped();
-			}
-		});
+        //handling onViewportTapped evts
+        img.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                eocvSim.pipelineManager.currentPipeline.onViewportTapped();
+            }
+        });
 
-		// delete input source
-		sourceSelectorDeleteBtt.addActionListener(e -> {
-			String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-			eocvSim.runOnMainThread(() -> {
-				eocvSim.inputSourceManager.deleteInputSource(source);
-				updateSourcesList();
-			});
-		});
+        // delete input source
+        sourceSelectorDeleteBtt.addActionListener(e -> {
+            String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
+            eocvSim.runOnMainThread(() -> {
+                eocvSim.inputSourceManager.deleteInputSource(source);
+                updateSourcesList();
+            });
+        });
 
-		//RESIZE HANDLING
+        //RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(e -> {
-			if(isCtrlPressed) { //check if control key is pressed
-				scale -= 0.3 * e.getPreciseWheelRotation();
-				if(scale <= 0) scale = 0.5;
-				visualizeScaleMat(lastPostedMat);
-			}
-		});
+            if (isCtrlPressed) { //check if control key is pressed
+                scale -= 0.3 * e.getPreciseWheelRotation();
+                if (scale <= 0) scale = 0.5;
+                visualizeScaleMat(lastPostedMat);
+            }
+        });
 
         //listening for keyboard presses and releases, to check if ctrl key was pressed or released
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
-			switch (ke.getID()) {
-				case KeyEvent.KEY_PRESSED:
-					if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
-						isCtrlPressed = true;
-						imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctrl is pressed
-					}
-					break;
-				case KeyEvent.KEY_RELEASED:
-					if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
-						isCtrlPressed = false;
-						imgScrollPane.setWheelScrollingEnabled(true); //unlock
-					}
-					break;
-			}
-			return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
-		});
+            switch (ke.getID()) {
+                case KeyEvent.KEY_PRESSED:
+                    if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+                        isCtrlPressed = true;
+                        imgScrollPane.setWheelScrollingEnabled(false); //lock scrolling if ctrl is pressed
+                    }
+                    break;
+                case KeyEvent.KEY_RELEASED:
+                    if (ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+                        isCtrlPressed = false;
+                        imgScrollPane.setWheelScrollingEnabled(true); //unlock
+                    }
+                    break;
+            }
+            return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
+        });
 
     }
 
     public void waitForFinishingInit() {
-		while (!hasFinishedInitializing) {
-			Thread.onSpinWait();
-		}
-	}
+        while (!hasFinishedInitializing) {
+            Thread.onSpinWait();
+        }
+    }
 
     public void close() {
 
-	    frame.setVisible(false);
-	    matPoster.stop();
+        frame.setVisible(false);
+        matPoster.stop();
 
-	    for(AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
-	        if(dialog != null) {
-	            dialog.destroyDialog();
+        for (AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
+            if (dialog != null) {
+                dialog.destroyDialog();
             }
         }
 
-	    pleaseWaitDialogs.clear();
+        pleaseWaitDialogs.clear();
 
-        for(JFrame frame : childFrames) {
-            if(frame != null && frame.isVisible()) {
+        for (JFrame frame : childFrames) {
+            if (frame != null && frame.isVisible()) {
                 frame.setVisible(false);
                 frame.dispose();
             }
@@ -584,8 +563,8 @@ public class Visualizer {
 
         childFrames.clear();
 
-        for(JDialog dialog : childDialogs) {
-            if(dialog != null && dialog.isVisible()) {
+        for (JDialog dialog : childDialogs) {
+            if (dialog != null && dialog.isVisible()) {
                 dialog.setVisible(false);
                 dialog.dispose();
             }
@@ -599,273 +578,273 @@ public class Visualizer {
 
     //scale img
     private synchronized void visualizeScaleMat(Mat mat) {
-double wscale = 1.0;
-double hscale = 1.0;
+        double wscale = 1.0;
+        double hscale = 1.0;
+        double calcScale = 1.0;
+        double finalscale = 1.0;
 
-		wscale=(double)frame.getWidth()*0.5/mat.width();
-		hscale=(double)frame.getHeight()*0.5/mat.height();
-		scale=wscale+hscale/2;
-		Size size = new Size(mat.width() * scale, mat.height() * scale);
-		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
+        wscale = (double) frame.getWidth() * 0.5 / mat.width();
+        hscale = (double) frame.getHeight() * 0.5 / mat.height();
+        calcScale = wscale + hscale / 2;
+        finalscale = Math.max(0, Math.min(10.8, scale * calcScale));
+        Log.info("Scale Value: " + finalscale);
+        Size size = new Size(mat.width() * finalscale, mat.height() * finalscale);
+        Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
 
-		img.setImageMat(lastScaledMat);
+        img.setImageMat(lastScaledMat);
 
-		Config config = eocvSim.configManager.getConfig();
-        if(config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
+        Config config = eocvSim.configManager.getConfig();
+        if (config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
 
     }
-	
-	private void setFrameTitle(String title, String titleMsg) {
-		frame.setTitle(title + " - " + titleMsg);
-	}
-	
-	public void setTitle(String title) {
-		this.title = title;
-		if(!beforeTitle.equals(title)) setFrameTitle(title, titleMsg);
-		beforeTitle = title;
-	}
-	
-	public void setTitleMessage(String titleMsg) {
-		this.titleMsg = titleMsg;
-		if(!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
-		beforeTitleMsg = titleMsg;
-	}
-	
-	public void updatePipelinesList() {
-		
-	    DefaultListModel<String> listModel = new DefaultListModel<>();  
-        
-		for(Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
-			listModel.addElement(pipelineClass.getSimpleName());
-		}
-		
-		pipelineSelector.setFixedCellWidth(240);
-		
-		pipelineSelector.setModel(listModel);
-		pipelineSelector.revalidate();
-		pipelineSelectorScroll.revalidate();
-		
-	}
-	
-	public void updateSourcesList() {
-		
-	    DefaultListModel<String> listModel = new DefaultListModel<>();  
-        
-		for(Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
-			listModel.addElement(entry.getKey());
-		}
-		
-		sourceSelector.setFixedCellWidth(240);
 
-		sourceSelector.setModel(listModel);
-		sourceSelector.revalidate();
-		sourceSelectorScroll.revalidate();
-		
-	}
+    private void setFrameTitle(String title, String titleMsg) {
+        frame.setTitle(title + " - " + titleMsg);
+    }
 
-	public void updateTelemetry(Telemetry telemetry) {
+    public void setTitle(String title) {
+        this.title = title;
+        if (!beforeTitle.equals(title)) setFrameTitle(title, titleMsg);
+        beforeTitle = title;
+    }
 
-		if(telemetry != null && telemetry.hasChanged()) {
+    public void setTitleMessage(String titleMsg) {
+        this.titleMsg = titleMsg;
+        if (!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
+        beforeTitleMsg = titleMsg;
+    }
 
-			DefaultListModel<String> listModel = new DefaultListModel<>();
+    public void updatePipelinesList() {
 
-			for(String line : telemetry.toString().split("\n")) {
-				listModel.addElement(line);
-			}
+        DefaultListModel<String> listModel = new DefaultListModel<>();
 
-			telemetryList.setFixedCellWidth(240);
+        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+            listModel.addElement(pipelineClass.getSimpleName());
+        }
 
-			telemetryList.setModel(listModel);
-			telemetryList.revalidate();
-			telemetryScroll.revalidate();
+        pipelineSelector.setFixedCellWidth(240);
 
-		}
+        pipelineSelector.setModel(listModel);
+        pipelineSelector.revalidate();
+        pipelineSelectorScroll.revalidate();
 
-	}
+    }
 
-	public void updateTunerFields(List<TunableFieldPanel> fields) {
+    public void updateSourcesList() {
 
-		tunerMenuPanel.removeAll();
+        DefaultListModel<String> listModel = new DefaultListModel<>();
 
-		for(TunableFieldPanel fieldPanel : fields) {
-			tunerMenuPanel.add(fieldPanel);
-		}
+        for (Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
+            listModel.addElement(entry.getKey());
+        }
 
-		tunerMenuPanel.updateUI();
-		imageTunerSplitPane.updateUI();
+        sourceSelector.setFixedCellWidth(240);
 
-	}
+        sourceSelector.setModel(listModel);
+        sourceSelector.revalidate();
+        sourceSelectorScroll.revalidate();
 
-	// PLEASE WAIT DIALOGS
+    }
 
-	public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
+    public void updateTelemetry(Telemetry telemetry) {
 
-		final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
+        if (telemetry != null && telemetry.hasChanged()) {
 
-		boolean addSubMessage = subMessage != null;
+            DefaultListModel<String> listModel = new DefaultListModel<>();
 
-		int rows = 3;
-		if(!addSubMessage) { rows--; }
+            for (String line : telemetry.toString().split("\n")) {
+                listModel.addElement(line);
+            }
 
-		dialog.setModal(true);
-		dialog.setLayout(new GridLayout(rows, 1));
+            telemetryList.setFixedCellWidth(240);
 
-		if(isError) {
-			dialog.setTitle("Operation failed");
-		} else {
-			dialog.setTitle("Operation in progress");
-		}
+            telemetryList.setModel(listModel);
+            telemetryList.revalidate();
+            telemetryScroll.revalidate();
 
-		JLabel msg = new JLabel(message);
-		msg.setHorizontalAlignment(JLabel.CENTER);
-		msg.setVerticalAlignment(JLabel.CENTER);
+        }
 
-		dialog.add(msg);
+    }
 
-		JLabel subMsg = null;
-		if(addSubMessage) {
+    public void updateTunerFields(List<TunableFieldPanel> fields) {
 
-			subMsg = new JLabel(subMessage);
-			subMsg.setHorizontalAlignment(JLabel.CENTER);
-			subMsg.setVerticalAlignment(JLabel.CENTER);
+        tunerMenuPanel.removeAll();
 
-			dialog.add(subMsg);
+        for (TunableFieldPanel fieldPanel : fields) {
+            tunerMenuPanel.add(fieldPanel);
+        }
 
-		}
+        tunerMenuPanel.updateUI();
+        imageTunerSplitPane.updateUI();
 
-		JPanel exitBttPanel = new JPanel(new FlowLayout());
-		JButton cancelBtt = new JButton(cancelBttText);
+    }
 
-		cancelBtt.setEnabled(cancellable);
+    // PLEASE WAIT DIALOGS
 
-		exitBttPanel.add(cancelBtt);
+    public boolean pleaseWaitDialog(JDialog diag, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, AsyncPleaseWaitDialog apwd, boolean isError) {
 
-		boolean[] cancelled = {false};
+        final JDialog dialog = diag == null ? new JDialog(this.frame) : diag;
 
-		cancelBtt.addActionListener(e -> {
+        boolean addSubMessage = subMessage != null;
+
+        int rows = 3;
+        if (!addSubMessage) {
+            rows--;
+        }
+
+        dialog.setModal(true);
+        dialog.setLayout(new GridLayout(rows, 1));
+
+        if (isError) {
+            dialog.setTitle("Operation failed");
+        } else {
+            dialog.setTitle("Operation in progress");
+        }
+
+        JLabel msg = new JLabel(message);
+        msg.setHorizontalAlignment(JLabel.CENTER);
+        msg.setVerticalAlignment(JLabel.CENTER);
+
+        dialog.add(msg);
+
+        JLabel subMsg = null;
+        if (addSubMessage) {
+
+            subMsg = new JLabel(subMessage);
+            subMsg.setHorizontalAlignment(JLabel.CENTER);
+            subMsg.setVerticalAlignment(JLabel.CENTER);
+
+            dialog.add(subMsg);
+
+        }
+
+        JPanel exitBttPanel = new JPanel(new FlowLayout());
+        JButton cancelBtt = new JButton(cancelBttText);
+
+        cancelBtt.setEnabled(cancellable);
+
+        exitBttPanel.add(cancelBtt);
+
+        boolean[] cancelled = {false};
+
+        cancelBtt.addActionListener(e -> {
             cancelled[0] = true;
             dialog.setVisible(false);
             dialog.dispose();
         });
 
-		dialog.add(exitBttPanel);
+        dialog.add(exitBttPanel);
 
-		if(apwd != null) {
-			apwd.msg = msg;
-			apwd.subMsg = subMsg;
-			apwd.cancelBtt = cancelBtt;
-		}
+        if (apwd != null) {
+            apwd.msg = msg;
+            apwd.subMsg = subMsg;
+            apwd.cancelBtt = cancelBtt;
+        }
 
-		if(size != null) {
-			dialog.setSize(size);
-		} else {
-			dialog.setSize(new Dimension(400, 200));
-		}
+        if (size != null) {
+            dialog.setSize(size);
+        } else {
+            dialog.setSize(new Dimension(400, 200));
+        }
 
-		dialog.setLocationRelativeTo(null);
-		dialog.setResizable(false);
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setLocationRelativeTo(null);
+        dialog.setResizable(false);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-		dialog.setVisible(true);
+        dialog.setVisible(true);
 
-		return cancelled[0];
+        return cancelled[0];
 
-	}
+    }
 
-	public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null, false);
-	}
+    public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+        pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, null, false);
+    }
 
-	public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-		pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null, false);
-	}
+    public void pleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+        pleaseWaitDialog(null, message, subMessage, cancelBttText, size, cancellable, null, false);
+    }
 
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
+    public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
 
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError, eocvSim);
+        AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError, eocvSim);
 
-		new Thread(rPWD).start();
+        new Thread(rPWD).start();
 
-		return rPWD;
+        return rPWD;
 
-	}
+    }
 
-	public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
+    public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
 
-		AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false, eocvSim);
+        AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false, eocvSim);
 
-		new Thread(rPWD).start();
+        new Thread(rPWD).start();
 
-		return rPWD;
+        return rPWD;
 
-	}
+    }
 
-	public class AsyncPleaseWaitDialog implements Runnable {
+    public class AsyncPleaseWaitDialog implements Runnable {
 
-		String message = "";
-		String subMessage = "";
-		String cancelBttText = "";
-		Dimension size = null;
-		boolean cancellable = false;
+        public volatile JDialog dialog = new JDialog(frame);
+        public volatile JLabel msg = null;
+        public volatile JLabel subMsg = null;
+        public volatile JButton cancelBtt = null;
+        public volatile boolean wasCancelled = false;
+        public volatile boolean isError = false;
+        public volatile String initialMessage = "";
+        public volatile String initialSubMessage = "";
+        public volatile boolean isDestroyed = false;
+        String message = "";
+        String subMessage = "";
+        String cancelBttText = "";
+        Dimension size = null;
+        boolean cancellable = false;
+        private final ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
 
-		public volatile JDialog dialog = new JDialog(frame);
-		public volatile JLabel msg = null;
-		public volatile JLabel subMsg = null;
-		public volatile JButton cancelBtt = null;
+        public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {
 
-		public volatile boolean wasCancelled = false;
+            this.message = message;
+            this.subMessage = subMessage;
+            this.initialMessage = message;
+            this.initialSubMessage = subMessage;
+            this.cancelBttText = cancelBttText;
 
-		public volatile boolean isError = false;
+            this.size = size;
+            this.cancellable = cancellable;
 
-		public volatile String initialMessage = "";
-		public volatile String initialSubMessage = "";
+            this.isError = isError;
 
-		public volatile boolean isDestroyed = false;
+            eocvSim.visualizer.pleaseWaitDialogs.add(this);
 
-		private ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
+        }
 
-		public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {
+        public void onCancel(Runnable runn) {
+            onCancelRunnables.add(runn);
+        }
 
-			this.message = message;
-			this.subMessage = subMessage;
-			this.initialMessage = message;
-			this.initialSubMessage = subMessage;
-			this.cancelBttText = cancelBttText;
+        @Override
+        public void run() {
 
-			this.size = size;
-			this.cancellable = cancellable;
+            wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
 
-			this.isError = isError;
+            if (wasCancelled) {
+                for (Runnable runn : onCancelRunnables) {
+                    runn.run();
+                }
+            }
 
-			eocvSim.visualizer.pleaseWaitDialogs.add(this);
+        }
 
-		}
-
-		public void onCancel(Runnable runn) {
-			onCancelRunnables.add(runn);
-		}
-
-		@Override
-		public void run() {
-
-			wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
-
-			if(wasCancelled) {
-				for(Runnable runn : onCancelRunnables) {
-					runn.run();
-				}
-			}
-
-		}
-
-		public void destroyDialog() {
-		    if(!isDestroyed) {
+        public void destroyDialog() {
+            if (!isDestroyed) {
                 dialog.setVisible(false);
                 dialog.dispose();
                 isDestroyed = true;
             }
-		}
+        }
 
-	}
+    }
 
 }
