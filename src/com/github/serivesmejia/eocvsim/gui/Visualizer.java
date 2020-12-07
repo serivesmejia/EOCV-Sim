@@ -405,7 +405,6 @@ public class Visualizer {
 
             try {
                 this.visualizeScaleMat(lastPostedMat);
-                Log.info("Posted mat brrrrr");
             } catch (Exception ex) {
                 Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
             }
@@ -578,17 +577,14 @@ public class Visualizer {
 
     //scale img
     private synchronized void visualizeScaleMat(Mat mat) {
-        double wscale = 1.0;
-        double hscale = 1.0;
-        double calcScale = 1.0;
-        double finalscale = 1.0;
 
-        wscale = (double) frame.getWidth() * 0.5 / mat.width();
-        hscale = (double) frame.getHeight() * 0.5 / mat.height();
-        calcScale = wscale + hscale / 2;
-        finalscale = Math.max(0, Math.min(10.8, scale * calcScale));
-        Log.info("Scale Value: " + finalscale);
-        Size size = new Size(mat.width() * finalscale, mat.height() * finalscale);
+        double wScale = (double) frame.getWidth() / mat.width();
+        double hScale = (double) frame.getHeight() / mat.height();
+
+        double calcScale = (wScale / hScale) * 1.5;;
+        double finalScale = Math.max(0.2, Math.min(3, scale * calcScale));
+
+        Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
         Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
 
         img.setImageMat(lastScaledMat);
