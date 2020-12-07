@@ -2,6 +2,9 @@ package com.github.serivesmejia.eocvsim;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.github.serivesmejia.eocvsim.config.ConfigManager;
 import com.github.serivesmejia.eocvsim.tuner.TunerManager;
@@ -80,8 +83,10 @@ public class EOCVSim {
 		Log.white();
 
 		inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
-
+		int count =0;
 		while(!Thread.interrupted()) {
+
+
 
 			Telemetry telemetry = pipelineManager.currentTelemetry;
 
@@ -110,6 +115,16 @@ public class EOCVSim {
 					telemetry.errItem.setCaption("");
 					telemetry.errItem.setValue("");
 				}
+				try{
+					Thread.sleep(30);
+					count++;
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+				if(count==100){
+					System.gc();
+					count=0;
+				}
 
 			} catch(Exception ex) {
 
@@ -124,6 +139,7 @@ public class EOCVSim {
 			}
 
 			visualizer.updateTelemetry(pipelineManager.currentTelemetry);
+
 
 		}
 
@@ -175,7 +191,7 @@ public class EOCVSim {
 		} else {
 			visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
 		}
-		
+
 	}
 
 	public void runOnMainThread(Runnable runn) {
