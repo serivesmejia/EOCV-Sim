@@ -50,6 +50,7 @@ public class ImageSource extends InputSource {
     @Override
     public void onPause() {
         //if(img != null) img.release();
+		System.gc();
     }
 
     @Override

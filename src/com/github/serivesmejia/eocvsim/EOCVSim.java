@@ -29,7 +29,7 @@ public class EOCVSim {
 	public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
 	public TunerManager tunerManager = new TunerManager(this);
 
-	public FpsLimiter fpsLimiter = new FpsLimiter(60);
+	public FpsLimiter fpsLimiter = new FpsLimiter(30);
 
 	public static String VERSION = "2.0.0";
 

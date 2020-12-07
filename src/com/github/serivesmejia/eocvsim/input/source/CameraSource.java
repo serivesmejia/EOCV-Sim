@@ -123,7 +123,7 @@ public class CameraSource extends InputSource {
 
         camera.release();
         camera = null;
-
+System.gc();
     }
 
     @Override

@@ -599,10 +599,12 @@ public class Visualizer {
 
     //scale img
     private synchronized void visualizeScaleMat(Mat mat) {
+double wscale = 1.0;
+double hscale = 1.0;
 
-		if(scale <= 0) scale = 0.2;
-		else if(scale > 2) scale = 2;
-
+		wscale=(double)frame.getWidth()*0.5/mat.width();
+		hscale=(double)frame.getHeight()*0.5/mat.height();
+		scale=wscale+hscale/2;
 		Size size = new Size(mat.width() * scale, mat.height() * scale);
 		Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
 
