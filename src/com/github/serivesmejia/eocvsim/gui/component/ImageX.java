@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.gui.util;
+package com.github.serivesmejia.eocvsim.gui.component;
 
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import org.opencv.core.Mat;

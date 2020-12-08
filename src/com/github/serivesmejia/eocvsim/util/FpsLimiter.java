@@ -27,4 +27,6 @@ public class FpsLimiter {
         this.fps = fps;
     }
 
+    public int getFPS() { return fps; }
+
 }

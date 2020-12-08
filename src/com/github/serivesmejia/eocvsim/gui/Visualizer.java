@@ -2,12 +2,13 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
+import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.gui.util.ImageX;
+import com.github.serivesmejia.eocvsim.gui.component.ImageX;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
@@ -41,49 +42,63 @@ public class Visualizer {
     }
 
     public final ArrayList<AsyncPleaseWaitDialog> pleaseWaitDialogs = new ArrayList<>();
+
     public final ArrayList<JFrame> childFrames = new ArrayList<>();
     public final ArrayList<JDialog> childDialogs = new ArrayList<>();
+
     private final EOCVSim eocvSim;
     private final ThemeInstaller themeInstaller = new ThemeInstaller();
+
     public JFrame frame = null;
-    public volatile ImageX img = null;
+
+    public Viewport viewport = null;
+
     public JMenuBar menuBar = null;
+
     public JMenu fileMenu = null;
     public JMenu editMenu = null;
+
     public JPanel tunerMenuPanel = new JPanel();
+
     public JScrollPane imgScrollPane = null;
-    public JPanel imgScrollContainer = new JPanel();
+
     public JPanel rightContainer = null;
     public JSplitPane globalSplitPane = null;
     public JSplitPane imageTunerSplitPane = null;
+
     public JPanel pipelineSelectorContainer = null;
     public volatile JList<String> pipelineSelector = null;
     public JScrollPane pipelineSelectorScroll = null;
     public JPanel pipelineButtonsContainer = null;
     public JToggleButton pipelinePauseBtt = null;
+
     public JPanel sourceSelectorContainer = null;
     public volatile JList<String> sourceSelector = null;
     public JScrollPane sourceSelectorScroll = null;
     public JPanel sourceSelectorButtonsContainer = null;
     public JButton sourceSelectorCreateBtt = null;
     public JButton sourceSelectorDeleteBtt = null;
+
     public JPanel telemetryContainer = null;
     public JScrollPane telemetryScroll = null;
     public volatile JList<String> telemetryList = null;
+
     public MatPoster matPoster;
     public Thread asyncVisualizerThread;
+
     private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
     private String titleMsg = "No pipeline";
     private String beforeTitle = "";
     private String beforeTitleMsg = "";
+
     private String beforeSelectedSource = "";
+
     private int beforeSelectedSourceIndex = 0;
     private int beforeSelectedPipeline = -1;
+
     //stuff for zooming handling
-    private volatile double scale = 1f;
     private volatile boolean isCtrlPressed = false;
-    private volatile Mat lastScaledMat;
-    private volatile Mat lastPostedMat;
+
     private volatile boolean hasFinishedInitializing = false;
 
     public Visualizer(EOCVSim eocvSim) {
@@ -94,8 +109,6 @@ public class Visualizer {
 
         //instantiate opencv stuff here to make sure
         //native lib has already been loaded
-        lastScaledMat = new Mat();
-        lastPostedMat = new Mat();
         this.matPoster = new MatPoster(10);
 
         try {
@@ -104,16 +117,13 @@ public class Visualizer {
             Log.error("Visualizer", "Failed to set theme " + theme.name(), e);
         }
 
-        scale = eocvSim.configManager.getConfig().zoom;
-
         //instantiate all swing elements after theme installation
         frame = new JFrame();
-        img = new ImageX();
+        viewport = new Viewport(eocvSim);
 
         menuBar = new JMenuBar();
 
         tunerMenuPanel = new JPanel();
-        imgScrollContainer = new JPanel();
 
         pipelineSelectorContainer = new JPanel();
         pipelineSelector = new JList<>();
@@ -165,7 +175,7 @@ public class Visualizer {
         JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
 
         fileSaveMatItem.addActionListener(e ->
-                GuiUtil.saveMatFileChooser(frame, lastPostedMat, eocvSim)
+                GuiUtil.saveMatFileChooser(frame, viewport.getLastVisualizedMat(), eocvSim)
         );
 
         fileMenu.add(fileSaveMatItem);
@@ -200,12 +210,7 @@ public class Visualizer {
          * IMG VISUALIZER & SCROLL PANE
          */
 
-        imgScrollContainer = new JPanel();
-        imgScrollPane = new JScrollPane(imgScrollContainer);
-
-        imgScrollContainer.setLayout(new GridBagLayout());
-
-        imgScrollContainer.add(img, new GridBagConstraints());
+        imgScrollPane = new JScrollPane(viewport);
 
         imgScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         imgScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -397,19 +402,8 @@ public class Visualizer {
 
     private void registerListeners() {
 
-        //listener for updating visualized image on post by MatPoster
-        matPoster.addPostable((mat) -> {
-
-            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR); //change mat color space to be compatible with BufferedImages
-            mat.copyTo(lastPostedMat);
-
-            try {
-                this.visualizeScaleMat(lastPostedMat);
-            } catch (Exception ex) {
-                Log.error("Visualizer-Postable", "Couldn't visualize last mat", ex);
-            }
-
-        });
+        //attach viewport to matposter to recieve mats from user pipeline to viewport
+        viewport.attachToPoster(matPoster);
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -489,7 +483,7 @@ public class Visualizer {
         });
 
         //handling onViewportTapped evts
-        img.addMouseListener(new MouseAdapter() {
+        viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 eocvSim.pipelineManager.currentPipeline.onViewportTapped();
             }
@@ -507,9 +501,8 @@ public class Visualizer {
         //RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(e -> {
             if (isCtrlPressed) { //check if control key is pressed
-                scale -= 0.3 * e.getPreciseWheelRotation();
-                if (scale <= 0) scale = 0.5;
-                visualizeScaleMat(lastPostedMat);
+                double scale = viewport.getViewportScale() - (0.3 * e.getPreciseWheelRotation());
+                viewport.setViewportScale(scale);
             }
         });
 
@@ -572,25 +565,6 @@ public class Visualizer {
         childDialogs.clear();
 
         frame.dispose();
-
-    }
-
-    //scale img
-    private synchronized void visualizeScaleMat(Mat mat) {
-
-        double wScale = (double) frame.getWidth() / mat.width();
-        double hScale = (double) frame.getHeight() / mat.height();
-
-        double calcScale = (wScale / hScale) * 1.5;;
-        double finalScale = Math.max(0.2, Math.min(3, scale * calcScale));
-
-        Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
-        Imgproc.resize(mat, lastScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat
-
-        img.setImageMat(lastScaledMat);
-
-        Config config = eocvSim.configManager.getConfig();
-        if (config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
 
     }
 
