@@ -3,7 +3,10 @@ package com.github.serivesmejia.eocvsim.gui.component;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
+import com.github.serivesmejia.eocvsim.util.BufferedImageRecycler;
+import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.qualcomm.robotcore.util.Range;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -18,6 +21,10 @@ public class Viewport extends JPanel {
     private Mat lastVisualizedMat = null;
     private Mat lastVisualizedScaledMat = null;
 
+    private BufferedImageRecycler.RecyclableBufferedImage lastBuffImage = null;
+
+    private BufferedImageRecycler buffImageRecycler;
+
     private double scale;
 
     private final EOCVSim eocvSim;
@@ -31,9 +38,14 @@ public class Viewport extends JPanel {
 
         add(image, new GridBagConstraints());
 
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        buffImageRecycler = new BufferedImageRecycler(5, (int)screenSize.getWidth(), (int)screenSize.getHeight());
+
     }
 
-    public void visualizeScaleMat(Mat mat) {
+    public synchronized void visualizeScaleMat(Mat mat) {
+
+        if(lastBuffImage != null) buffImageRecycler.returnBufferedImage(lastBuffImage);
 
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
@@ -51,7 +63,11 @@ public class Viewport extends JPanel {
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
         Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat to lastVisualizedScaledMat
 
-        image.setImageMat(lastVisualizedScaledMat); //set mat image to ImageX component
+        lastBuffImage = buffImageRecycler.takeBufferedImage();
+
+        CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
+
+        image.setImage(lastBuffImage); //set buff image to ImageX component
 
         Config config = eocvSim.configManager.getConfig();
         if (config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
@@ -62,26 +78,30 @@ public class Viewport extends JPanel {
         poster.addPostable((m) -> {
             try {
                 Imgproc.cvtColor(m, m, Imgproc.COLOR_RGB2BGR);
-                this.visualizeScaleMat(m);
+                visualizeScaleMat(m);
             } catch(Exception ex) {
                 Log.error("Viewport-Postable", "Couldn't visualize last mat", ex);
             }
         });
     }
 
-    public void setViewportScale(double scale) {
+    public synchronized void setViewportScale(double scale) {
+
+        scale = Range.clip(scale, 0.1, 3);
+
         boolean scaleChanged = this.scale != scale;
         this.scale = scale;
 
         if(lastVisualizedMat != null && scaleChanged)
             visualizeScaleMat(lastVisualizedMat);
+
     }
 
-    public Mat getLastVisualizedMat() {
+    public synchronized Mat getLastVisualizedMat() {
         return lastVisualizedMat;
     }
 
-    public double getViewportScale() {
+    public synchronized double getViewportScale() {
         return scale;
     }
 

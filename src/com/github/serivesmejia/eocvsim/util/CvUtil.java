@@ -14,6 +14,12 @@ import java.io.IOException;
 
 public class CvUtil {
 
+    public static void matToBufferedImage(Mat m, BufferedImage buffImg) {
+        // Get the BufferedImage's backing array and copy the pixels directly into it
+        byte[] data = ((DataBufferByte) buffImg.getRaster().getDataBuffer()).getData();
+        m.get(0, 0, data);
+    }
+
     public static BufferedImage matToBufferedImage(Mat m) {
 
         // Fastest code
@@ -25,10 +31,7 @@ public class CvUtil {
 
         // Create an empty image in matching format
         BufferedImage buffImg = new BufferedImage(m.width(), m.height(), type);
-
-        // Get the BufferedImage's backing array and copy the pixels directly into it
-        byte[] data = ((DataBufferByte) buffImg.getRaster().getDataBuffer()).getData();
-        m.get(0, 0, data);
+        matToBufferedImage(m, buffImg);
 
         return buffImg;
 

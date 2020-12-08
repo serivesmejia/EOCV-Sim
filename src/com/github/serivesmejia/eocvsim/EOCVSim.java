@@ -17,14 +17,19 @@ import java.util.ArrayList;
 public class EOCVSim {
 
     public static String VERSION = "2.0.0";
+
     public static int DEFAULT_EOCV_WIDTH = 320;
     public static int DEFAULT_EOCV_HEIGHT = 240;
+
     private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+
     public volatile Visualizer visualizer = new Visualizer(this);
+
     public ConfigManager configManager = new ConfigManager();
     public InputSourceManager inputSourceManager = new InputSourceManager(this);
     public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
     public TunerManager tunerManager = new TunerManager(this);
+
     public FpsLimiter fpsLimiter = new FpsLimiter(30);
 
     public void init() {
@@ -45,11 +50,6 @@ public class EOCVSim {
 
         inputSourceManager.init(); //loading user created input sources
 
-        visualizer.waitForFinishingInit();
-
-        visualizer.updateSourcesList(); //update sources and pick first one
-        visualizer.sourceSelector.setSelectedIndex(0);
-
         //create a dialog to give user visual feedback
         AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
         lookForPipelineAPWD.onCancel(() -> System.exit(0));
@@ -59,6 +59,11 @@ public class EOCVSim {
         lookForPipelineAPWD.destroyDialog(); //destroy dialog since wait's over.
 
         tunerManager.init(); //init tunable variables manager
+
+        visualizer.waitForFinishingInit(); //wait for visualizer to finish its work
+
+        visualizer.updateSourcesList(); //update sources and pick first one
+        visualizer.sourceSelector.setSelectedIndex(0);
 
         visualizer.updatePipelinesList(); //update pipelines and pick first one (DefaultPipeline)
         visualizer.pipelineSelector.setSelectedIndex(0);
@@ -120,8 +125,8 @@ public class EOCVSim {
 
             visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
-            if (count == 100) { //run garbage collector every 100 frames
-                System.gc();
+            if (count == 200) { //run garbage collector every 200 frames
+                //System.gc();
                 count = 0;
             } else {
                 count++;
