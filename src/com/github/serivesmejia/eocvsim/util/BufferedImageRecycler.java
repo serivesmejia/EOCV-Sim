@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.util;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -18,8 +19,16 @@ public class BufferedImageRecycler {
         }
     }
 
+    public BufferedImageRecycler(int num, Dimension allImgSize, int allImgType) {
+        this(num, (int)allImgSize.getWidth(), (int)allImgSize.getHeight(), allImgType);
+    }
+
     public BufferedImageRecycler(int num, int allImgWidth, int allImgHeight) {
         this(num, allImgWidth, allImgHeight, BufferedImage.TYPE_3BYTE_BGR);
+    }
+
+    public BufferedImageRecycler(int num, Dimension allImgSize) {
+        this(num, (int)allImgSize.getWidth(), (int)allImgSize.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
     }
 
     public synchronized RecyclableBufferedImage takeBufferedImage() {
@@ -47,9 +56,10 @@ public class BufferedImageRecycler {
 
         if (buffImg.checkedOut) {
             buffImg.checkedOut = false;
+            buffImg.flush();
             availableBufferedImages.add(buffImg);
         } else {
-            throw new IllegalArgumentException("This Buffered Image has already been returned!");
+            throw new IllegalArgumentException("This BufferedImage has already been returned!");
         }
     }
 

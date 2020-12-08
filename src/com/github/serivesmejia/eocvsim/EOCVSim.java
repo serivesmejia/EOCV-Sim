@@ -78,9 +78,6 @@ public class EOCVSim {
         Log.white();
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
-
-        int count = 0;
-
         while (!Thread.interrupted()) {
 
             Telemetry telemetry = pipelineManager.currentTelemetry;
@@ -124,13 +121,6 @@ public class EOCVSim {
             }
 
             visualizer.updateTelemetry(pipelineManager.currentTelemetry);
-
-            if (count == 200) { //run garbage collector every 200 frames
-                //System.gc();
-                count = 0;
-            } else {
-                count++;
-            }
 
             try {
                 fpsLimiter.sync();

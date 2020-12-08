@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.util.CvUtil;
 import org.opencv.core.Mat;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageX extends JLabel {

@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim.gui.component;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
+import com.github.serivesmejia.eocvsim.util.BufferedImageGiver;
 import com.github.serivesmejia.eocvsim.util.BufferedImageRecycler;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
@@ -13,6 +14,7 @@ import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Viewport extends JPanel {
 
@@ -21,9 +23,9 @@ public class Viewport extends JPanel {
     private Mat lastVisualizedMat = null;
     private Mat lastVisualizedScaledMat = null;
 
-    private BufferedImageRecycler.RecyclableBufferedImage lastBuffImage = null;
+    private final BufferedImageGiver buffImgGiver = new BufferedImageGiver();
 
-    private BufferedImageRecycler buffImageRecycler;
+    private volatile BufferedImage lastBuffImage;
 
     private double scale;
 
@@ -38,18 +40,17 @@ public class Viewport extends JPanel {
 
         add(image, new GridBagConstraints());
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        buffImageRecycler = new BufferedImageRecycler(5, (int)screenSize.getWidth(), (int)screenSize.getHeight());
-
     }
 
     public synchronized void visualizeScaleMat(Mat mat) {
 
-        if(lastBuffImage != null) buffImageRecycler.returnBufferedImage(lastBuffImage);
+        if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
+
+        if(lastVisualizedMat == null) lastVisualizedMat = new Mat(); //create latest mat if we have null reference
+        if(lastVisualizedScaledMat == null) lastVisualizedScaledMat = new Mat(); //create last scaled mat if null reference
 
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
-        if(lastVisualizedMat == null) lastVisualizedMat = new Mat(); //create latest mat if we have null reference
         mat.copyTo(lastVisualizedMat); //copy given mat to viewport latest one
 
         double wScale = (double) frame.getWidth() / mat.width();
@@ -58,13 +59,10 @@ public class Viewport extends JPanel {
         double calcScale = (wScale / hScale) * 1.5;
         double finalScale = Math.max(0.1, Math.min(3, scale * calcScale));
 
-        if(lastVisualizedScaledMat == null) lastVisualizedScaledMat = new Mat(); //create last scaled mat if null reference
-
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
         Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat to lastVisualizedScaledMat
 
-        lastBuffImage = buffImageRecycler.takeBufferedImage();
-
+        lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 3);
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
 
         image.setImage(lastBuffImage); //set buff image to ImageX component
