@@ -57,6 +57,7 @@ public class Visualizer {
 
     public JMenu fileMenu = null;
     public JMenu editMenu = null;
+    public JMenu helpMenu = null;
 
     public JPanel tunerMenuPanel = new JPanel();
 
@@ -204,6 +205,14 @@ public class Visualizer {
 
         menuBar.add(editMenu);
 
+        helpMenu = new JMenu("Help");
+
+        JMenuItem helpAbout = new JMenuItem("About");
+        
+        helpMenu.add(helpAbout);
+
+        menuBar.add(helpMenu);
+        
         frame.setJMenuBar(menuBar);
 
         /*
@@ -565,6 +574,8 @@ public class Visualizer {
         childDialogs.clear();
 
         frame.dispose();
+
+        viewport.flush();
 
     }
 

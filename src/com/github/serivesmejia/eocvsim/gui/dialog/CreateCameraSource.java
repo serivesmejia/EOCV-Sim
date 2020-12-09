@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 public class CreateCameraSource {
 
     public JDialog createCameraSource = null;
+
     public JTextField cameraIdField = null;
     public JButton createButton = null;
 

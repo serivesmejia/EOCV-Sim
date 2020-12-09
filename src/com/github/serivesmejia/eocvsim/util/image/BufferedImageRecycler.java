@@ -63,6 +63,12 @@ public class BufferedImageRecycler {
         }
     }
 
+    public synchronized void flushAll() {
+        for(BufferedImage img : allBufferedImages) {
+            img.flush();
+        }
+    }
+
     public static class RecyclableBufferedImage extends BufferedImage {
 
         private int idx = -1;

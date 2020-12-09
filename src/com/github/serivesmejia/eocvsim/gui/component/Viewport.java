@@ -82,6 +82,10 @@ public class Viewport extends JPanel {
         });
     }
 
+    public void flush() {
+        buffImgGiver.flushAll();
+    }
+
     public synchronized void setViewportScale(double scale) {
 
         scale = Range.clip(scale, 0.1, 3);

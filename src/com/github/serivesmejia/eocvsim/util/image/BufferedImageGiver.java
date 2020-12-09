@@ -49,5 +49,11 @@ public class BufferedImageGiver {
         recyclers.get(dimension).returnBufferedImage((BufferedImageRecycler.RecyclableBufferedImage) buffImg);
 
     }
+    
+    public synchronized void flushAll() {
+        for(BufferedImageRecycler recycler : recyclers.values()) {
+            recycler.flushAll();
+        }
+    }
 
 }

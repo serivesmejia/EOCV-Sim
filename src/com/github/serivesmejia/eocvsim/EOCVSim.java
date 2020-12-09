@@ -124,7 +124,7 @@ public class EOCVSim {
 
             visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
-            fpsCounter.update();
+            if(!pipelineManager.isPaused()) fpsCounter.update();
 
             try {
                 fpsLimiter.sync();
