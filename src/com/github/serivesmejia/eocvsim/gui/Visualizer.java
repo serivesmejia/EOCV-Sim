@@ -758,19 +758,28 @@ public class Visualizer {
     public class AsyncPleaseWaitDialog implements Runnable {
 
         public volatile JDialog dialog = new JDialog(frame);
+
         public volatile JLabel msg = null;
         public volatile JLabel subMsg = null;
+
         public volatile JButton cancelBtt = null;
+
         public volatile boolean wasCancelled = false;
         public volatile boolean isError = false;
+
         public volatile String initialMessage = "";
         public volatile String initialSubMessage = "";
+
         public volatile boolean isDestroyed = false;
+
         String message = "";
         String subMessage = "";
         String cancelBttText = "";
+
         Dimension size = null;
+
         boolean cancellable = false;
+
         private final ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
 
         public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {

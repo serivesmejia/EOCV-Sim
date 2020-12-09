@@ -23,10 +23,10 @@ public class FpsLimiter {
 
     }
 
-    public void setFPS(int fps) {
+    public void setMaxFPS(int fps) {
         this.fps = fps;
     }
 
-    public int getFPS() { return fps; }
+    public int getMaxFPS() { return fps; }
 
 }
