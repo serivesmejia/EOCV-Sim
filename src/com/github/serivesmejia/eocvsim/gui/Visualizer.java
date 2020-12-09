@@ -85,7 +85,6 @@ public class Visualizer {
     public volatile JList<String> telemetryList = null;
 
     public MatPoster matPoster;
-    public Thread asyncVisualizerThread;
 
     private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
     private String titleMsg = "No pipeline";
@@ -405,8 +404,7 @@ public class Visualizer {
     }
 
     public void initAsync(Theme simTheme) {
-        asyncVisualizerThread = new Thread(() -> init(simTheme), "Visualizer-Thread");
-        asyncVisualizerThread.start();
+        SwingUtilities.invokeLater(() -> init(simTheme));
     }
 
     private void registerListeners() {

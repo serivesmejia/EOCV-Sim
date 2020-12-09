@@ -20,7 +20,7 @@ public class DialogFactory {
 
     public static FileChooser createFileChooser(Component parent, FileChooser.Mode mode, FileFilter... filters) {
         FileChooser fileChooser = new FileChooser(parent, mode, filters);
-        createStartThread(fileChooser::init);
+        invokeLater(fileChooser::init);
         return fileChooser;
     }
 
@@ -36,14 +36,8 @@ public class DialogFactory {
         return createFileChooser(parent, null, null);
     }
 
-    private static Thread createStartThread(Runnable runn) {
-        Thread t = new Thread(runn, "DialogFactory-Thread");
-        t.start();
-        return t;
-    }
-
-    public Thread createSourceDialog(InputSourceManager.SourceType type) {
-        return createStartThread(() -> {
+    public void createSourceDialog(InputSourceManager.SourceType type) {
+        invokeLater(() -> {
             switch (type) {
                 case IMAGE:
                     new CreateImageSource(eocvSim.visualizer.frame, eocvSim);
@@ -55,16 +49,20 @@ public class DialogFactory {
         });
     }
 
-    public Thread createSourceDialog() {
-        return createStartThread(() -> new CreateSource(eocvSim.visualizer.frame, eocvSim));
+    public void createSourceDialog() {
+        invokeLater(() -> new CreateSource(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public Thread createConfigDialog() {
-        return createStartThread(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
+    public void createConfigDialog() {
+        invokeLater(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public FileAlreadyExists.UserChoice fileAlreadyExists() {
+    public FileAlreadyExists.UserChoice createFileAlreadyExistsDialog() {
         return new FileAlreadyExists(eocvSim.visualizer.frame, eocvSim).run();
+    }
+
+    private static void invokeLater(Runnable runn) {
+        SwingUtilities.invokeLater(runn);
     }
 
     public static class FileChooser {
