@@ -18,17 +18,22 @@ public class PipelineManager {
     private final ArrayList<Runnable> runnsOnChange = new ArrayList<>();
     private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
     private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
+
     public volatile ArrayList<Class<? extends OpenCvPipeline>> pipelines = new ArrayList<>();
+
     public OpenCvPipeline currentPipeline = null;
     public String currentPipelineName = "";
     public int currentPipelineIndex = -1;
+
     public Telemetry currentTelemetry = null;
     public volatile Mat lastOutputMat = new Mat();
+
     public EOCVSim eocvSim;
-    private int lastFPS = 0;
-    private int fpsCount = 0;
+
     private final ElapsedTime fpsElapsedTime = new ElapsedTime();
+
     private volatile boolean isPaused = false;
+
     private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
 
     public PipelineManager(EOCVSim eocvSim) {
@@ -82,18 +87,8 @@ public class PipelineManager {
             lastOutputMat = inputMat;
         }
 
-        calcFPS();
 
-    }
 
-    private void calcFPS() {
-        fpsCount++;
-        //update and reset the fps count if a second has passed since the last update
-        if (fpsElapsedTime.seconds() >= 1) {
-            lastFPS = fpsCount;
-            fpsCount = 0;
-            fpsElapsedTime.reset();
-        }
     }
 
     public void changePipeline(int index) {
@@ -151,10 +146,6 @@ public class PipelineManager {
             runn.run();
         }
 
-    }
-
-    public int getFPS() {
-        return lastFPS;
     }
 
     public void requestChangePipeline(int index) {

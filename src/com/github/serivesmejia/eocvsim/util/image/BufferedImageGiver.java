@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.util;
+package com.github.serivesmejia.eocvsim.util.image;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -17,6 +17,9 @@ public class ImageX extends JLabel {
 
     public synchronized void setImage(BufferedImage img) {
 
+        Graphics2D g2d = (Graphics2D) getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         if (icon != null)
             icon.getImage().flush(); //flush old image :p
 

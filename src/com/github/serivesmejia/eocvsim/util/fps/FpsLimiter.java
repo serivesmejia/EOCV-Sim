@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.util;
+package com.github.serivesmejia.eocvsim.util.fps;
 
 public class FpsLimiter {
 

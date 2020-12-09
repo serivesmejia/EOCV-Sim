@@ -6,7 +6,8 @@ import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.tuner.TunerManager;
-import com.github.serivesmejia.eocvsim.util.FpsLimiter;
+import com.github.serivesmejia.eocvsim.util.fps.FpsCounter;
+import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -30,7 +31,8 @@ public class EOCVSim {
     public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
     public TunerManager tunerManager = new TunerManager(this);
 
-    public FpsLimiter fpsLimiter = new FpsLimiter(30);
+    public final FpsLimiter fpsLimiter = new FpsLimiter(60);
+    public final FpsCounter fpsCounter = new FpsCounter();
 
     public void init() {
 
@@ -122,6 +124,8 @@ public class EOCVSim {
 
             visualizer.updateTelemetry(pipelineManager.currentTelemetry);
 
+            fpsCounter.update();
+
             try {
                 fpsLimiter.sync();
             } catch (InterruptedException e) {
@@ -168,16 +172,19 @@ public class EOCVSim {
 
     public void updateVisualizerTitle() {
 
-        String fpsMsg = " (" + pipelineManager.getFPS() + " FPS)";
+        String pipelineFpsMsg = " (" + fpsCounter.getFPS() + " Pipeline FPS)";
+        String posterFpsMsg = " (" + visualizer.matPoster.fpsCounter.getFPS() + " Poster FPS)";
 
         String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
 
         String memoryMsg = " (" + SysUtil.getMemoryUsageMB() + " MB Java memory used)";
 
+        String msg = pipelineFpsMsg + posterFpsMsg + isPaused + memoryMsg;
+
         if (pipelineManager.currentPipeline == null) {
-            visualizer.setTitleMessage("No pipeline" + fpsMsg + isPaused + memoryMsg);
+            visualizer.setTitleMessage("No pipeline" + msg);
         } else {
-            visualizer.setTitleMessage(pipelineManager.currentPipelineName + fpsMsg + isPaused + memoryMsg);
+            visualizer.setTitleMessage(pipelineManager.currentPipelineName + msg);
         }
 
     }
