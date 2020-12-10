@@ -17,10 +17,12 @@ public class About {
     public JDialog about = null;
 
     public static ListModel<String> CONTRIBS_LIST_MODEL;
+    public static ListModel<String> OSL_LIST_MODEL;
 
     static {
         try {
             CONTRIBS_LIST_MODEL = GuiUtil.isToListModel(About.class.getResourceAsStream("/resources/contributors.txt"), StandardCharsets.UTF_8);
+            OSL_LIST_MODEL = GuiUtil.isToListModel(About.class.getResourceAsStream("/resources/opensourcelibs.txt"), StandardCharsets.UTF_8);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -40,7 +42,7 @@ public class About {
         about.setModal(true);
 
         about.setTitle("About");
-        about.setSize(400, 250);
+        about.setSize(400, 300);
 
         JPanel contents = new JPanel(new GridLayout(2, 1));
         contents.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -59,14 +61,17 @@ public class About {
         appInfoLogo.add(icon);
         appInfoLogo.add(appInfo);
 
-        appInfoLogo.setBorder(BorderFactory.createEmptyBorder(20, 10, -40, 10));
+        appInfoLogo.setBorder(BorderFactory.createEmptyBorder(10, 10, -30, 10));
 
         contents.add(appInfoLogo);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
 
         JPanel contributors = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         JList<String> contribsList = new JList<>();
         contribsList.setModel(CONTRIBS_LIST_MODEL);
+        contribsList.setSelectionModel(new GuiUtil.NoSelectionModel());
         contribsList.setLayout(new FlowLayout(FlowLayout.CENTER));
         contribsList.setAlignmentY(Component.TOP_ALIGNMENT);
 
@@ -86,7 +91,36 @@ public class About {
 
         contributorsList.add(contribsListScroll);
         contributors.add(contributorsList);
-        contents.add(contributors);
+
+        tabbedPane.addTab("Contributors", contributors);
+
+        JPanel osLibs = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        JList<String> osLibsList = new JList<>();
+        osLibsList.setModel(OSL_LIST_MODEL);
+        osLibsList.setSelectionModel(new GuiUtil.NoSelectionModel());
+        osLibsList.setLayout(new FlowLayout(FlowLayout.CENTER));
+        osLibsList.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        osLibsList.setVisibleRowCount(4);
+
+        JPanel osLibsListPane = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        osLibsList.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        JScrollPane osLibsListScroll = new JScrollPane();
+        osLibsListScroll.setBorder(new EmptyBorder(0,0,20,10));
+        osLibsListScroll.setAlignmentX(Component.CENTER_ALIGNMENT);
+        osLibsListScroll.setAlignmentY(Component.TOP_ALIGNMENT);
+        osLibsListScroll.setViewportView(osLibsList);
+
+        osLibs.setAlignmentY(Component.TOP_ALIGNMENT);
+
+        osLibsListPane.add(osLibsListScroll);
+        osLibs.add(osLibsListPane);
+
+        tabbedPane.addTab("Open Source Libraries", osLibs);
+
+        contents.add(tabbedPane);
 
         contents.setBorder(new EmptyBorder(10,10,10,10));
 
