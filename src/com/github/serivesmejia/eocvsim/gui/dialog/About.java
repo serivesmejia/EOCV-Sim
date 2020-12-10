@@ -5,12 +5,21 @@ import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.gui.component.ImageX;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.github.serivesmejia.eocvsim.util.StrUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class About {
 
@@ -42,7 +51,7 @@ public class About {
         about.setModal(true);
 
         about.setTitle("About");
-        about.setSize(400, 300);
+        about.setSize(430, 300);
 
         JPanel contents = new JPanel(new GridLayout(2, 1));
         contents.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -98,11 +107,29 @@ public class About {
 
         JList<String> osLibsList = new JList<>();
         osLibsList.setModel(OSL_LIST_MODEL);
-        osLibsList.setSelectionModel(new GuiUtil.NoSelectionModel());
         osLibsList.setLayout(new FlowLayout(FlowLayout.CENTER));
         osLibsList.setAlignmentY(Component.TOP_ALIGNMENT);
 
         osLibsList.setVisibleRowCount(4);
+
+        osLibsList.addListSelectionListener(e -> {
+            if(!e.getValueIsAdjusting()) {
+
+                String text = osLibsList.getModel().getElementAt(osLibsList.getSelectedIndex());
+                String[] urls = StrUtil.findUrlsInString(text);
+
+                if(urls.length > 0) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(urls[0]));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                osLibsList.clearSelection();
+
+            }
+        });
 
         JPanel osLibsListPane = new JPanel(new FlowLayout(FlowLayout.CENTER));
         osLibsList.setAlignmentY(Component.TOP_ALIGNMENT);
