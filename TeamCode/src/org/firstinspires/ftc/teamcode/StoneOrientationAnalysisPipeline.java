@@ -195,7 +195,7 @@ public class StoneOrientationAnalysisPipeline extends OpenCvPipeline
 
         // We do draw the contours we find, but not to the main input buffer.
         input.copyTo(contoursOnPlainImageMat);
-        Imgproc.drawContours(contoursOnPlainImageMat, contoursList, -1, BLUE, CONTOUR_LINE_THICKNESS, 8);
+        Imgproc.drawContours(contoursOnPlainImageMat, contoursList, -1, BLUE, CONTOUR_LINE_THICKNESS);
 
         return contoursList;
     }
@@ -293,7 +293,7 @@ public class StoneOrientationAnalysisPipeline extends OpenCvPipeline
                     2); // Thickness of the line we're drawing
 
             // We outline the contour region that we assumed to be the side with the nubs
-            Imgproc.drawContours(input, aboveMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2, 8);
+            Imgproc.drawContours(input, aboveMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2);
 
             // Compute the absolute angle of the stone
             double angle = -(rotRectAngle-90);
@@ -326,7 +326,7 @@ public class StoneOrientationAnalysisPipeline extends OpenCvPipeline
                     2); // Thickness of the line we're drawing
 
             // We outline the contour region that we assumed to be the side with the nubs
-            Imgproc.drawContours(input, belowMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2, 8);
+            Imgproc.drawContours(input, belowMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2);
 
             // Compute the absolute angle of the stone
             double angle = -(rotRectAngle-270);
@@ -444,7 +444,7 @@ public class StoneOrientationAnalysisPipeline extends OpenCvPipeline
                 new Point( // The anchor point for the text
                         rect.center.x-50,  // x anchor point
                         rect.center.y+25), // y anchor point
-                Imgproc.FONT_HERSHEY_PLAIN, // Font
+                Core.FONT_HERSHEY_PLAIN, // Font
                 1, // Font size
                 TEAL, // Font color
                 1); // Font thickness
