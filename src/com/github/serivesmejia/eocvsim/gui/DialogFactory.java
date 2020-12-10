@@ -57,6 +57,10 @@ public class DialogFactory {
         invokeLater(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
     }
 
+    public void createAboutDialog() {
+        invokeLater(() -> new About(eocvSim.visualizer.frame, eocvSim));
+    }
+
     public FileAlreadyExists.UserChoice createFileAlreadyExistsDialog() {
         return new FileAlreadyExists(eocvSim.visualizer.frame, eocvSim).run();
     }

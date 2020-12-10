@@ -11,7 +11,9 @@ public class CreateSource {
 
     public static volatile boolean alreadyOpened = false;
     public volatile JDialog chooseSource = null;
+
     EOCVSim eocvSim = null;
+
     private volatile JFrame parent = null;
 
     public CreateSource(JFrame parent, EOCVSim eocvSim) {
@@ -68,7 +70,8 @@ public class CreateSource {
 
         nextButton.addActionListener(e -> {
             close();
-            new DialogFactory(eocvSim).createSourceDialog(SourceType.valueOf(dropDown.getSelectedItem().toString()));
+            SourceType sourceType = SourceType.valueOf(dropDown.getSelectedItem().toString());
+            new DialogFactory(eocvSim).createSourceDialog(sourceType);
         });
 
         chooseSource.setResizable(false);

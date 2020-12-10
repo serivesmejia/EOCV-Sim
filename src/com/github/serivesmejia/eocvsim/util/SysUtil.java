@@ -2,15 +2,15 @@ package com.github.serivesmejia.eocvsim.util;
 
 import org.opencv.core.Core;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SysUtil {
 
@@ -56,15 +56,11 @@ public class SysUtil {
 
         boolean is64bit = System.getProperty("sun.arch.data.model").contains("64"); //Checking if JVM is 64 bits or not
 
-        try {
-            loadLib(os, fileExt, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        loadLib(os, fileExt, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
 
     }
 
-    public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) throws IOException {
+    public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) {
 
         String arch = is64bit ? "64" : "32"; //getting os arch
 
@@ -144,6 +140,11 @@ public class SysUtil {
 
     public static long getMemoryUsageMB() {
         return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / MB;
+    }
+
+    public static String loadIsStr(InputStream is, Charset charset) throws UnsupportedEncodingException {
+        return new BufferedReader(new InputStreamReader(is, String.valueOf(charset)))
+                .lines().collect(Collectors.joining("\n"));
     }
 
     public static String loadFileStr(File f) {

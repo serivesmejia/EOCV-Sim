@@ -1,24 +1,20 @@
 package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.gui.component.ImageX;
-import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
+
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import javax.swing.*;
@@ -47,6 +43,8 @@ public class Visualizer {
     public final ArrayList<JDialog> childDialogs = new ArrayList<>();
 
     private final EOCVSim eocvSim;
+    private final DialogFactory dialogFactory;
+
     private final ThemeInstaller themeInstaller = new ThemeInstaller();
 
     public JFrame frame = null;
@@ -84,8 +82,6 @@ public class Visualizer {
     public JScrollPane telemetryScroll = null;
     public volatile JList<String> telemetryList = null;
 
-    public MatPoster matPoster;
-
     private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
     private String titleMsg = "No pipeline";
     private String beforeTitle = "";
@@ -103,13 +99,10 @@ public class Visualizer {
 
     public Visualizer(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
+        dialogFactory = new DialogFactory(eocvSim);
     }
 
     public void init(Theme theme) {
-
-        //instantiate opencv stuff here to make sure
-        //native lib has already been loaded
-        this.matPoster = new MatPoster(10);
 
         try {
             themeInstaller.installTheme(theme);
@@ -119,7 +112,7 @@ public class Visualizer {
 
         //instantiate all swing elements after theme installation
         frame = new JFrame();
-        viewport = new Viewport(eocvSim);
+        viewport = new Viewport(eocvSim, 10);
 
         menuBar = new JMenuBar();
 
@@ -159,7 +152,7 @@ public class Visualizer {
         JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
 
         fileNewInputSourceImageItem.addActionListener(e ->
-                new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.IMAGE)
+                dialogFactory.createSourceDialog(InputSourceManager.SourceType.IMAGE)
         );
 
         fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
@@ -167,7 +160,7 @@ public class Visualizer {
         JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
 
         fileNewInputSourceCameraItem.addActionListener(e ->
-                new DialogFactory(eocvSim).createSourceDialog(InputSourceManager.SourceType.CAMERA)
+                dialogFactory.createSourceDialog(InputSourceManager.SourceType.CAMERA)
         );
 
         fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
@@ -197,7 +190,7 @@ public class Visualizer {
         JMenuItem editSettings = new JMenuItem("Settings");
 
         editSettings.addActionListener(e ->
-                new DialogFactory(eocvSim).createConfigDialog()
+                dialogFactory.createConfigDialog()
         );
 
         editMenu.add(editSettings);
@@ -207,7 +200,11 @@ public class Visualizer {
         helpMenu = new JMenu("Help");
 
         JMenuItem helpAbout = new JMenuItem("About");
-        
+
+        helpAbout.addActionListener((e) ->
+                dialogFactory.createAboutDialog()
+        );
+
         helpMenu.add(helpAbout);
 
         menuBar.add(helpMenu);
@@ -409,9 +406,6 @@ public class Visualizer {
 
     private void registerListeners() {
 
-        //attach viewport to matposter to recieve mats from user pipeline to viewport
-        viewport.attachToPoster(matPoster);
-
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 eocvSim.runOnMainThread(eocvSim::destroy);
@@ -492,7 +486,8 @@ public class Visualizer {
         //handling onViewportTapped evts
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                eocvSim.pipelineManager.currentPipeline.onViewportTapped();
+                OpenCvPipeline pipeline = eocvSim.pipelineManager.currentPipeline;
+                if(pipeline != null) pipeline.onViewportTapped();
             }
         });
 
@@ -543,7 +538,7 @@ public class Visualizer {
     public void close() {
 
         frame.setVisible(false);
-        matPoster.stop();
+        viewport.stop();
 
         for (AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
             if (dialog != null) {

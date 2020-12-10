@@ -19,6 +19,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -182,6 +186,21 @@ public final class GuiUtil {
         clonedMat.release();
 
         saveBufferedImageFileChooser(parent, img, eocvSim);
+
+    }
+
+    public static ListModel<String> isToListModel(InputStream is, Charset charset) throws UnsupportedEncodingException {
+
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        String isStr = SysUtil.loadIsStr(is, charset);
+
+        String[] lines = isStr.split("\n");
+
+        for(int i = 0 ; i < lines.length ; i++) {
+            listModel.add(i, lines[i]);
+        }
+
+        return listModel;
 
     }
 

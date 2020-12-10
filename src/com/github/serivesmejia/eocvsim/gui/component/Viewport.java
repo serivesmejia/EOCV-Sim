@@ -9,6 +9,7 @@ import com.github.serivesmejia.eocvsim.util.Log;
 import com.qualcomm.robotcore.util.Range;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.awt.image.BufferedImage;
 public class Viewport extends JPanel {
 
     public final ImageX image = new ImageX();
+    public final MatPoster matPoster;
 
     private Mat lastVisualizedMat = null;
     private Mat lastVisualizedScaledMat = null;
@@ -30,7 +32,7 @@ public class Viewport extends JPanel {
 
     private final EOCVSim eocvSim;
 
-    public Viewport(EOCVSim eocvSim) {
+    public Viewport(EOCVSim eocvSim, int maxQueueItems) {
 
         super(new GridBagLayout());
 
@@ -39,6 +41,13 @@ public class Viewport extends JPanel {
 
         add(image, new GridBagConstraints());
 
+        matPoster = new MatPoster(maxQueueItems);
+        attachToPoster(matPoster);
+
+    }
+
+    public synchronized void postMat(Mat mat) {
+        matPoster.post(mat);
     }
 
     public synchronized void visualizeScaleMat(Mat mat) {
@@ -84,6 +93,11 @@ public class Viewport extends JPanel {
 
     public void flush() {
         buffImgGiver.flushAll();
+    }
+
+    public void stop() {
+        matPoster.stop();
+        flush();
     }
 
     public synchronized void setViewportScale(double scale) {

@@ -110,6 +110,8 @@ fabric.properties
 !/lib/classgraph-4.8.90.jar
 !/lib/gson-2.8.6.jar
 !/lib/opencv-440.jar
+!/lib/flatlaf-0.44.jar
+!/lib/flatlaf-intellij-themes-0.44.jar
 
 /TeamCode/src/org/firstinspires/ftc/teamcode/*
 !/TeamCode/src/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java

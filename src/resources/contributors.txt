@@ -1,0 +1,4 @@
+<html>NPE & OpenFTC Team - EOCV Developers & Advisors</html>
+<html>serivesmejia - Main Dev</html>
+<html>Purav Datta - Contributor & Tester (Mac)</html>
+<html>Shaurya - Mac Tester & Guide Contributor</html>

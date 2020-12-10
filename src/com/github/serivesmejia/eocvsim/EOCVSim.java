@@ -103,7 +103,7 @@ public class EOCVSim {
                 pipelineManager.update(inputSourceManager.lastMatFromSource);
 
                 if (!pipelineManager.isPaused())
-                    visualizer.matPoster.post(pipelineManager.lastOutputMat);
+                    visualizer.viewport.postMat(pipelineManager.lastOutputMat);
 
                 if (telemetry != null) {
                     telemetry.errItem.setCaption("");
@@ -173,7 +173,7 @@ public class EOCVSim {
     public void updateVisualizerTitle() {
 
         String pipelineFpsMsg = " (" + fpsCounter.getFPS() + " Pipeline FPS)";
-        String posterFpsMsg = " (" + visualizer.matPoster.fpsCounter.getFPS() + " Poster FPS)";
+        String posterFpsMsg = " (" + visualizer.viewport.matPoster.fpsCounter.getFPS() + " Poster FPS)";
 
         String isPaused = pipelineManager.isPaused() ? " (Paused)" : "";
 
