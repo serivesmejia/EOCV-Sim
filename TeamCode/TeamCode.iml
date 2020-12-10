@@ -11,6 +11,6 @@
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="com.formdev:flatlaf:0.44" level="project" />
     <orderEntry type="library" name="com.formdev:flatlaf-intellij-themes:0.44" level="project" />
-    <orderEntry type="library" name="org.openpnp:opencv:3.4.2-1" level="project" />
+    <orderEntry type="library" name="org.openpnp:opencv:4.3.0-2" level="project" />
   </component>
 </module>

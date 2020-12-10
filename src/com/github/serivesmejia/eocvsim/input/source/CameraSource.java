@@ -36,7 +36,7 @@ public class CameraSource extends InputSource {
         if (initialized) return false;
         initialized = true;
 
-        camera = new VideoCapture(webcamIndex);
+        camera = new VideoCapture();
 
         if (!camera.isOpened()) {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex);
@@ -125,7 +125,7 @@ public class CameraSource extends InputSource {
     @Override
     public void onResume() {
         Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.checkCameraDialogPleaseWait(name);
-        camera = new VideoCapture(webcamIndex);
+        camera = new VideoCapture();
         camera.open(webcamIndex);
         apwdCam.destroyDialog();
     }

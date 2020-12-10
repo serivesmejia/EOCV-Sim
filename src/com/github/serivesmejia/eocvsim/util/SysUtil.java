@@ -61,47 +61,47 @@ public class SysUtil {
     }
 
     public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) {
-//
-//        String arch = is64bit ? "64" : "32"; //getting os arch
-//
-//        String libName = os + arch + "_" + name; //resultant lib name from those two
-//        String libNameExt = libName + "." + fileExt; //resultant lib name from those two
-//
-//        File nativeLibFile = new File(getAppData() + File.separator + libNameExt);
-//
-//        if (!nativeLibFile.exists()) {
-//            Log.info("SysUtil", "Downloading native lib from " + GH_NATIVE_LIBS_URL + libNameExt);
-//            try {
-//                download(GH_NATIVE_LIBS_URL + libNameExt, nativeLibFile.getAbsolutePath());
-//            } catch (Throwable ex) {
-//                ex.printStackTrace();
-//            }
-//            Log.white();
-//        }
-//
-//        Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
-//
-//        try {
-//
-//            System.load(nativeLibFile.getAbsolutePath()); //Loading OpenCV native library
-//            Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
-//
-//        } catch (UnsatisfiedLinkError ex) {
-//
-//            ex.printStackTrace();
-//
-//            if (attempts < 4) {
-//                ex.printStackTrace();
-//                Log.error("SysUtil", "Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attempts + " attempts)");
-//                loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attempts + 1);
-//            } else {
-//                ex.printStackTrace();
-//                Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
-//                System.exit(1);
-//            }
 
-//        }
-        nu.pattern.OpenCV.loadShared();
+        String arch = is64bit ? "64" : "32"; //getting os arch
+
+        String libName = os + arch + "_" + name; //resultant lib name from those two
+        String libNameExt = libName + "." + fileExt; //resultant lib name from those two
+
+        File nativeLibFile = new File(getAppData() + File.separator + libNameExt);
+
+        if (!nativeLibFile.exists()) {
+            Log.info("SysUtil", "Downloading native lib from " + GH_NATIVE_LIBS_URL + libNameExt);
+            try {
+                download(GH_NATIVE_LIBS_URL + libNameExt, nativeLibFile.getAbsolutePath());
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+            }
+            Log.white();
+        }
+
+        Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
+
+        try {
+
+            System.load(nativeLibFile.getAbsolutePath()); //Loading OpenCV native library
+            Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
+
+        } catch (UnsatisfiedLinkError ex) {
+
+            ex.printStackTrace();
+
+            if (attempts < 4) {
+                ex.printStackTrace();
+                Log.error("SysUtil", "Failure loading lib \"" + libName + "\", retrying with different architecture... (" + attempts + " attempts)");
+                loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attempts + 1);
+            } else {
+                ex.printStackTrace();
+                Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
+                System.exit(1);
+            }
+
+        }
+
     }
 
     public static CopyFileIsData copyFileIs(InputStream is, File toPath, boolean replaceIfExisting) throws IOException {

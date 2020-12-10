@@ -39,7 +39,8 @@ public class EOCVSim {
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
         Log.white();
 
-        SysUtil.loadCvNativeLib();
+        Log.info("EOCVSim", "Loading native lib...");
+        nu.pattern.OpenCV.loadShared();
         Log.white();
 
         Thread.currentThread().setPriority((int) (Thread.MAX_PRIORITY * 0.8));

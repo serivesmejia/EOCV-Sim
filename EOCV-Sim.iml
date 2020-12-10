@@ -10,10 +10,10 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="src" level="project" />
     <orderEntry type="module" module-name="TeamCode" />
-    <orderEntry type="library" name="classgraph-4.8.90" level="project" />
-    <orderEntry type="library" name="gson-2.8.6" level="project" />
     <orderEntry type="library" name="com.formdev:flatlaf:0.44" level="project" />
     <orderEntry type="library" name="com.formdev:flatlaf-intellij-themes:0.44" level="project" />
-    <orderEntry type="library" name="org.openpnp:opencv:3.4.2-1" level="project" />
+    <orderEntry type="library" name="com.google.code.gson:gson:2.8.6" level="project" />
+    <orderEntry type="library" name="io.github.classgraph:classgraph:4.8.89" level="project" />
+    <orderEntry type="library" name="org.openpnp:opencv:4.3.0-2" level="project" />
   </component>
 </module>

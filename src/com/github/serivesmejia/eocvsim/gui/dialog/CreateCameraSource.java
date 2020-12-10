@@ -257,7 +257,9 @@ public class CreateCameraSource {
 
     public boolean testCamera(int camIndex) {
 
-        VideoCapture camera = new VideoCapture(camIndex);
+        VideoCapture camera = new VideoCapture();
+        camera.open(camIndex);
+
         boolean wasOpened = camera.isOpened();
 
         camera.release();

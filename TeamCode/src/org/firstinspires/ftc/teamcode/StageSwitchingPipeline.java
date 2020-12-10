@@ -85,8 +85,7 @@ public class StageSwitchingPipeline extends OpenCvPipeline
         Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
         numContoursFound = contoursList.size();
         input.copyTo(contoursOnFrameMat);
-//        Imgproc.drawContours(contoursOnFrameMat, contoursList, -1, new Scalar(0, 0, 255), 3, 8);
-        Imgproc.drawContours(contoursOnFrameMat,contoursList,-1,new Scalar(0,0,255),3);
+        Imgproc.drawContours(contoursOnFrameMat, contoursList, -1, new Scalar(0, 0, 255), 3, 8);
 
         telemetry.addData("[Stage]", stageToRenderToViewport);
         telemetry.addData("[Found Contours]", "%d", numContoursFound);

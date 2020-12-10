@@ -32,7 +32,7 @@ public class DefaultPipeline extends OpenCvPipeline {
                 input,
                 "Default pipeline selected",
                 new Point(0, 22 * aspectRatioPercentage),
-                Core.FONT_HERSHEY_PLAIN,
+                Imgproc.FONT_HERSHEY_PLAIN,
                 2 * aspectRatioPercentage,
                 new Scalar(255, 255, 255),
                 (int) Math.round(5 * aspectRatioPercentage)
@@ -44,7 +44,7 @@ public class DefaultPipeline extends OpenCvPipeline {
                 input,
                 "Default pipeline selected",
                 new Point(0, 22 * aspectRatioPercentage),
-                Core.FONT_HERSHEY_PLAIN,
+                Imgproc.FONT_HERSHEY_PLAIN,
                 2 * aspectRatioPercentage,
                 new Scalar(0, 0, 0),
                 (int) Math.round(2 * aspectRatioPercentage)
