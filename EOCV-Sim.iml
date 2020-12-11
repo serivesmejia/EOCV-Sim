@@ -8,12 +8,14 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="src" level="project" />
-    <orderEntry type="module" module-name="TeamCode" />
-    <orderEntry type="library" name="com.formdev:flatlaf:0.44" level="project" />
-    <orderEntry type="library" name="com.formdev:flatlaf-intellij-themes:0.44" level="project" />
+    <orderEntry type="library" exported="" name="src" level="project" />
+    <orderEntry type="module" module-name="TeamCode" exported="" />
+    <orderEntry type="library" exported="" name="com.formdev:flatlaf:0.44" level="project" />
+    <orderEntry type="library" exported="" name="com.formdev:flatlaf-intellij-themes:0.44" level="project" />
+    <orderEntry type="library" exported="" name="io.github.classgraph:classgraph:4.8.89" level="project" />
+    <orderEntry type="library" exported="" name="org.openpnp:opencv:4.3.0-2" level="project" />
     <orderEntry type="library" name="com.google.code.gson:gson:2.8.6" level="project" />
-    <orderEntry type="library" name="io.github.classgraph:classgraph:4.8.89" level="project" />
-    <orderEntry type="library" name="org.openpnp:opencv:4.3.0-2" level="project" />
+    <orderEntry type="library" name="nu.pattern:opencv:2.4.9-7" level="project" />
+    <orderEntry type="library" name="opencv_java249" level="project" />
   </component>
 </module>
