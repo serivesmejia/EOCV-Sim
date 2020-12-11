@@ -34,24 +34,31 @@ public class EOCVSim {
     public final FpsLimiter fpsLimiter = new FpsLimiter(60);
     public final FpsCounter fpsCounter = new FpsCounter();
 
+    private static volatile boolean alreadyInitializedOnce = false;
+
     public void init() {
 
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
         Log.white();
 
-        Log.info("EOCVSim", "Loading native lib...");
+        if(!alreadyInitializedOnce) {
 
-        try {
-            nu.pattern.OpenCV.loadShared();
-            Log.info("EOCVSim", "Successfully loaded native lib");
-        } catch(Throwable ex) {
-            Log.error("EOCVSim", "Failure loading native lib, the application will exit now.", ex);
-            System.exit(-1);
+            Log.info("EOCVSim", "Loading native lib...");
+
+            try {
+                nu.pattern.OpenCV.loadLocally();
+                Log.info("EOCVSim", "Successfully loaded native lib");
+            } catch (Throwable ex) {
+                Log.error("EOCVSim", "Failure loading native lib", ex);
+                Log.info("EOCVSim", "Retrying with old method...");
+                SysUtil.loadCvNativeLib();
+            }
+
+            Log.white();
+
         }
 
-        Log.white();
-
-        Thread.currentThread().setPriority((int) (Thread.MAX_PRIORITY * 0.8));
+        alreadyInitializedOnce = true;
 
         pipelineManager = new PipelineManager(this);
 
