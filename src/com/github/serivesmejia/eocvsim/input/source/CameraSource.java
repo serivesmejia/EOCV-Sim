@@ -37,6 +37,7 @@ public class CameraSource extends InputSource {
         initialized = true;
 
         camera = new VideoCapture();
+        camera.open(webcamIndex);
 
         if (!camera.isOpened()) {
             Log.error("CameraSource", "Unable to open camera " + webcamIndex);
