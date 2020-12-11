@@ -4,22 +4,14 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.gui.component.ImageX;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.StrUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class About {
 
@@ -51,7 +43,7 @@ public class About {
         about.setModal(true);
 
         about.setTitle("About");
-        about.setSize(430, 300);
+        about.setSize(430, 290);
 
         JPanel contents = new JPanel(new GridLayout(2, 1));
         contents.setAlignmentX(Component.CENTER_ALIGNMENT);

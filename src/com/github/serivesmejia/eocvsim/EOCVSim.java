@@ -40,7 +40,15 @@ public class EOCVSim {
         Log.white();
 
         Log.info("EOCVSim", "Loading native lib...");
-        nu.pattern.OpenCV.loadShared();
+
+        try {
+            nu.pattern.OpenCV.loadShared();
+            Log.info("EOCVSim", "Successfully loaded native lib");
+        } catch(Throwable ex) {
+            Log.error("EOCVSim", "Failure loading native lib, the application will exit now.", ex);
+            System.exit(-1);
+        }
+
         Log.white();
 
         Thread.currentThread().setPriority((int) (Thread.MAX_PRIORITY * 0.8));
