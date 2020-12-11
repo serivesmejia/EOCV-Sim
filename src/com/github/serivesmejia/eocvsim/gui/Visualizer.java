@@ -415,6 +415,7 @@ public class Visualizer {
         //listener for changing pause state
         pipelinePauseBtt.addActionListener(e -> {
             boolean selected = pipelinePauseBtt.isSelected();
+            pipelinePauseBtt.setText(selected ? "Resume" : "Pause");
             eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
         });
 
