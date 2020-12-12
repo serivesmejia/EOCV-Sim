@@ -1,0 +1,4 @@
+rootProject.name = 'EOCV-Sim'
+include 'TeamCode'
+include 'EOCV-Sim'
+

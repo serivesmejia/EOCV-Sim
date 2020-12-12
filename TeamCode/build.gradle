@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+group 'com.github.serivesmejia'
+version '2.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.openpnp:opencv:4.3.0-2'
+}
