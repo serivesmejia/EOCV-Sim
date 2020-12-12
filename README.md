@@ -15,19 +15,16 @@ Because OpenCV in Java uses a native library, which are platform specific, the s
 
 * Windows x64 (tested)
 * Windows x32 (untested)
-* MacOS x64 (tested)*
+* MacOS x64 (tested)
 * Linux x64 (tested for Ubuntu 20.04)<br/>
-
-*\*For Mac support, you will also need to follow [these steps](https://opencv-java-tutorials.readthedocs.io/en/latest/01-installing-opencv-for-java.html#install-opencv-3-x-under-macos) to download some other required native libraries, and you should find a libopencv_java450.dylib under /usr/local/share/java/opencv4/libopencv_java450.dylib. Right click on the .dylib file, and click "duplicate." Rename the duplicated file (libopencv_java450 copy.dylib) to mac64_opencv_java440.dylib. Move the renamed .dylib to your user folder, and replace the existing file. EOCV sim should now work as expected*
 
 # Installation
 
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
-      JDK 13 is the most tested with the Sim, but any JDK > 8 will probably work fine.<br/>
+      JDK 8 is the minimum required, although JDK 11 & 13 are most tested with the Sim<br/>
       You can download JDK > 8 from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html)<br/>
-      **Since JDK 13 seems unavailable on the Oracle site, you can alternatively use JDK 14 or 11**<br/><br/>
       Here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the JDK installation process<br/>
 
 2) **Download & install IntelliJ IDEA Community IDE if you haven't already:**<br/><br/>
