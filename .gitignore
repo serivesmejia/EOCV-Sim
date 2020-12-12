@@ -115,3 +115,5 @@ fabric.properties
 !/TeamCode/src/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
 
 *.log
+
+**/build/*
