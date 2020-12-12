@@ -40,7 +40,7 @@ public class PipelineManager {
         this.eocvSim = eocvSim;
     }
 
-    public void init(AsyncPleaseWaitDialog lookForPipelineAPWD) {
+    public void init() {
 
         Log.info("PipelineManager", "Initializing...");
 
@@ -48,7 +48,7 @@ public class PipelineManager {
         addPipelineClass(DefaultPipeline.class);
 
         //scan for pipelines
-        new PipelineScanner(this).lookForPipelines(lookForPipelineAPWD);
+        new PipelineScanner().lookForPipelines(this::addPipelineClass);
 
         Log.info("PipelineManager", "Found " + pipelines.size() + " pipeline(s)");
         Log.white();
@@ -59,7 +59,7 @@ public class PipelineManager {
 
     public void addPipelineClass(Class<?> C) {
         try {
-            pipelines.add((Class<OpenCvPipeline>) C);
+            pipelines.add((Class<? extends OpenCvPipeline>) C);
         } catch (Throwable ex) {
             ex.printStackTrace();
             Log.error("PipelineManager", "Unable to cast " + C.getName() + " to OpenCvPipeline class.");
@@ -86,8 +86,6 @@ public class PipelineManager {
         } else {
             lastOutputMat = inputMat;
         }
-
-
 
     }
 

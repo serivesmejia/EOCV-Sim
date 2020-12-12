@@ -42,6 +42,8 @@ public class Visualizer {
     public final ArrayList<JFrame> childFrames = new ArrayList<>();
     public final ArrayList<JDialog> childDialogs = new ArrayList<>();
 
+    private final ArrayList<Runnable> onInitFinishedRunns = new ArrayList<>();
+
     private final EOCVSim eocvSim;
     private final DialogFactory dialogFactory;
 
@@ -396,6 +398,10 @@ public class Visualizer {
 
         registerListeners();
 
+        for(Runnable runn : onInitFinishedRunns) {
+            runn.run();
+        }
+
         hasFinishedInitializing = true;
 
     }
@@ -534,6 +540,10 @@ public class Visualizer {
         while (!hasFinishedInitializing) {
             Thread.onSpinWait();
         }
+    }
+
+    public void onInitFinished(Runnable runn) {
+        onInitFinishedRunns.add(runn);
     }
 
     public void close() {

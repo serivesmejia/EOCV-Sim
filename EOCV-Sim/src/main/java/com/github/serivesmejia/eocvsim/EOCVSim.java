@@ -67,18 +67,10 @@ public class EOCVSim {
         visualizer.initAsync(configManager.getConfig().simTheme); //create gui in new thread
 
         inputSourceManager.init(); //loading user created input sources
-
-        //create a dialog to give user visual feedback
-        AsyncPleaseWaitDialog lookForPipelineAPWD = visualizer.asyncPleaseWaitDialog("Looking for pipelines...", "Scanning classpath", "Exit", new Dimension(300, 150), true);
-        lookForPipelineAPWD.onCancel(() -> System.exit(0));
-
-        pipelineManager.init(lookForPipelineAPWD); //init pipeline manager (scan for pipelines)
-
-        lookForPipelineAPWD.destroyDialog(); //destroy dialog since wait's over.
-
+        pipelineManager.init(); //init pipeline manager (scan for pipelines)
         tunerManager.init(); //init tunable variables manager
 
-        visualizer.waitForFinishingInit(); //wait for visualizer to finish its work
+        visualizer.waitForFinishingInit();
 
         visualizer.updateSourcesList(); //update sources and pick first one
         visualizer.sourceSelector.setSelectedIndex(0);

@@ -9,14 +9,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class PipelineScanner {
 
-    PipelineManager pipelineManager;
-
-    public PipelineScanner(PipelineManager pipelineManager) {
-        this.pipelineManager = pipelineManager;
-    }
-
     @SuppressWarnings("unchecked")
-    public void lookForPipelines(Visualizer.AsyncPleaseWaitDialog lookForPipelineAPWD) {
+    public void lookForPipelines(PipelineFoundCallback callback) {
 
         Log.info("PipelineScanner", "Scanning for pipelines...");
 
@@ -40,14 +34,9 @@ public class PipelineScanner {
             while (superClass != null) {
 
                 if (superClass == OpenCvPipeline.class) { //Yay we found a pipeline
-
                     Log.info("PipelineScanner", "Found pipeline " + routeClassInfo.getName());
-                    if (lookForPipelineAPWD != null)
-                        lookForPipelineAPWD.subMsg.setText("Found pipeline " + routeClassInfo.getSimpleName());
-
-                    pipelineManager.addPipelineClass(foundClass);
+                    callback.onPipelineFound((Class<OpenCvPipeline>) foundClass);
                     break;
-
                 }
 
                 //Didn't found a pipeline, continue searching...
@@ -63,6 +52,10 @@ public class PipelineScanner {
         //Scan for all classes in the specified package
         ClassGraph classGraph = new ClassGraph().enableAllInfo().acceptPackages(inPackage);
         return classGraph.scan();
+    }
+
+    public interface PipelineFoundCallback {
+        void onPipelineFound(Class<OpenCvPipeline> pipelineClass);
     }
 
 }
