@@ -70,7 +70,7 @@ public class TunerManager {
 
             try {
 
-                if (!field.canAccess(pipeline) || Modifier.isFinal(field.getModifiers())) continue;
+                if (Modifier.isFinal(field.getModifiers())) continue;
 
                 if (field.getType() == int.class) {
                     toAddField = new IntegerField(pipeline, field, eocvSim);
