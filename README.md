@@ -11,12 +11,14 @@ transfer it onto your robot!
 
 # Compatibility
 
-Because OpenCV in Java uses a native shared lib, which are platform specific, the simulator is currently limited to the following platforms:
+Because OpenCV in Java uses a native library, which are platform specific, the simulator is currently limited to the following platforms:
 
 * Windows x64 (tested)
 * Windows x32 (untested)
-* MacOS x64 (tested)
-* Linux x64 (tested)<br/>
+* MacOS x64 (tested)*
+* Linux x64 (tested for Ubuntu 20.04)<br/>
+
+*\*For Mac support, you will also need to follow [these steps](https://opencv-java-tutorials.readthedocs.io/en/latest/01-installing-opencv-for-java.html#install-opencv-3-x-under-macos) to download some other required native libraries, and you should find a libopencv_java450.dylib under /usr/local/share/java/opencv4/libopencv_java450.dylib. Right click on the .dylib file, and click "duplicate." Rename the duplicated file (libopencv_java450 copy.dylib) to mac64_opencv_java440.dylib. Move the renamed .dylib to your user folder, and replace the existing file. EOCV sim should now work as expected*
 
 # Installation
 
@@ -52,7 +54,7 @@ No complicated setup is required, straight up importing the project into Intelli
             <img src='images/eocvsim_screenshot_installation_5.png' width='500' height='267'><br/>
             
 4) **Change to packages view** (optional):<br/><br/>
-      In order to have a better look of your project's sources, I recommend to change the view to "project" as explained next:<br/>
+      In order to have a better look of your project's sources, I recommend to change the view to "package" as explained next:<br/>
       1) Go to the left where your project files are shown, and click on the "Project" drop down list
       2) Select "Packages" from the list and the view will change.<br/><br/>
       Here's a quick gif illustrating these steps:<br/><br/>
@@ -60,5 +62,5 @@ No complicated setup is required, straight up importing the project into Intelli
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
 
 # Contact
-For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8247* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
+For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8237* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
 For bug reporting or feature requesting, use the [issues tab](https://github.com/serivesmejia/EOCV-Sim/issues) in this repository.
