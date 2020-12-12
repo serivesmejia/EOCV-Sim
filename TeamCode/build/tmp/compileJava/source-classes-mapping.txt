@@ -1,0 +1,14 @@
+org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline$1
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline$AnalyzedStone
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline$ContourRegionAnalysis
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline$Stage
+ org.firstinspires.ftc.teamcode.StoneOrientationAnalysisPipeline$StoneOrientation
+org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
+ org.firstinspires.ftc.teamcode.StageSwitchingPipeline
+ org.firstinspires.ftc.teamcode.StageSwitchingPipeline$1
+ org.firstinspires.ftc.teamcode.StageSwitchingPipeline$Stage
+org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
+ org.firstinspires.ftc.teamcode.SkystoneDeterminationPipeline
+ org.firstinspires.ftc.teamcode.SkystoneDeterminationPipeline$SkystonePosition

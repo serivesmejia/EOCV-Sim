@@ -11,4 +11,10 @@ repositories {
 
 dependencies {
     implementation 'org.openpnp:opencv:4.3.0-2'
+    compile project(':EOCV-Sim')
+}
+
+task(runSimulator, dependsOn: 'classes', type: JavaExec) {
+    main = 'com.github.serivesmejia.eocvsim.Main'
+    classpath = sourceSets.main.runtimeClasspath
 }

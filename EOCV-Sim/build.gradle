@@ -16,8 +16,3 @@ dependencies {
     implementation 'com.formdev:flatlaf:0.45'
     implementation 'com.formdev:flatlaf-intellij-themes:0.45'
 }
-
-task(runMain, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.github.serivesmejia.eocvsim.Main'
-    classpath = sourceSets.main.runtimeClasspath
-}
