@@ -538,7 +538,7 @@ public class Visualizer {
 
     public void waitForFinishingInit() {
         while (!hasFinishedInitializing) {
-            Thread.onSpinWait();
+            Thread.yield();
         }
     }
 
