@@ -1,4 +1,4 @@
-<img src='src/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px' alt='EOCVSim'>
+<img src='/EOCV-Sim/src/main/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px'>
 
 # Welcome!
 
