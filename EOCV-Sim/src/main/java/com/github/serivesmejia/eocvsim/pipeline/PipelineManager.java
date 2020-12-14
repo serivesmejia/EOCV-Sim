@@ -30,10 +30,7 @@ public class PipelineManager {
 
     public EOCVSim eocvSim;
 
-    private final ElapsedTime fpsElapsedTime = new ElapsedTime();
-
     private volatile boolean isPaused = false;
-
     private volatile PauseReason lastPauseReason = PauseReason.NOT_PAUSED;
 
     public PipelineManager(EOCVSim eocvSim) {
@@ -103,17 +100,23 @@ public class PipelineManager {
         Constructor<?> constructor;
         try {
 
-            constructor = pipelineClass.getConstructor();
-            nextPipeline = (OpenCvPipeline) constructor.newInstance();
-
             nextTelemetry = new Telemetry();
-            nextPipeline.telemetry = nextTelemetry;
+
+            try { //instantiate pipeline if it has a constructor with a telemetry parameter
+                constructor = pipelineClass.getConstructor(Telemetry.class);
+                nextPipeline = (OpenCvPipeline) constructor.newInstance(nextTelemetry);
+            } catch (NoSuchMethodException ex) { //instantiating with a constructor with no params
+                constructor = pipelineClass.getConstructor();
+                nextPipeline = (OpenCvPipeline) constructor.newInstance();
+            }
 
             Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.getName());
 
             nextPipeline.init(eocvSim.inputSourceManager.lastMatFromSource);
 
-        } catch (Throwable ex) {
+        } catch (NoSuchMethodException ex) {
+
+        } catch (Exception ex) {
 
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
                     "Close", new Dimension(300, 150), true, true);

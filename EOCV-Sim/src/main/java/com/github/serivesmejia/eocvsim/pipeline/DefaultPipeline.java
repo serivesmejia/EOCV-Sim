@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.pipeline;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -8,8 +9,10 @@ public class DefaultPipeline extends OpenCvPipeline {
 
     public int blur = 0;
 
-    @Override
-    public void init(Mat input) {
+    private Telemetry telemetry;
+
+    public DefaultPipeline(Telemetry telemetry) {
+        this.telemetry = telemetry;
     }
 
     @Override

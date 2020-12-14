@@ -29,11 +29,11 @@ public class DialogFactory {
     }
 
     public static FileChooser createFileChooser(Component parent, FileChooser.Mode mode) {
-        return createFileChooser(parent, mode, null);
+        return createFileChooser(parent, mode, new FileFilter[0]);
     }
 
     public static FileChooser createFileChooser(Component parent) {
-        return createFileChooser(parent, null, null);
+        return createFileChooser(parent, null, new FileFilter[0]);
     }
 
     public void createSourceDialog(InputSourceManager.SourceType type) {
