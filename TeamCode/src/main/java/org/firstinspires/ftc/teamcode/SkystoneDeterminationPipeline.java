@@ -21,6 +21,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -101,6 +102,12 @@ public class SkystoneDeterminationPipeline extends OpenCvPipeline {
 
     // Volatile since accessed by OpMode thread w/o synchronization
     private volatile SkystonePosition position = SkystonePosition.LEFT;
+
+    private Telemetry telemetry;
+
+    public SkystoneDeterminationPipeline(Telemetry telemetry) {
+        this.telemetry = telemetry;
+    }
 
     /*
      * This function takes the RGB frame, converts to YCrCb,

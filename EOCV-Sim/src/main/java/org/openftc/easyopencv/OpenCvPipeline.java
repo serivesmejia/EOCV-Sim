@@ -5,8 +5,6 @@ import org.opencv.core.Mat;
 
 public abstract class OpenCvPipeline {
 
-    public Telemetry telemetry;
-
     public abstract Mat processFrame(Mat input);
 
     public void onViewportTapped() {

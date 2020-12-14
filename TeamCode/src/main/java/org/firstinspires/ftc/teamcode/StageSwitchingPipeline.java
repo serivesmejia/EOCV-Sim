@@ -21,6 +21,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -49,6 +50,12 @@ public class StageSwitchingPipeline extends OpenCvPipeline
 
     private Stage stageToRenderToViewport = Stage.YCbCr_CHAN2;
     private Stage[] stages = Stage.values();
+
+    private Telemetry telemetry;
+
+    public StageSwitchingPipeline(Telemetry telemetry) {
+        this.telemetry = telemetry;
+    }
 
     @Override
     public void onViewportTapped()
