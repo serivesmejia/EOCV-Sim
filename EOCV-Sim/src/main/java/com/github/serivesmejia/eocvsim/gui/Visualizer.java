@@ -29,7 +29,6 @@ import java.util.Map;
 
 public class Visualizer {
 
-
     public static ImageIcon ICO_EOCVSIM = null;
     final static Taskbar taskbar = Taskbar.getTaskbar();
 
@@ -38,16 +37,6 @@ public class Visualizer {
             ICO_EOCVSIM = GuiUtil.loadImageIcon("/images/icon/ico_eocvsim.png");
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        if(taskbar.isTaskbarSupported()){
-            try {
-                //set icon for mac os (and other systems which do support this method)
-                taskbar.setIconImage(ICO_EOCVSIM.getImage());
-            } catch (final UnsupportedOperationException e) {
-                System.out.println("The os does not support: 'taskbar.setIconImage'");
-            } catch (final SecurityException e) {
-                System.out.println("There was a security exception for: 'taskbar.setIconImage'");
-            }
         }
     }
 
@@ -119,6 +108,16 @@ public class Visualizer {
     }
 
     public void init(Theme theme) {
+
+        if(Taskbar.isTaskbarSupported()){
+            try {
+                //set icon for mac os (and other systems which do support this method)
+                taskbar.setIconImage(ICO_EOCVSIM.getImage());
+            } catch (final UnsupportedOperationException ignored) {
+            } catch (final SecurityException e) {
+                Log.error("Visualizer", "Security exception while setting TaskBar icon", e);
+            }
+        }
 
         try {
             themeInstaller.installTheme(theme);
