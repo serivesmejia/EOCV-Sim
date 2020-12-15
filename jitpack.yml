@@ -1,3 +1,5 @@
+jdk:
+  - openjdk9
 before_install:
  - chmod +x gradlew
 install:
