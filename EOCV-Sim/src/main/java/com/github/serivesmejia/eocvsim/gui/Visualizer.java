@@ -20,20 +20,34 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.Taskbar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
 public class Visualizer {
 
+
     public static ImageIcon ICO_EOCVSIM = null;
+    final static Taskbar taskbar = Taskbar.getTaskbar();
 
     static {
         try {
             ICO_EOCVSIM = GuiUtil.loadImageIcon("/images/icon/ico_eocvsim.png");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(taskbar.isTaskbarSupported()){
+            try {
+                //set icon for mac os (and other systems which do support this method)
+                taskbar.setIconImage(ICO_EOCVSIM.getImage());
+            } catch (final UnsupportedOperationException e) {
+                System.out.println("The os does not support: 'taskbar.setIconImage'");
+            } catch (final SecurityException e) {
+                System.out.println("There was a security exception for: 'taskbar.setIconImage'");
+            }
         }
     }
 
@@ -387,6 +401,7 @@ public class Visualizer {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         frame.setIconImage(ICO_EOCVSIM.getImage());
+
 
         frame.setLocationRelativeTo(null);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
