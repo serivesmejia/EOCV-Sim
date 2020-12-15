@@ -91,7 +91,7 @@ public class PipelineManager {
         if (index == currentPipelineIndex) return;
 
         OpenCvPipeline nextPipeline = null;
-        Telemetry nextTelemetry;
+        Telemetry nextTelemetry = null;
 
         Class<? extends OpenCvPipeline> pipelineClass = pipelines.get(index);
 
@@ -116,12 +116,20 @@ public class PipelineManager {
 
         } catch (NoSuchMethodException ex) {
 
+            eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Check console for details",
+                    "Close", new Dimension(300, 150), true, true);
+
+            Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.getSimpleName() + ")", ex);
+            Log.info("PipelineManager", "Make sure your pipeline implements a public constructor with no parameters or with a Telemetry parameter");
+
+            Log.white();
+
         } catch (Exception ex) {
 
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
                     "Close", new Dimension(300, 150), true, true);
 
-            Log.error("InputSourceManager", "Error while initializing requested pipeline (" + pipelineClass.getSimpleName() + ")", ex);
+            Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.getSimpleName() + ")", ex);
             Log.white();
 
             eocvSim.visualizer.pipelineSelector.setSelectedIndex(currentPipelineIndex);
