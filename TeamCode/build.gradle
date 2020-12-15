@@ -1,9 +1,14 @@
 plugins {
     id 'java'
+    id 'java-library'
 }
 
 group 'com.github.serivesmejia'
 version '2.0.0'
+
+java.toolchain {
+    languageVersion.set(JavaLanguageVersion.of(9))
+}
 
 repositories {
     mavenCentral()

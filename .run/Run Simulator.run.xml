@@ -13,11 +13,9 @@
           <option value=":TeamCode:runSimulator" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" value="-Xms20m -Xmx100m" />
     </ExternalSystemSettings>
-    <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-    <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-    <DebugAllEnabled>false</DebugAllEnabled>
+    <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
     <method v="2" />
   </configuration>
 </component>

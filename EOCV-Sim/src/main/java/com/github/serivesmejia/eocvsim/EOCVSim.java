@@ -31,7 +31,7 @@ public class EOCVSim {
     public PipelineManager pipelineManager = null; //we'll initialize pipeline manager after loading native lib
     public TunerManager tunerManager = new TunerManager(this);
 
-    public final FpsLimiter fpsLimiter = new FpsLimiter(60);
+    public final FpsLimiter fpsLimiter = new FpsLimiter(30);
     public final FpsCounter fpsCounter = new FpsCounter();
 
     private static volatile boolean alreadyInitializedOnce = false;
@@ -88,6 +88,7 @@ public class EOCVSim {
         Log.white();
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile();
+
         while (!Thread.interrupted()) {
 
             Telemetry telemetry = pipelineManager.currentTelemetry;
