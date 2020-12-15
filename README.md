@@ -23,9 +23,9 @@ Because OpenCV in Java uses a native library, which are platform specific, the s
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
-      JDK 8 is the minimum required, although JDK 11 & 13 are most tested with the Sim<br/>
-      You can download JDK > 8 from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html)<br/>
-      Here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the JDK installation process<br/>
+      JDK 9 is the required one, if no installation of JDK 9 is found in the computer, it will be automatically downloaded by gradle.<br/>
+      You can download JDK 9 manually from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html),
+      and here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the installation process<br/>
 
 2) **Download & install IntelliJ IDEA Community IDE if you haven't already:**<br/><br/>
       You can download it from the JetBrains webpage (https://www.jetbrains.com/idea/download/)<br/>
