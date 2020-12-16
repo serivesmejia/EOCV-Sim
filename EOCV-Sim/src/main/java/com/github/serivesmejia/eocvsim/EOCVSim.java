@@ -71,7 +71,7 @@ public class EOCVSim {
 
         configManager.init(); //load config
 
-        visualizer.initAsync(configManager.getConfig().simTheme); //create gui in new thread
+        visualizer.initAsync(configManager.getConfig().simTheme); //create gui in the EDT
 
         inputSourceManager.init(); //loading user created input sources
         pipelineManager.init(); //init pipeline manager (scan for pipelines)

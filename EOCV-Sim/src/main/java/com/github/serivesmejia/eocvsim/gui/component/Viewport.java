@@ -70,7 +70,7 @@ public class Viewport extends JPanel {
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
         Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat to lastVisualizedScaledMat
 
-        lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 3);
+        lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 2);
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
 
         image.setImage(lastBuffImage); //set buff image to ImageX component
