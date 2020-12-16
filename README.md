@@ -52,7 +52,7 @@ No complicated setup is required, straight up importing the project into Intelli
          4) After that, click on the "Clone" button, located at the bottom right and the cloning process will begin...<br/>    
          <img src='images/eocvsim_screenshot_installation_4.png' width='50%' height='50%'><br/>
          5) After the cloning finishes, the project should automatically import and you'll have something like this:<br/><br/>
-            <img src='images/eocvsim_screenshot_installation_5.png' width='50%' height='50%'><br/>
+            <img src='images/eocvsim_screenshot_installation_5.png' width='75%' height='75%'><br/>
             
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
 
