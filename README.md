@@ -1,5 +1,9 @@
 <img src='/EOCV-Sim/src/main/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px'>
 
+![Java CI with Gradle](https://github.com/serivesmejia/EOCV-Sim/workflows/Java%20CI%20with%20Gradle/badge.svg)
+[![](https://jitpack.io/v/serivesmejia/EOCV-Sim.svg)](https://jitpack.io/#serivesmejia/EOCV-Sim)
+
+
 # Welcome!
 
 EOCV-Sim (EasyOpenCV Simulator) is a straightforward way to test your pipelines in a 
@@ -7,7 +11,7 @@ simple user interface directly in your computer, simulating the EasyOpenCV libra
 FTC SDK structure, allowing you to simply copy paste directly your pipeline code once you want to 
 transfer it onto your robot!
 
-<img src='images/eocvsim_screenshot_1.png' width='718' height='580'>
+<img src='images/eocvsim_screenshot_1.png' width='650' height='500'>
 
 # Compatibility
 
