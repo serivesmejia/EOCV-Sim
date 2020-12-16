@@ -17,10 +17,10 @@ import java.util.ArrayList;
 
 public class EOCVSim {
 
-    public static String VERSION = "2.0.0";
+    public static final String VERSION = "2.0.0";
 
-    public static int DEFAULT_EOCV_WIDTH = 320;
-    public static int DEFAULT_EOCV_HEIGHT = 240;
+    public static final int DEFAULT_EOCV_WIDTH = 320;
+    public static final int DEFAULT_EOCV_HEIGHT = 240;
 
     private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
 
@@ -36,7 +36,14 @@ public class EOCVSim {
 
     private static volatile boolean alreadyInitializedOnce = false;
 
-    public void init() {
+    private Parameters params = null;
+
+    public enum DestroyReason { USER_REQUESTED, THEME_CHANGING, RESTART }
+
+    public void init(Parameters params) {
+
+        if(params == null) params = new Parameters();
+        this.params = params;
 
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v" + VERSION);
         Log.white();
@@ -175,7 +182,7 @@ public class EOCVSim {
 
         Log.white();
 
-        new Thread(() -> new EOCVSim().init(), "main").start(); //run next instance on a separate thread for the old one to get interrupted and ended
+        new Thread(() -> new EOCVSim().init(params), "main").start(); //run next instance on a separate thread for the old one to get interrupted and ended
 
     }
 
@@ -202,6 +209,8 @@ public class EOCVSim {
         runnsOnMain.add(runn);
     }
 
-    public enum DestroyReason {USER_REQUESTED, THEME_CHANGING, RESTART}
+    public static class Parameters {
+        public String scanForPipelinesIn = "org.firstinspires";
+    }
 
 }

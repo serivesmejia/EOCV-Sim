@@ -2,10 +2,10 @@ package com.github.serivesmejia.eocvsim;
 
 public class Main {
 
-    public static EOCVSim eocvSim = new EOCVSim();
+    public static final EOCVSim eocvSim = new EOCVSim();
 
     public static void main(String[] args) {
-        eocvSim.init();
+        eocvSim.init(new EOCVSim.Parameters());
     }
 
 }
