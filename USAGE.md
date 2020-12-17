@@ -15,7 +15,7 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
 All of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
 automatically detected by the simulator and will be selectionable from the GUI.
 
-<img src='images/eocvsim_screenshot_structure.png' width='301' height='183'><br/>
+<img src='images/eocvsim_screenshot_structure.png' width='25%' height='25%'><br/>
 
 *(Also, the simulator already comes by default with some EasyOpenCV samples)*<br/>
 
@@ -28,7 +28,7 @@ To create a new java class, follow these steps:<br/>
 
 Here's a quick gif illustrating these steps:<br/>
 
-<img src='images/eocvsim_usage_createclass.gif' width='512' height='288'><br/>
+<img src='images/eocvsim_usage_createclass.gif' width='50%' height='50%'><br/>
 
 If you want your class to be a pipeline, it **should also** extend the EOCV's OpenCvPipeline abstract class and override the processFrame() method.<br/><br/>
 Here's a empty pipeline template, with the SamplePipeline class we created before:
@@ -66,15 +66,17 @@ public class SamplePipeline extends OpenCvPipeline {
 }
 ```
 
+### For more detailed information about pipelines, make sure to check out the [EasyOpenCV docs](https://github.com/OpenFTC/EasyOpenCV/blob/master/doc/user_docs/pipelines_overview.md)
+
 ## Input Sources
 
-To allow multiple ways to test your pipeline, the simulator comes with so called *Input Sources*, which are the ones that will give your pipeline the input mats, As of right now, the sim has two types of Input Sources:
+To allow multiple ways to test your pipeline, the simulator comes with so called *Input Sources*, which are the ones in charge of giving your pipeline the input Mats, As of right now, the sim has two types of Input Sources:
 
 - Image Source:</br></br>
-    These will feed your pipeline with a static Mat from an image loaded in your computer hard drive.</br></br>
+    These will feed your pipeline with a static Mat from an image loaded in your computer hard drive.</br>
     To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the           "Pause" button under the pipeline selector.</br></br>
 - Camera Source:</br></br>
-    These will feed your pipeline with a constantly changing Mat from a specified camera plugged in your computer.</br></br>
+    These will feed your pipeline with a constantly changing Mat from a specified camera plugged in your computer.</br>
     Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.
     
 ### Creating an Input Source
