@@ -10,9 +10,21 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
     - Sample Pipeline
 - Input Sources
 
+## Popping out the TeamCode module
+
+EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:</br>
+1) Pop out the parent EOCV-Sim project folder by clicking on the horizontal arrow
+2) Find the TeamCode module (folder) and pop it out just like before
+3) Find the src folder and open it
+4) Now you will find the *org.firstinspires.ftc.teamcode* package, in which some sample pipelines are already placed.
+
+These steps are illustrated in this gif:</br>
+
+<img src='images/eocvsim_usage_popup_teamcode.gif' width='60%' height='60%'><br/>
+
 ## Pipelines
 
-All of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
+As said before, all of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
 automatically detected by the simulator and will be selectionable from the GUI.
 
 <img src='images/eocvsim_screenshot_structure.png' width='25%' height='25%'><br/>
@@ -28,7 +40,7 @@ To create a new java class, follow these steps:<br/>
 
 Here's a quick gif illustrating these steps:<br/>
 
-<img src='images/eocvsim_usage_createclass.gif' width='50%' height='50%'><br/>
+<img src='images/eocvsim_usage_createclass.gif' width='75%' height='75%'><br/>
 
 If you want your class to be a pipeline, it **should also** extend the EOCV's OpenCvPipeline abstract class and override the processFrame() method.<br/><br/>
 Here's a empty pipeline template, with the SamplePipeline class we created before:
@@ -81,3 +93,40 @@ To allow multiple ways to test your pipeline, the simulator comes with so called
     
 ### Creating an Input Source
 
+## Telemetry
+
+There's also an SDK-like Telemetry implementation in the sim. In 1.1.0 (when it was introduced) you could simply access it from your pipeline since it was an instance variable ```telemetry```.
+
+But, starting 2.0.0, to make it more alike to an actual EOCV pipeline, you need to implement a public constructor which takes a Telemetry parameter, then creating and setting an instance variable from that constructor:
+
+```java
+package org.firstinspires.ftc.teamcode;
+
+import org.opencv.core.Mat;
+import org.openftc.easyopencv.OpenCvPipeline;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+public class TelemetryPipeline extends OpenCvPipeline {
+
+    Telemetry telemetry;
+
+    public TelemetryPipeline(Telemetry telemetry) {
+        this.telemetry = telemetry;
+    }
+
+    @Override
+    public Mat processFrame(Mat input) {
+        telemetry.addData("[Hello]", "World!");
+        telemetry.update();
+        return input; // Return the input mat
+    }
+
+}
+```
+
+Which then produces the following result:<br/>
+
+<img src='images/eocvsim_usage_telemetry.png' width='25%' height='25%'><br/>
+
+For further information about telemetry, you can check out the [SDK docs on Telemetry](https://ftctechnh.github.io/ftc_app/doc/javadoc/org/firstinspires/ftc/robotcore/external/Telemetry.html), note that not all the methods are implemented for EOCV-Sim
