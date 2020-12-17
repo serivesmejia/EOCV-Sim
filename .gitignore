@@ -5,15 +5,8 @@
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-# Generated files
-.idea/**/contentModel.xml
+.idea/
+.gradle/
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
@@ -31,14 +24,14 @@
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
-# .idea/artifacts
-# .idea/compiler.xml
-# .idea/jarRepositories.xml
-# .idea/modules.xml
-# .idea/*.iml
-# .idea/modules
-# *.iml
-# *.ipr
+.idea/artifacts
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/modules.xml
+.idea/*.iml
+.idea/modules
+*.iml
+*.ipr
 
 # CMake
 cmake-build-*/
@@ -105,15 +98,11 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
 
-/lib/*
+/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/*
+!/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
+!/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
+!/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
 
-!/lib/classgraph-4.8.90.jar
-!/lib/gson-2.8.6.jar
-!/lib/opencv-440.jar
+*.log
 
-/TeamCode/src/org/firstinspires/ftc/teamcode/*
-!/TeamCode/src/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
-!/TeamCode/src/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
-!/TeamCode/src/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
-
-/.idea/libraries/KotlinJavaRuntime.xml
+**/build/*
