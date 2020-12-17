@@ -1,5 +1,7 @@
 # Usage Explaination
 
+### This guide is still a work in progress 
+
 The purpose of this software is to *simulate the package & class structure of OpenFTC's EasyOpenCV and a little bit of the FTC SDK*,
 while also providing OpenCV functionality and a simple GUI. By simulating the aforementioned structure, it allows the imports, class names, etc.
 to be the same as they would if you were using the FTC SDK with EasyOpenCV, allowing you to simply copy paste your vision code
