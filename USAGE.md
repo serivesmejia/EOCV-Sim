@@ -93,9 +93,12 @@ To allow multiple ways to test your pipeline, the simulator comes with so called
     
 ### Creating an Input Source
 
+    1) 
+
 ## Telemetry
 
-There's also an SDK-like Telemetry implementation in the sim. In 1.1.0 (when it was introduced) you could simply access it from your pipeline since it was an instance variable ```telemetry```.
+There's also an SDK-like Telemetry implementation in the sim. 
+In 1.1.0 (when it was introduced) you could simply access it from your pipeline since it was an instance variable ```telemetry```.
 
 But, starting 2.0.0, to make it more alike to an actual EOCV pipeline, you need to implement a public constructor which takes a Telemetry parameter, then creating and setting an instance variable from that constructor:
 
