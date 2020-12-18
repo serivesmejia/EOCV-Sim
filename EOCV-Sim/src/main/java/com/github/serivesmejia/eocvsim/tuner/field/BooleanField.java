@@ -40,7 +40,7 @@ public class BooleanField extends TunableField<Boolean> {
 
     @Override
     public void updateGuiFieldValues() {
-        fieldPanel.setFieldValue(0, value);
+        fieldPanel.setComboBoxSelection(0, value);
     }
 
     @Override

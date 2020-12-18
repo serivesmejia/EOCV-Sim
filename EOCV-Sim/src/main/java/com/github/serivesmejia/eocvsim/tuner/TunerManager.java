@@ -49,7 +49,11 @@ public class TunerManager {
     public void update() {
         //update all fields
         for (TunableField field : fields) {
-            field.update();
+            try {
+                field.update();
+            } catch(Exception ex) {
+                Log.error("Error while updating field " + field.getFieldName(), ex);
+            }
         }
     }
 
