@@ -72,6 +72,10 @@ public class TunableFieldPanel extends JPanel {
         fields[index].setText(value.toString());
     }
 
+    public void setComboBoxSelection(int index, Object selection) {
+        comboBoxes[index].setSelectedItem(selection.toString());
+    }
+
     public void setOnlyNumbers(boolean isOnlyNumbers) {
         this.isOnlyNumbers = isOnlyNumbers;
     }
