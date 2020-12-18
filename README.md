@@ -11,7 +11,7 @@ simple user interface directly in your computer, simulating the EasyOpenCV libra
 FTC SDK structure, allowing you to simply copy paste directly your pipeline code once you want to 
 transfer it onto your robot!
 
-<img src='images/eocvsim_screenshot_1.png' width='650' height='500'>
+<img src='images/eocvsim_screenshot_1.png' width='75%' height='75%'>
 
 # Compatibility
 
@@ -48,18 +48,12 @@ No complicated setup is required, straight up importing the project into Intelli
          1) In the "URL" field, enter: ```https://github.com/serivesmejia/EOCV-Sim.git```<br/>
          2) The directory can be changed, but it will be automatically filled so it's not necessary.
          3) Make sure the "Version control" is set to "Git".<br/><br/>
-         <img src='images/eocvsim_screenshot_installation_3.png' width='608' height='363'><br/>
+         <img src='images/eocvsim_screenshot_installation_3.png' width='50%' height='50%'><br/>
          4) After that, click on the "Clone" button, located at the bottom right and the cloning process will begin...<br/>    
-         <img src='images/eocvsim_screenshot_installation_4.png' width='407' height='83'><br/>
+         <img src='images/eocvsim_screenshot_installation_4.png' width='50%' height='50%'><br/>
          5) After the cloning finishes, the project should automatically import and you'll have something like this:<br/><br/>
-            <img src='images/eocvsim_screenshot_installation_5.png' width='500' height='267'><br/>
+            <img src='images/eocvsim_screenshot_installation_5.png' width='75%' height='75%'><br/>
             
-4) **Change to packages view** (optional):<br/><br/>
-      In order to have a better look of your project's sources, I recommend to change the view to "package" as explained next:<br/>
-      1) Go to the left where your project files are shown, and click on the "Project" drop down list
-      2) Select "Packages" from the list and the view will change.<br/><br/>
-      Here's a quick gif illustrating these steps:<br/><br/>
-      <img src='images/eocv_installation_changeview.gif' width='512' height='288'><br/><br/>
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
 
 # Contact
