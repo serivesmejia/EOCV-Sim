@@ -102,7 +102,7 @@ public class ImageSource extends InputSource {
         readMat.release();
 
         if (this.size != null) {
-            Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_CUBIC);
+            Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_AREA);
         } else {
             this.size = img.size();
         }

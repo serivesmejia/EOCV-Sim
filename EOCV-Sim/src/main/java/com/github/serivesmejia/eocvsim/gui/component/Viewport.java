@@ -68,7 +68,7 @@ public class Viewport extends JPanel {
         double finalScale = Math.max(0.1, Math.min(3, scale * calcScale));
 
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
-        Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat to lastVisualizedScaledMat
+        Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_AREA); //resize mat to lastVisualizedScaledMat
 
         lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 3);
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
