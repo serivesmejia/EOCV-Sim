@@ -30,7 +30,6 @@ import java.util.Map;
 public class Visualizer {
 
     public static ImageIcon ICO_EOCVSIM = null;
-    final static Taskbar taskbar = Taskbar.getTaskbar();
 
     static {
         try {
@@ -112,7 +111,7 @@ public class Visualizer {
         if(Taskbar.isTaskbarSupported()){
             try {
                 //set icon for mac os (and other systems which do support this method)
-                taskbar.setIconImage(ICO_EOCVSIM.getImage());
+                Taskbar.getTaskbar().setIconImage(ICO_EOCVSIM.getImage());
             } catch (final UnsupportedOperationException ignored) {
             } catch (final SecurityException e) {
                 Log.error("Visualizer", "Security exception while setting TaskBar icon", e);
