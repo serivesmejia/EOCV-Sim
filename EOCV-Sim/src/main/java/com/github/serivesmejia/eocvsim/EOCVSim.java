@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class EOCVSim {
 
-    public static final String VERSION = "2.0.0";
+    public static final String VERSION = "2.0.2";
 
     public static final int DEFAULT_EOCV_WIDTH = 320;
     public static final int DEFAULT_EOCV_HEIGHT = 240;
