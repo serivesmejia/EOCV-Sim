@@ -106,3 +106,5 @@ fabric.properties
 *.log
 
 **/build/*
+EOCV-Sim/src/main/.DS_Store
+EOCV-Sim/src/main/resources/.DS_Store
