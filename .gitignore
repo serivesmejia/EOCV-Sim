@@ -106,3 +106,4 @@ fabric.properties
 *.log
 
 **/build/*
+*.DS_Store

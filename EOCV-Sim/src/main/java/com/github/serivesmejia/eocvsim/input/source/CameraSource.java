@@ -99,7 +99,7 @@ public class CameraSource extends InputSource {
         if (size == null) size = lastFrame.size();
 
         Imgproc.cvtColor(lastFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
-        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_CUBIC);
+        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         return lastFrame;
 
@@ -114,7 +114,7 @@ public class CameraSource extends InputSource {
         camera.read(lastFramePaused);
 
         Imgproc.cvtColor(lastFramePaused, lastFramePaused, Imgproc.COLOR_BGR2RGB);
-        Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+        Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         update();
 
