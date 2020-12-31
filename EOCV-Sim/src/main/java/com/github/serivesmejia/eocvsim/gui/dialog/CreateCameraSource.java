@@ -178,7 +178,7 @@ public class CreateCameraSource {
                 cameraIdField.setEditable(false);
                 createButton.setEnabled(false);
 
-                eocvSim.runOnMainThread(() -> {
+                eocvSim.onMainUpdate.addListener(() -> {
                     if (testCamera(camId)) {
                         close();
                         if (wasCancelled) return;
@@ -269,7 +269,7 @@ public class CreateCameraSource {
     }
 
     public void createSource(String sourceName, int index, Size size) {
-        eocvSim.runOnMainThread(() -> {
+        eocvSim.onMainUpdate.addListener(() -> {
             eocvSim.inputSourceManager.addInputSource(sourceName, new CameraSource(index, size));
             eocvSim.visualizer.updateSourcesList();
         });

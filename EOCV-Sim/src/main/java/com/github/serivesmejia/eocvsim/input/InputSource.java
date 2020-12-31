@@ -13,9 +13,7 @@ public abstract class InputSource {
     protected transient boolean isPaused = false;
     private transient boolean beforeIsPaused = false;
 
-    public boolean init() {
-        return false;
-    }
+    public abstract boolean init();
 
     public abstract void reset();
 

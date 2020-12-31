@@ -2,27 +2,24 @@ package com.github.serivesmejia.eocvsim;
 
 import com.github.serivesmejia.eocvsim.config.ConfigManager;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
-import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.tuner.TunerManager;
+import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter;
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.awt.*;
-import java.util.ArrayList;
-
 public class EOCVSim {
 
-    public static final String VERSION = "2.0.2";
+    public static final String VERSION = "2.1.0";
 
     public static final int DEFAULT_EOCV_WIDTH = 320;
     public static final int DEFAULT_EOCV_HEIGHT = 240;
 
-    private final ArrayList<Runnable> runnsOnMain = new ArrayList<>();
+    public final EventHandler onMainUpdate = new EventHandler("OnMainUpdate");
 
     public volatile Visualizer visualizer = new Visualizer(this);
 
@@ -101,10 +98,7 @@ public class EOCVSim {
             Telemetry telemetry = pipelineManager.currentTelemetry;
 
             //run all pending requested runnables
-            for (Runnable runn : runnsOnMain.toArray(new Runnable[0])) {
-                runn.run();
-                runnsOnMain.remove(runn);
-            }
+            onMainUpdate.run();
 
             updateVisualizerTitle();
 
@@ -203,10 +197,6 @@ public class EOCVSim {
             visualizer.setTitleMessage(pipelineManager.currentPipelineName + msg);
         }
 
-    }
-
-    public void runOnMainThread(Runnable runn) {
-        runnsOnMain.add(runn);
     }
 
     public static class Parameters {

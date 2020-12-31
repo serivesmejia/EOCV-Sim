@@ -187,28 +187,20 @@ public class InputSourceManager {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
         if (getSourceType(currentInputSource) == SourceType.IMAGE) {
-            eocvSim.runOnMainThread(new Runnable() {
-                @Override
-                public void run() {
-                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS);
-                }
-            });
+            eocvSim.onMainUpdate.addListener(() ->
+                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
+            );
         }
     }
 
     public void pauseIfImageTwoFrames() {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                pauseIfImage();
-            }
-        });
+        eocvSim.onMainUpdate.addListener(this::pauseIfImage);
     }
 
     public void requestSetInputSource(String name) {
-        eocvSim.runOnMainThread(() -> setInputSource(name));
+        eocvSim.onMainUpdate.addListener(() -> setInputSource(name));
     }
 
     public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
@@ -218,12 +210,7 @@ public class InputSourceManager {
         if (getSourceType(sourceName) == SourceType.CAMERA) {
             apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
                     new Dimension(300, 150), true);
-            apwdCam.onCancel(new Runnable() {
-                @Override
-                public void run() {
-                    System.exit(0);
-                }
-            });
+            apwdCam.onCancel(() -> System.exit(0));
         }
 
         return apwdCam;

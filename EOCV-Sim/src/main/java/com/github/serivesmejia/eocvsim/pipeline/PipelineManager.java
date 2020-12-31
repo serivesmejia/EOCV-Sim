@@ -165,7 +165,7 @@ public class PipelineManager {
 
         setPaused(false);
 
-        eocvSim.runOnMainThread(() -> setPaused(true));
+        eocvSim.onMainUpdate.addListener(() -> setPaused(true));
 
     }
 
@@ -206,7 +206,7 @@ public class PipelineManager {
     }
 
     public void requestSetPaused(boolean paused, PauseReason pauseReason) {
-        eocvSim.runOnMainThread(() -> setPaused(paused, pauseReason));
+        eocvSim.onMainUpdate.addListener(() -> setPaused(paused, pauseReason));
     }
 
     public void requestSetPaused(boolean paused) {

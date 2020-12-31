@@ -223,7 +223,7 @@ public class CreateImageSource {
     }
 
     public void createSource(String sourceName, String imgPath, Size size) {
-        eocvSim.runOnMainThread(() -> {
+        eocvSim.onMainUpdate.addListener(() -> {
             eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
             eocvSim.visualizer.updateSourcesList();
         });

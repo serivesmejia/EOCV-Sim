@@ -191,9 +191,7 @@ public class Visualizer {
 
         JMenuItem fileRestart = new JMenuItem("Restart");
 
-        fileRestart.addActionListener((e) ->
-                eocvSim.runOnMainThread(eocvSim::restart)
-        );
+        fileRestart.addActionListener((e) -> eocvSim.onMainUpdate.addListener(eocvSim::restart));
 
         fileMenu.add(fileRestart);
 
@@ -427,7 +425,7 @@ public class Visualizer {
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                eocvSim.runOnMainThread(eocvSim::destroy);
+                eocvSim.onMainUpdate.addListener((Runnable) eocvSim::destroy);
             }
         });
 
@@ -435,7 +433,7 @@ public class Visualizer {
         pipelinePauseBtt.addActionListener(e -> {
             boolean selected = pipelinePauseBtt.isSelected();
             pipelinePauseBtt.setText(selected ? "Resume" : "Pause");
-            eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
+            eocvSim.onMainUpdate.addListener(() -> eocvSim.pipelineManager.setPaused(selected));
         });
 
         //listener for changing pipeline
@@ -514,7 +512,7 @@ public class Visualizer {
         // delete input source
         sourceSelectorDeleteBtt.addActionListener(e -> {
             String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-            eocvSim.runOnMainThread(() -> {
+            eocvSim.onMainUpdate.addListener(() -> {
                 eocvSim.inputSourceManager.deleteInputSource(source);
                 updateSourcesList();
             });

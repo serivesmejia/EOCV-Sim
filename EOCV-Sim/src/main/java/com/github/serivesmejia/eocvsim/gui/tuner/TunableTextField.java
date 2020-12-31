@@ -106,7 +106,7 @@ public class TunableTextField extends JTextField {
             }
 
             public void change() {
-                eocvSim.runOnMainThread(() -> {
+                eocvSim.onMainUpdate.addListener(() -> {
                     if (!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals("")) {
                         try {
                             tunableField.setGuiFieldValue(index, getText());

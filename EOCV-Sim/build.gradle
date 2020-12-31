@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.30-M1'
 }
 
 group 'com.github.serivesmejia'
@@ -13,6 +14,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 dependencies {
@@ -21,4 +23,11 @@ dependencies {
     implementation 'io.github.classgraph:classgraph:4.8.94'
     implementation 'com.formdev:flatlaf:0.45'
     implementation 'com.formdev:flatlaf-intellij-themes:0.45'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
