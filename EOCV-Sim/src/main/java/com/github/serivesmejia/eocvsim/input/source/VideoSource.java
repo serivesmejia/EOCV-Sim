@@ -8,15 +8,17 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
 import org.openftc.easyopencv.MatRecycler;
 
 import java.util.Objects;
 
-public class CameraSource extends InputSource {
+public class VideoSource extends InputSource {
 
     @Expose
-    private final int webcamIndex;
-    private transient VideoCapture camera = null;
+    private final String videoPath;
+
+    private transient VideoCapture video = null;
 
     private transient MatRecycler.RecyclableMat lastFramePaused = null;
     private transient MatRecycler.RecyclableMat lastFrame = null;
@@ -26,10 +28,10 @@ public class CameraSource extends InputSource {
     @Expose
     private volatile Size size;
 
-    private volatile transient MatRecycler matRecycler;
+    private volatile transient MatRecycler matRecycler = null;
 
-    public CameraSource(int webcamIndex, Size size) {
-        this.webcamIndex = webcamIndex;
+    public VideoSource(String videoPath, Size size) {
+        this.videoPath = videoPath;
         this.size = size;
     }
 
@@ -39,26 +41,27 @@ public class CameraSource extends InputSource {
         if (initialized) return false;
         initialized = true;
 
-        camera = new VideoCapture();
-        camera.open(webcamIndex);
+        video = new VideoCapture();
+        video.open(videoPath);
 
-        if (!camera.isOpened()) {
-            Log.error("CameraSource", "Unable to open camera " + webcamIndex);
+        if (!video.isOpened()) {
+            Log.error("VideoSource", "Unable to open video " + videoPath);
             return false;
         }
 
         if (matRecycler == null) matRecycler = new MatRecycler(4);
 
         MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
+        newFrame.release();
 
-        camera.read(newFrame);
+        video.read(newFrame);
 
         if (newFrame.empty()) {
-            Log.error("CameraSource", "Unable to open camera " + webcamIndex + ", returned Mat was empty.");
-            newFrame.release();
+            Log.error("VideoSource", "Unable to open video " + videoPath + ", returned Mat was empty.");
             return false;
         }
 
+        newFrame.release();
         matRecycler.returnMat(newFrame);
 
         return true;
@@ -69,21 +72,32 @@ public class CameraSource extends InputSource {
     public void reset() {
 
         if (!initialized) return;
-        if (camera != null && camera.isOpened()) camera.release();
+
+        if (video != null && video.isOpened()) video.release();
 
         if(lastFrame != null)
             matRecycler.returnMat(lastFrame);
         if(lastFramePaused != null)
             matRecycler.returnMat(lastFramePaused);
 
-        camera = null;
+        matRecycler.releaseAll();
+
+        video = null;
         initialized = false;
 
     }
 
     @Override
     public void close() {
-        if (camera != null && camera.isOpened()) camera.release();
+
+        if(video != null && video.isOpened()) video.release();
+        if(lastFrame != null) matRecycler.returnMat(lastFrame);
+
+        if (lastFramePaused != null) {
+            lastFramePaused.returnMat();
+            lastFramePaused = null;
+        }
+
     }
 
     @Override
@@ -92,17 +106,16 @@ public class CameraSource extends InputSource {
         if (isPaused) {
             return lastFramePaused;
         } else if (lastFramePaused != null) {
-            lastFramePaused.release();
-            lastFramePaused.returnMat();
+            matRecycler.returnMat(lastFramePaused);
             lastFramePaused = null;
         }
 
         if (lastFrame == null) lastFrame = matRecycler.takeMat();
-        if (camera == null) return lastFrame;
+        if (video == null) return lastFrame;
 
         MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 
-        camera.read(newFrame);
+        video.read(newFrame);
 
         if (newFrame.empty()) return lastFrame;
         if (size == null) size = lastFrame.size();
@@ -110,8 +123,7 @@ public class CameraSource extends InputSource {
         Imgproc.cvtColor(newFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
         Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
-        newFrame.release();
-        newFrame.returnMat();
+        matRecycler.returnMat(newFrame);
 
         return lastFrame;
 
@@ -123,39 +135,32 @@ public class CameraSource extends InputSource {
         if (lastFrame != null) lastFrame.release();
         if (lastFramePaused == null) lastFramePaused = matRecycler.takeMat();
 
-        camera.read(lastFramePaused);
+        video.read(lastFramePaused);
 
         Imgproc.cvtColor(lastFramePaused, lastFramePaused, Imgproc.COLOR_BGR2RGB);
         Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         update();
 
-        camera.release();
-        camera = null;
+        video.release();
+        video = null;
 
     }
 
     @Override
     public void onResume() {
-
-        Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.checkCameraDialogPleaseWait(name);
-
-        camera = new VideoCapture();
-        camera.open(webcamIndex);
-
-        apwdCam.destroyDialog();
-
+        video = new VideoCapture();
+        video.open(videoPath);
     }
 
     @Override
     public InputSource cloneSource() {
-        return new CameraSource(webcamIndex, size);
+        return new VideoSource(videoPath, size);
     }
 
     @Override
     public String toString() {
-        if (size == null) size = new Size();
-        return "CameraSource(" + webcamIndex + ", " + (size != null ? size.toString() : "null") + ")";
+        return "VideoSource(" + videoPath + ", " + (size != null ? size.toString() : "null") + ")";
     }
 
 }

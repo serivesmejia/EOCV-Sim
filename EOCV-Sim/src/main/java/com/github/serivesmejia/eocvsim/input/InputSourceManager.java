@@ -19,9 +19,12 @@ import java.util.Map;
 public class InputSourceManager {
 
     private final EOCVSim eocvSim;
+
     public volatile Mat lastMatFromSource = null;
     public volatile InputSource currentInputSource = null;
+
     public volatile HashMap<String, InputSource> sources = new HashMap<>();
+
     public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 
     public InputSourceManager(EOCVSim eocvSim) {
@@ -35,6 +38,8 @@ public class InputSourceManager {
                 return SourceType.IMAGE;
             case "CameraSource":
                 return SourceType.CAMERA;
+            case "VideoSource":
+                return SourceType.VIDEO;
         }
 
         return SourceType.UNKNOWN;
@@ -203,12 +208,7 @@ public class InputSourceManager {
     }
 
     public void requestSetInputSource(String name) {
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                setInputSource(name);
-            }
-        });
+        eocvSim.runOnMainThread(() -> setInputSource(name));
     }
 
     public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
@@ -241,6 +241,7 @@ public class InputSourceManager {
     public enum SourceType {
         IMAGE,
         CAMERA,
+        VIDEO,
         UNKNOWN
     }
 

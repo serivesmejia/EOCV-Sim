@@ -2,10 +2,12 @@ package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.input.source.CameraSource;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
+import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 import java.io.File;
 import java.util.HashMap;
@@ -13,10 +15,16 @@ import java.util.Map;
 
 public class InputSourceLoader {
 
-    public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    public static String SOURCES_SAVEFILE_NAME = "eocvsim_sources.json";
-    public static File SOURCES_SAVEFILE = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    public static final String SOURCES_SAVEFILE_NAME = "eocvsim_sources.json";
+    public static final File SOURCES_SAVEFILE = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
+
+    public static final InputSourcesContainer.SourcesFileVersion CURRENT_FILE_VERSION = InputSourcesContainer.SourcesFileVersion.SEIS;
+
     public HashMap<String, InputSource> loadedInputSources = new HashMap<>();
+
+    public InputSourcesContainer.SourcesFileVersion fileVersion = null;
 
     public void saveInputSource(String name, InputSource source) {
         loadedInputSources.put(name, source);
@@ -27,8 +35,16 @@ public class InputSourceLoader {
     }
 
     public void saveInputSourcesToFile() {
+        saveInputSourcesToFile(SOURCES_SAVEFILE);
+    }
+
+    public void saveInputSourcesToFile(File f) {
 
         InputSourcesContainer sourcesContainer = new InputSourcesContainer();
+
+        //updates file version to most recent since it will be regenerated at this point
+        sourcesContainer.sourcesFileVersion = fileVersion.ordinal() < CURRENT_FILE_VERSION.ordinal()
+                                                ? CURRENT_FILE_VERSION : fileVersion;
 
         for (Map.Entry<String, InputSource> entry : loadedInputSources.entrySet()) {
 
@@ -39,10 +55,17 @@ public class InputSourceLoader {
 
         }
 
+        saveInputSourcesToFile(f, sourcesContainer);
+
+    }
+
+    public void saveInputSourcesToFile(File file, InputSourcesContainer sourcesContainer) {
         String jsonInputSources = gson.toJson(sourcesContainer);
+        SysUtil.saveFileStr(file, jsonInputSources);
+    }
 
-        SysUtil.saveFileStr(SOURCES_SAVEFILE, jsonInputSources);
-
+    public void saveInputSourcesToFile(InputSourcesContainer sourcesContainer) {
+        saveInputSourcesToFile(SOURCES_SAVEFILE, sourcesContainer);
     }
 
     public void loadInputSourcesFromFile() {
@@ -60,28 +83,41 @@ public class InputSourceLoader {
 
         try {
             sources = gson.fromJson(jsonSources, InputSourcesContainer.class);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             Log.error("InputSourceLoader", "Error while parsing sources file, it will be replaced and fixed later on, but the user created sources will be deleted.", ex);
             Log.white();
             return;
         }
 
         sources.updateAllSources();
+        fileVersion = sources.sourcesFileVersion;
+
+        saveInputSourcesToFile(sources); //to make sure version gets declared in case it was an older file
+
+        Log.info("InputSourceLoader", "InputSources file version is " + sources.sourcesFileVersion);
 
         loadedInputSources = sources.allSources;
 
     }
 
-    class InputSourcesContainer {
+    static class InputSourcesContainer {
 
         public transient HashMap<String, InputSource> allSources = new HashMap<>();
 
         public HashMap<String, ImageSource> imageSources = new HashMap<>();
         public HashMap<String, CameraSource> cameraSources = new HashMap<>();
+        public HashMap<String, VideoSource> videoSources = new HashMap<>();
+
+        @Expose
+        public SourcesFileVersion sourcesFileVersion = null;
+
+        enum SourcesFileVersion { DOS, SEIS, SIETE }
 
         public void updateAllSources() {
 
-            allSources = new HashMap<>();
+            if(sourcesFileVersion == null) sourcesFileVersion = SourcesFileVersion.DOS;
+
+            allSources.clear();
 
             for (Map.Entry<String, ImageSource> entry : imageSources.entrySet()) {
                 allSources.put(entry.getKey(), entry.getValue());
@@ -89,6 +125,14 @@ public class InputSourceLoader {
 
             for (Map.Entry<String, CameraSource> entry : cameraSources.entrySet()) {
                 allSources.put(entry.getKey(), entry.getValue());
+            }
+
+            //check if file version is bigger than DOS, we should have video sources section
+            //declared in any file with a version greater than that
+            if(sourcesFileVersion.ordinal() >= 1) {
+                for (Map.Entry<String, VideoSource> entry : videoSources.entrySet()) {
+                    allSources.put(entry.getKey(), entry.getValue());
+                }
             }
 
         }
@@ -101,6 +145,9 @@ public class InputSourceLoader {
                     break;
                 case CAMERA:
                     cameraSources.put(sourceName, (CameraSource) source);
+                    break;
+                case VIDEO:
+                    videoSources.put(sourceName, (VideoSource) source);
                     break;
             }
 
