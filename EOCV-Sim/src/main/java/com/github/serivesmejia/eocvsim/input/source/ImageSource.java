@@ -48,7 +48,6 @@ public class ImageSource extends InputSource {
     @Override
     public void onPause() {
         //if(img != null) img.release();
-        System.gc();
     }
 
     @Override
@@ -57,12 +56,12 @@ public class ImageSource extends InputSource {
         if (!initialized) return;
 
         if (lastCloneTo != null) {
-            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo.returnMat();
             lastCloneTo = null;
         }
 
         if (img != null) {
-            matRecycler.returnMat(img);
+            img.returnMat();
             img = null;
         }
 
@@ -80,7 +79,7 @@ public class ImageSource extends InputSource {
         }
 
         if (lastCloneTo != null) {
-            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo.returnMat();
             lastCloneTo = null;
         }
 
@@ -115,7 +114,6 @@ public class ImageSource extends InputSource {
     public Mat update() {
 
         if (isPaused) return lastCloneTo;
-
         if (lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
 
         if (img == null) return null;

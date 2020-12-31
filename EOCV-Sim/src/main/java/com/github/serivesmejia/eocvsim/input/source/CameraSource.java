@@ -104,7 +104,11 @@ public class CameraSource extends InputSource {
 
         camera.read(newFrame);
 
-        if (newFrame.empty()) return lastFrame;
+        if (newFrame.empty()) {
+            newFrame.returnMat();
+            return lastFrame;
+        }
+
         if (size == null) size = lastFrame.size();
 
         Imgproc.cvtColor(newFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
