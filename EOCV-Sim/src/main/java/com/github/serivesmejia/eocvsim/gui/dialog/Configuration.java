@@ -85,7 +85,7 @@ public class Configuration {
         acceptPanel.add(acceptButton);
 
         acceptButton.addActionListener((e) -> {
-            eocvSim.onMainUpdate.addListener(this::applyChanges);
+            eocvSim.onMainUpdate.doOnce(this::applyChanges);
             close();
         });
 

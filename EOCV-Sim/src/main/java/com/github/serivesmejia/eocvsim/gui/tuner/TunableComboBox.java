@@ -30,7 +30,7 @@ public class TunableComboBox extends JComboBox<String> {
             this.addItem(obj.toString());
         }
 
-        addActionListener(e -> eocvSim.onMainUpdate.addListener(() -> {
+        addActionListener(e -> eocvSim.onMainUpdate.doOnce(() -> {
 
             try {
                 tunableField.setGuiComboBoxValue(index, getSelectedItem().toString());

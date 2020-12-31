@@ -29,29 +29,32 @@ class EventHandler(val name: String) : Runnable {
         }
     }
 
-    fun addListener(listener: EventListener): Int {
-
+    fun doOnce(listener: EventListener): Int {
         idCount++
 
         internalListeners[idCount] = listener
         listener.id = idCount
 
         return listener.id
-
     }
 
-    fun addListener(listener: (Int) -> Unit) = addListener(KEventListener { listener(it) })
+    fun doOnce(runnable: Runnable) = doOnce(KEventListener { runnable.run() })
+    fun doOnce(listener: (Int) -> Unit) = doOnce(KEventListener(listener))
 
-    fun addListener(runnable: Runnable) = addListener(KEventListener { runnable.run() })
-
-    fun addPersistentListener(listener: EventListener) {
-        addListener(listener)
+    fun doPersistent(listener: EventListener) {
+        doOnce(listener)
         listener.persistent = true
     }
 
-    fun addPersistentListener(listener: (Int) -> Unit) = addPersistentListener(KEventListener { listener(it) })
+    fun doPersistent(runnable: Runnable) = doPersistent(KEventListener { runnable.run() })
+    fun doPersistent(listener: (Int) -> Unit) = doPersistent(KEventListener(listener))
 
-    fun addPersistentListener(runnable: Runnable) = addPersistentListener(KEventListener { runnable.run() })
+    fun getListener(id: Int): EventListener? = internalListeners[id]
+
+    fun getKListener(id: Int): KEventListener? {
+        val listener = getListener(id) ?: return null
+        return if(listener is KEventListener) { listener } else { null }
+    }
 
     fun removeListener(id: Int) = internalListeners.remove(id)
 

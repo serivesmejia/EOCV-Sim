@@ -187,7 +187,7 @@ public class InputSourceManager {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
         if (getSourceType(currentInputSource) == SourceType.IMAGE) {
-            eocvSim.onMainUpdate.addListener(() ->
+            eocvSim.onMainUpdate.doOnce(() ->
                     eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
             );
         }
@@ -196,11 +196,11 @@ public class InputSourceManager {
     public void pauseIfImageTwoFrames() {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
-        eocvSim.onMainUpdate.addListener(this::pauseIfImage);
+        eocvSim.onMainUpdate.doOnce(this::pauseIfImage);
     }
 
     public void requestSetInputSource(String name) {
-        eocvSim.onMainUpdate.addListener(() -> setInputSource(name));
+        eocvSim.onMainUpdate.doOnce(() -> setInputSource(name));
     }
 
     public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {

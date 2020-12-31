@@ -1,9 +1,7 @@
 package com.github.serivesmejia.eocvsim.pipeline;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.Visualizer.AsyncPleaseWaitDialog;
 import com.github.serivesmejia.eocvsim.util.Log;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -165,7 +163,7 @@ public class PipelineManager {
 
         setPaused(false);
 
-        eocvSim.onMainUpdate.addListener(() -> setPaused(true));
+        eocvSim.onMainUpdate.doOnce(() -> setPaused(true));
 
     }
 
@@ -206,7 +204,7 @@ public class PipelineManager {
     }
 
     public void requestSetPaused(boolean paused, PauseReason pauseReason) {
-        eocvSim.onMainUpdate.addListener(() -> setPaused(paused, pauseReason));
+        eocvSim.onMainUpdate.doOnce(() -> setPaused(paused, pauseReason));
     }
 
     public void requestSetPaused(boolean paused) {
