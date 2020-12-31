@@ -51,6 +51,10 @@ public class ImageSource extends InputSource {
     }
 
     @Override
+    public void onResume() {
+    }
+
+    @Override
     public void reset() {
 
         if (!initialized) return;
