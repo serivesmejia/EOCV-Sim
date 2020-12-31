@@ -17,17 +17,13 @@ public abstract class InputSource {
         return false;
     }
 
-    public void reset() {
-    }
+    public abstract void reset();
 
-    public void close() {
-    }
+    public abstract void close();
 
-    public void onPause() {
-    }
+    public abstract void onPause();
 
-    public void onResume() {
-    }
+    public abstract void onResume();
 
     public Mat update() {
         return null;
