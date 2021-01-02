@@ -14,7 +14,9 @@ public abstract class TunableField<T> {
     protected OpenCvPipeline pipeline;
     protected AllowMode allowMode;
     protected EOCVSim eocvSim;
+
     protected Object initialFieldValue;
+
     private int guiFieldAmount = 1;
     private int guiComboBoxAmount = 0;
 
