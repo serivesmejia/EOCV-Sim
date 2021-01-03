@@ -300,11 +300,8 @@ public class Visualizer {
         sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        try {
-            sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //different icons
+        sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
 
         sourceSelectorCreateBtt.addActionListener(e -> {
             if (CreateSource.alreadyOpened) return;
@@ -630,8 +627,8 @@ public class Visualizer {
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        for (Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
-            listModel.addElement(entry.getKey());
+        for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
+            listModel.addElement(source.getName());
         }
 
         sourceSelector.setFixedCellWidth(240);

@@ -75,10 +75,10 @@ public class VideoSource extends InputSource {
 
         if (video != null && video.isOpened()) video.release();
 
-        if(lastFrame != null)
-            matRecycler.returnMat(lastFrame);
-        if(lastFramePaused != null)
-            matRecycler.returnMat(lastFramePaused);
+        if(lastFrame != null && lastFrame.isCheckedOut())
+            lastFrame.returnMat();
+        if(lastFramePaused != null && lastFramePaused.isCheckedOut())
+            lastFramePaused.returnMat();
 
         matRecycler.releaseAll();
 
@@ -91,7 +91,7 @@ public class VideoSource extends InputSource {
     public void close() {
 
         if(video != null && video.isOpened()) video.release();
-        if(lastFrame != null) matRecycler.returnMat(lastFrame);
+        if(lastFrame != null) lastFrame.returnMat();
 
         if (lastFramePaused != null) {
             lastFramePaused.returnMat();
@@ -119,6 +119,7 @@ public class VideoSource extends InputSource {
 
         if (newFrame.empty()) {
             newFrame.returnMat();
+            video.set(Videoio.CAP_PROP_POS_FRAMES, 0);
             return lastFrame;
         }
 
@@ -128,6 +129,8 @@ public class VideoSource extends InputSource {
         Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         matRecycler.returnMat(newFrame);
+
+        Log.info(String.valueOf(video.get(Videoio.CAP_PROP_POS_FRAMES)));
 
         return lastFrame;
 
@@ -158,7 +161,7 @@ public class VideoSource extends InputSource {
     }
 
     @Override
-    public InputSource cloneSource() {
+    public InputSource internalCloneSource() {
         return new VideoSource(videoPath, size);
     }
 

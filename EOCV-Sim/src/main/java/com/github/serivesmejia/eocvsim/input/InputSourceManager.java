@@ -13,8 +13,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class InputSourceManager {
 
@@ -27,11 +26,15 @@ public class InputSourceManager {
 
     public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 
+    private int biggestSortId = 0;
+
     public InputSourceManager(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
     }
 
     public static SourceType getSourceType(InputSource source) {
+
+        if(source == null) return SourceType.UNKNOWN;
 
         switch (source.getClass().getSimpleName()) {
             case "ImageSource":
@@ -50,20 +53,22 @@ public class InputSourceManager {
 
         Log.info("InputSourceManager", "Initializing...");
 
-        inputSourceLoader.loadInputSourcesFromFile();
-
-        for (Map.Entry<String, InputSource> entry : inputSourceLoader.loadedInputSources.entrySet()) {
-            addInputSource(entry.getKey(), entry.getValue());
-        }
+        if(lastMatFromSource == null)
+            lastMatFromSource = new Mat();
 
         Size size = new Size(320, 240);
         createDefaultImgInputSource("/images/ug_4.jpg", "ug_eocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
         createDefaultImgInputSource("/images/ug_1.jpg", "ug_eocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
         createDefaultImgInputSource("/images/ug_0.jpg", "ug_eocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
 
-        lastMatFromSource = new Mat();
+        inputSourceLoader.loadInputSourcesFromFile();
+
+        for (Map.Entry<String, InputSource> entry : inputSourceLoader.loadedInputSources.entrySet()) {
+            addInputSource(entry.getKey(), entry.getValue());
+        }
 
         Log.white();
+
 
     }
 
@@ -84,16 +89,14 @@ public class InputSourceManager {
     }
 
     public void update(boolean isPaused) {
-
         if (currentInputSource == null) return;
         currentInputSource.setPaused(isPaused);
 
         try {
-            lastMatFromSource = currentInputSource.update();
+            currentInputSource.update().copyTo(lastMatFromSource);
         } catch (Throwable ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }
-
     }
 
     public void addInputSource(String name, InputSource inputSource) {
@@ -109,8 +112,15 @@ public class InputSourceManager {
 
         sources.put(name, inputSource);
 
-        inputSourceLoader.saveInputSource(name, inputSource);
-        inputSourceLoader.saveInputSourcesToFile();
+        if(inputSource.sortId == -1)
+            inputSource.sortId = biggestSortId + 1;
+        else
+            biggestSortId = inputSource.sortId;
+
+        if(!inputSource.isDefault) {
+            inputSourceLoader.saveInputSource(name, inputSource);
+            inputSourceLoader.saveInputSourcesToFile();
+        }
 
         Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
 
@@ -218,11 +228,15 @@ public class InputSourceManager {
     }
 
     public SourceType getSourceType(String sourceName) {
-
         InputSource source = sources.get(sourceName);
-
         return getSourceType(source);
+    }
 
+    public InputSource[] getSortedInputSources() {
+        ArrayList<InputSource> sources = new ArrayList<>(this.sources.values());
+        Collections.sort(sources);
+
+        return sources.toArray(new InputSource[0]);
     }
 
     public enum SourceType {

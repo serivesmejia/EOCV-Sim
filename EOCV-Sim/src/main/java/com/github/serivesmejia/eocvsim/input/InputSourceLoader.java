@@ -43,16 +43,15 @@ public class InputSourceLoader {
         InputSourcesContainer sourcesContainer = new InputSourcesContainer();
 
         //updates file version to most recent since it will be regenerated at this point
-        sourcesContainer.sourcesFileVersion = fileVersion.ordinal() < CURRENT_FILE_VERSION.ordinal()
+        if(fileVersion != null)
+            sourcesContainer.sourcesFileVersion = fileVersion.ordinal() < CURRENT_FILE_VERSION.ordinal()
                                                 ? CURRENT_FILE_VERSION : fileVersion;
 
         for (Map.Entry<String, InputSource> entry : loadedInputSources.entrySet()) {
-
             if (!entry.getValue().isDefault) {
                 InputSource source = entry.getValue().cloneSource();
                 sourcesContainer.classifySource(entry.getKey(), source);
             }
-
         }
 
         saveInputSourcesToFile(f, sourcesContainer);

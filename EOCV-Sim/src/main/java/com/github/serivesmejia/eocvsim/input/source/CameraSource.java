@@ -71,10 +71,10 @@ public class CameraSource extends InputSource {
         if (!initialized) return;
         if (camera != null && camera.isOpened()) camera.release();
 
-        if(lastFrame != null)
-            matRecycler.returnMat(lastFrame);
-        if(lastFramePaused != null)
-            matRecycler.returnMat(lastFramePaused);
+        if(lastFrame != null && lastFramePaused.isCheckedOut())
+            lastFrame.returnMat();
+        if(lastFramePaused != null && lastFramePaused.isCheckedOut())
+            lastFramePaused.returnMat();
 
         camera = null;
         initialized = false;
@@ -152,7 +152,7 @@ public class CameraSource extends InputSource {
     }
 
     @Override
-    public InputSource cloneSource() {
+    public InputSource internalCloneSource() {
         return new CameraSource(webcamIndex, size);
     }
 
