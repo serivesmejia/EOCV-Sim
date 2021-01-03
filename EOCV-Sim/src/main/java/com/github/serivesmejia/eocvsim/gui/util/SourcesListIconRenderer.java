@@ -46,7 +46,7 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
         if (isDarkTheme) {
             if(!colorsInverted) {
                 invertIconColors();
-                colorsInverted = false;
+                colorsInverted = true;
             }
         } else {
             if(colorsInverted) {

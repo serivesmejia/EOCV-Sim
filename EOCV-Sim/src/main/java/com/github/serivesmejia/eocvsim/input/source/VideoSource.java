@@ -117,6 +117,10 @@ public class VideoSource extends InputSource {
 
         video.read(newFrame);
 
+        //with videocapture for video files, when an empty mat is returned
+        //the most likely reason is that the video ended, so we set the
+        //playback position back to 0 for looping in here and start over
+        //in next update
         if (newFrame.empty()) {
             newFrame.returnMat();
             video.set(Videoio.CAP_PROP_POS_FRAMES, 0);
@@ -129,8 +133,6 @@ public class VideoSource extends InputSource {
         Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         matRecycler.returnMat(newFrame);
-
-        Log.info(String.valueOf(video.get(Videoio.CAP_PROP_POS_FRAMES)));
 
         return lastFrame;
 

@@ -71,7 +71,7 @@ public class CameraSource extends InputSource {
         if (!initialized) return;
         if (camera != null && camera.isOpened()) camera.release();
 
-        if(lastFrame != null && lastFramePaused.isCheckedOut())
+        if(lastFrame != null && lastFrame.isCheckedOut())
             lastFrame.returnMat();
         if(lastFramePaused != null && lastFramePaused.isCheckedOut())
             lastFramePaused.returnMat();
