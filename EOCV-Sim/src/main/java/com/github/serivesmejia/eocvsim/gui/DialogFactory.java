@@ -2,7 +2,7 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.dialog.*;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.SourceType;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -36,7 +36,7 @@ public class DialogFactory {
         return createFileChooser(parent, null, new FileFilter[0]);
     }
 
-    public void createSourceDialog(InputSourceManager.SourceType type) {
+    public void createSourceDialog(SourceType type) {
         invokeLater(() -> {
             switch (type) {
                 case IMAGE:
@@ -45,6 +45,8 @@ public class DialogFactory {
                 case CAMERA:
                     new CreateCameraSource(eocvSim.visualizer.frame, eocvSim);
                     break;
+                case VIDEO:
+                    new CreateVideoSource(eocvSim.visualizer.frame, eocvSim);
             }
         });
     }

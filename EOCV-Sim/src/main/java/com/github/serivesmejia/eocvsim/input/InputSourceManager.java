@@ -32,23 +32,6 @@ public class InputSourceManager {
         this.eocvSim = eocvSim;
     }
 
-    public static SourceType getSourceType(InputSource source) {
-
-        if(source == null) return SourceType.UNKNOWN;
-
-        switch (source.getClass().getSimpleName()) {
-            case "ImageSource":
-                return SourceType.IMAGE;
-            case "CameraSource":
-                return SourceType.CAMERA;
-            case "VideoSource":
-                return SourceType.VIDEO;
-        }
-
-        return SourceType.UNKNOWN;
-
-    }
-
     public void init() {
 
         Log.info("InputSourceManager", "Initializing...");
@@ -238,13 +221,6 @@ public class InputSourceManager {
         Collections.sort(sources);
 
         return sources.toArray(new InputSource[0]);
-    }
-
-    public enum SourceType {
-        IMAGE,
-        CAMERA,
-        VIDEO,
-        UNKNOWN
     }
 
 }

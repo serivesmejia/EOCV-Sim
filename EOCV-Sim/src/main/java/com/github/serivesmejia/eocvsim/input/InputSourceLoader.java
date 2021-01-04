@@ -138,7 +138,7 @@ public class InputSourceLoader {
 
         public void classifySource(String sourceName, InputSource source) {
 
-            switch (InputSourceManager.getSourceType(source)) {
+            switch (SourceType.fromClass(source.getClass())) {
                 case IMAGE:
                     imageSources.put(sourceName, (ImageSource) source);
                     break;

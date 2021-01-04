@@ -5,6 +5,7 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoCapture;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -71,6 +72,33 @@ public class CvUtil {
         }
 
     }
+
+    public static boolean checkVideoValid(String videoPath) {
+
+        try {
+
+            VideoCapture capture = new VideoCapture();
+
+            Mat img = new Mat();
+
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            if (img != null && !img.empty()) { //image is valid
+                img.release();
+                return true;
+            } else { //image is not valid
+                if(img != null) img.release();
+                return false;
+            }
+
+        } catch (Exception ex) {
+            return false;
+        }
+
+    }
+
 
     public static Size getImageSize(String imagePath) {
 

@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
+import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import org.opencv.core.Size;
 
@@ -159,11 +160,11 @@ public class CreateVideoSource {
         selectDirButton.addActionListener(e -> {
 
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Video Media",
-                    "avi", "mkv", "jpe", "jp2", "bmp", "png", "tiff", "tif");
+                    "avi", "mkv", "mov", "mp4");
 
             DialogFactory.createFileChooser(createVideoSource, filter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    imageFileSelected(selectedFile);
+                    videoFileSelected(selectedFile);
                 }
             });
 
@@ -194,6 +195,9 @@ public class CreateVideoSource {
             close();
         });
 
+
+        // Status label part
+
         cancelButton.addActionListener(e -> close());
 
         createVideoSource.setResizable(false);
@@ -202,11 +206,11 @@ public class CreateVideoSource {
 
     }
 
-    public void imageFileSelected(File f) {
+    public void videoFileSelected(File f) {
 
         String fileAbsPath = f.getAbsolutePath();
 
-        if (CvUtil.checkImageValid(fileAbsPath)) {
+        if (CvUtil.checkVideoValid(fileAbsPath)) {
             vidDirTextField.setText(fileAbsPath);
             selectedValidVideo = true;
         } else {
@@ -223,9 +227,9 @@ public class CreateVideoSource {
         createVideoSource.dispose();
     }
 
-    public void createSource(String sourceName, String imgPath, Size size) {
+    public void createSource(String sourceName, String videoPath, Size size) {
         eocvSim.onMainUpdate.doOnce(() -> {
-            eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
+            eocvSim.inputSourceManager.addInputSource(sourceName, new VideoSource(videoPath, size));
             eocvSim.visualizer.updateSourcesList();
         });
     }

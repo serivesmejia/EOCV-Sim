@@ -9,7 +9,7 @@ import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.SourceType;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 
@@ -165,7 +165,7 @@ public class Visualizer {
         JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
 
         fileNewInputSourceImageItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(InputSourceManager.SourceType.IMAGE)
+                dialogFactory.createSourceDialog(SourceType.IMAGE)
         );
 
         fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
@@ -173,7 +173,7 @@ public class Visualizer {
         JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
 
         fileNewInputSourceCameraItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(InputSourceManager.SourceType.CAMERA)
+                dialogFactory.createSourceDialog(SourceType.CAMERA)
         );
 
         fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);

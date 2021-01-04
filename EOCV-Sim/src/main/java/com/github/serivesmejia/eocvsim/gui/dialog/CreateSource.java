@@ -2,7 +2,7 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager.SourceType;
+import com.github.serivesmejia.eocvsim.input.SourceType;
 
 import javax.swing.*;
 import java.awt.*;
