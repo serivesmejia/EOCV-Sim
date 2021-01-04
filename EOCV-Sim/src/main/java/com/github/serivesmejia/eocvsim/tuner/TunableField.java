@@ -5,6 +5,8 @@ import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 public abstract class TunableField<T> {
 
@@ -86,6 +88,15 @@ public abstract class TunableField<T> {
 
     public final AllowMode getAllowMode() {
         return allowMode;
+    }
+
+    public final Type getType() {
+        try {
+            Type sooper = getClass().getGenericSuperclass();
+            return ((ParameterizedType)sooper).getActualTypeArguments()[0];
+        } catch(Exception ex) {
+            return null;
+        }
     }
 
     public final boolean isOnlyNumbers() {

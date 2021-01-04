@@ -24,7 +24,6 @@ import java.awt.Taskbar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class Visualizer {
@@ -440,7 +439,7 @@ public class Visualizer {
                 int pipeline = pipelineSelector.getSelectedIndex();
 
                 if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-                    if (!eocvSim.pipelineManager.isPaused()) {
+                    if (!eocvSim.pipelineManager.getPaused()) {
                         eocvSim.pipelineManager.requestChangePipeline(pipeline);
                         beforeSelectedPipeline = pipeline;
                     } else {
@@ -469,7 +468,7 @@ public class Visualizer {
                     String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
                     if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
-                        if (!eocvSim.pipelineManager.isPaused()) {
+                        if (!eocvSim.pipelineManager.getPaused()) {
 
                             eocvSim.inputSourceManager.requestSetInputSource(source);
                             beforeSelectedSource = source;
@@ -501,7 +500,7 @@ public class Visualizer {
         //handling onViewportTapped evts
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                OpenCvPipeline pipeline = eocvSim.pipelineManager.currentPipeline;
+                OpenCvPipeline pipeline = eocvSim.pipelineManager.getCurrentPipeline();
                 if(pipeline != null) pipeline.onViewportTapped();
             }
         });
@@ -611,7 +610,7 @@ public class Visualizer {
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.getPipelines()) {
             listModel.addElement(pipelineClass.getSimpleName());
         }
 

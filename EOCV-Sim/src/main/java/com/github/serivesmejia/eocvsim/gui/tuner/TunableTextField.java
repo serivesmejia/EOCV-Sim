@@ -140,7 +140,7 @@ public class TunableTextField extends JTextField {
             }
 
             public void execute() {
-                if (eocvSim.pipelineManager.isPaused()) {
+                if (eocvSim.pipelineManager.getPaused()) {
                     eocvSim.pipelineManager.requestSetPaused(false);
                 }
             }

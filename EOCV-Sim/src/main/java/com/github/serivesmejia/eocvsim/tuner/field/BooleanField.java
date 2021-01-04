@@ -2,10 +2,12 @@ package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
+import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
 
+@RegisterTunableField
 public class BooleanField extends TunableField<Boolean> {
 
     boolean value;

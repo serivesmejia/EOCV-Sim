@@ -6,9 +6,9 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
 
-public class NumericField extends TunableField<Number> {
+public class NumericField<T extends Number> extends TunableField<T> {
 
-    protected Number value;
+    protected T value;
 
     protected volatile boolean hasChanged = false;
 
@@ -22,7 +22,7 @@ public class NumericField extends TunableField<Number> {
         if (value == null) return;
 
         try {
-            value = (Number) reflectionField.get(pipeline);
+            value = (T) reflectionField.get(pipeline);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -45,7 +45,7 @@ public class NumericField extends TunableField<Number> {
     }
 
     @Override
-    public Number getValue() {
+    public T getValue() {
         return value;
     }
 

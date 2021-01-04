@@ -2,11 +2,13 @@ package com.github.serivesmejia.eocvsim.tuner.field.numeric;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.field.NumericField;
+import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
 
-public class FloatField extends NumericField {
+@RegisterTunableField
+public class FloatField extends NumericField<Float> {
 
     protected float beforeValue;
 
@@ -26,14 +28,14 @@ public class FloatField extends NumericField {
 
         setPipelineFieldValue(value);
 
-        beforeValue = value.floatValue();
+        beforeValue = value;
 
     }
 
     @Override
     public boolean hasChanged() {
-        boolean hasChanged = value.floatValue() != beforeValue;
-        beforeValue = value.floatValue();
+        boolean hasChanged = value != beforeValue;
+        beforeValue = value;
         return hasChanged;
     }
 

@@ -17,10 +17,9 @@ import nu.pattern.OpenCV
 class EOCVSim(val params: Parameters = Parameters()) {
 
     companion object {
-        @JvmField val VERSION = "2.1.0"
-        @JvmField val DEFAULT_EOCV_WIDTH = 320
-        @JvmField val DEFAULT_EOCV_HEIGHT = 240
-
+        const val VERSION = "2.1.0"
+        const val DEFAULT_EOCV_WIDTH = 320
+        const val DEFAULT_EOCV_HEIGHT = 240
         @Volatile private var alreadyInitializedOnce = false
     }
 
@@ -30,7 +29,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     @JvmField val configManager = ConfigManager()
     @JvmField val inputSourceManager = InputSourceManager(this)
-    lateinit var pipelineManager: PipelineManager //we'll initialize pipeline manager after loading native lib
+    @JvmField val pipelineManager = PipelineManager(this) //we'll initialize pipeline manager after loading native lib
 
     @JvmField var tunerManager = TunerManager(this)
 
@@ -61,8 +60,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         }
 
         alreadyInitializedOnce = true
-
-        pipelineManager = PipelineManager(this)
 
         configManager.init() //load config
 
@@ -98,7 +95,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             updateVisualizerTitle()
 
-            inputSourceManager.update(pipelineManager.isPaused)
+            inputSourceManager.update(pipelineManager.paused)
             tunerManager.update()
 
             //if we don't have a mat from the inputsource, we'll just skip this frame.
@@ -111,7 +108,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
 
                 //when not paused, post the last pipeline mat to the viewport
-                if (!pipelineManager.isPaused)
+                if (!pipelineManager.paused)
                     visualizer.viewport.postMat(pipelineManager.lastOutputMat)
 
                 if (telemetry != null) {
@@ -131,7 +128,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             //updating displayed telemetry
             visualizer.updateTelemetry(pipelineManager.currentTelemetry)
 
-            if (!pipelineManager.isPaused) fpsCounter.update()
+            if (!pipelineManager.paused) fpsCounter.update()
 
             //limit FPS
             try {
@@ -177,7 +174,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         val pipelineFpsMsg = " (" + fpsCounter.fps + " Pipeline FPS)"
         val posterFpsMsg = " (" + visualizer.viewport.matPoster.fpsCounter.fps + " Poster FPS)"
-        val isPaused = if (pipelineManager.isPaused) " (Paused)" else ""
+        val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val memoryMsg = " (" + SysUtil.getMemoryUsageMB() + " MB Java memory used)"
 
         val msg = pipelineFpsMsg + posterFpsMsg + isPaused + memoryMsg

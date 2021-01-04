@@ -2,11 +2,13 @@ package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
+import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
 
+@RegisterTunableField
 public class PointField extends TunableField<Point> {
 
     Point point;

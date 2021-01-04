@@ -38,7 +38,7 @@ public class TunableComboBox extends JComboBox<String> {
                 ex.printStackTrace();
             }
 
-            if (eocvSim.pipelineManager.isPaused()) {
+            if (eocvSim.pipelineManager.getPaused()) {
                 eocvSim.pipelineManager.requestSetPaused(false);
             }
 
