@@ -30,6 +30,8 @@ public class VideoSource extends InputSource {
 
     private volatile transient MatRecycler matRecycler = null;
 
+    private double lastFramePosition = 0;
+
     public VideoSource(String videoPath, Size size) {
         this.videoPath = videoPath;
         this.size = size;
@@ -151,6 +153,8 @@ public class VideoSource extends InputSource {
 
         update();
 
+        lastFramePosition = video.get(Videoio.CAP_PROP_POS_FRAMES);
+
         video.release();
         video = null;
 
@@ -160,6 +164,7 @@ public class VideoSource extends InputSource {
     public void onResume() {
         video = new VideoCapture();
         video.open(videoPath);
+        video.set(Videoio.CAP_PROP_POS_FRAMES, lastFramePosition);
     }
 
     @Override
