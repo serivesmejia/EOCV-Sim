@@ -129,7 +129,7 @@ public class ImageSource extends InputSource {
     }
 
     @Override
-    public InputSource internalCloneSource() {
+    protected InputSource internalCloneSource() {
         return new ImageSource(imgPath, size);
     }
 

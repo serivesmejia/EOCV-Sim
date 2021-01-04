@@ -25,7 +25,7 @@ public abstract class InputSource implements Comparable<InputSource> {
         return null;
     }
 
-    public InputSource cloneSource() {
+    public final InputSource cloneSource() {
         InputSource source = internalCloneSource();
         source.sortId = sortId;
         return source;

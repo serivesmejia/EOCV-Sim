@@ -1,0 +1,24 @@
+group 'com.github.serivesmejia'
+version '2.1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_9
+    targetCompatibility = JavaVersion.VERSION_1_9
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+tasks.withType(Jar) {
+    manifest {
+        attributes['Main-Class'] = 'com.github.serivesmejia.eocvsim.Main'
+    }
+}

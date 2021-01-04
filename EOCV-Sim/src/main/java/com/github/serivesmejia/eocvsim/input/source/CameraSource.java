@@ -152,7 +152,7 @@ public class CameraSource extends InputSource {
     }
 
     @Override
-    public InputSource internalCloneSource() {
+    protected InputSource internalCloneSource() {
         return new CameraSource(webcamIndex, size);
     }
 

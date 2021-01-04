@@ -89,12 +89,13 @@ public class InputSourceManager {
     }
 
     public void update(boolean isPaused) {
-        if (currentInputSource == null) return;
+        if(currentInputSource == null) return;
         currentInputSource.setPaused(isPaused);
 
         try {
-            currentInputSource.update().copyTo(lastMatFromSource);
-        } catch (Throwable ex) {
+            Mat m = currentInputSource.update();
+            if(m != null) m.copyTo(lastMatFromSource);;
+        } catch (Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }
     }

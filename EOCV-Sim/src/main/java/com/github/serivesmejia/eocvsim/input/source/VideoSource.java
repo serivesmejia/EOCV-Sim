@@ -168,7 +168,7 @@ public class VideoSource extends InputSource {
     }
 
     @Override
-    public InputSource internalCloneSource() {
+    protected InputSource internalCloneSource() {
         return new VideoSource(videoPath, size);
     }
 

@@ -3,29 +3,12 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.30-M1'
 }
 
-group 'com.github.serivesmejia'
-version '2.0.0'
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_9
-    targetCompatibility = JavaVersion.VERSION_1_9
-}
-
-repositories {
-    mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-}
+apply from: '../build.common.gradle'
 
 dependencies {
     implementation 'org.openpnp:opencv:4.3.0-2'
-    compile project(':EOCV-Sim')
+    implementation project(':EOCV-Sim')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 task(runSimulator, dependsOn: 'classes', type: JavaExec) {

@@ -35,7 +35,7 @@ public class TunerManager {
     public void init() {
 
         if (firstInit) {
-            eocvSim.pipelineManager.runOnChange(this::reset);
+            eocvSim.pipelineManager.onPipelineChange.doPersistent(this::reset);
             firstInit = false;
         }
 

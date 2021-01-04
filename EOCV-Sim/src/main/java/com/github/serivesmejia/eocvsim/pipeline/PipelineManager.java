@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.pipeline;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -12,10 +13,11 @@ import java.util.ArrayList;
 
 public class PipelineManager {
 
-    private final ArrayList<Runnable> runnsOnUpdate = new ArrayList<>();
-    private final ArrayList<Runnable> runnsOnChange = new ArrayList<>();
-    private final ArrayList<Runnable> runnsOnPause = new ArrayList<>();
-    private final ArrayList<Runnable> runnsOnResume = new ArrayList<>();
+    public final EventHandler onUpdate = new EventHandler("OnUpdate-PipelineManager");
+    public final EventHandler onPipelineChange = new EventHandler("OnPipelineChange-PipelineManager");
+
+    public final EventHandler onPause = new EventHandler("OnPause-PipelineManager");
+    public final EventHandler onResume = new EventHandler("OnResume-PipelineManager");
 
     public volatile ArrayList<Class<? extends OpenCvPipeline>> pipelines = new ArrayList<>();
 
@@ -64,11 +66,7 @@ public class PipelineManager {
 
     public void update(Mat inputMat) {
 
-        //run all pending requested runnables
-        for (Runnable runn : runnsOnUpdate.toArray(new Runnable[0])) {
-            runn.run();
-            runnsOnUpdate.remove(runn);
-        }
+        onUpdate.run();
 
         if (isPaused) {
             if (lastOutputMat == null || lastOutputMat.empty())
@@ -149,38 +147,17 @@ public class PipelineManager {
         if (eocvSim.configManager.getConfig().pauseOnImages)
             eocvSim.inputSourceManager.pauseIfImageTwoFrames(); //pause next frame if current selected inputsource is an image
 
-        for (Runnable runn : runnsOnChange.toArray(new Runnable[0])) {
-            runn.run();
-        }
+        onPipelineChange.run();
 
     }
 
     public void requestChangePipeline(int index) {
-        runOnUpdate(() -> changePipeline(index));
+        onUpdate.doOnce(() -> changePipeline(index));
     }
 
     public void runThenPause() {
-
         setPaused(false);
-
         eocvSim.onMainUpdate.doOnce(() -> setPaused(true));
-
-    }
-
-    public void runOnChange(Runnable runn) {
-        runnsOnChange.add(runn);
-    }
-
-    public void runOnPause(Runnable runn) {
-        runnsOnPause.add(runn);
-    }
-
-    public void runOnResume(Runnable runn) {
-        runnsOnResume.add(runn);
-    }
-
-    public void runOnUpdate(Runnable runn) {
-        runnsOnUpdate.add(runn);
     }
 
     public void setPaused(boolean paused, PauseReason pauseReason) {
@@ -189,18 +166,18 @@ public class PipelineManager {
 
         if (isPaused) {
             lastPauseReason = pauseReason;
+            onPause.run();
         } else {
             lastPauseReason = PauseReason.NOT_PAUSED;
+            onResume.run();
         }
 
         eocvSim.visualizer.pipelinePauseBtt.setSelected(isPaused);
-        executeRunnsOnPauseOrResume();
 
     }
 
     public void togglePause() {
         setPaused(!isPaused);
-        executeRunnsOnPauseOrResume();
     }
 
     public void requestSetPaused(boolean paused, PauseReason pauseReason) {
@@ -223,28 +200,6 @@ public class PipelineManager {
     public PauseReason getPauseReason() {
         if (!isPaused) lastPauseReason = PauseReason.NOT_PAUSED;
         return lastPauseReason;
-    }
-
-    private void executeRunnsOnPauseOrResume() {
-        if (isPaused) {
-            executeRunnsOnPause();
-        } else {
-            executeRunnsOnResume();
-        }
-    }
-
-    private void executeRunnsOnPause() {
-        //run all pending requested runnables
-        for (Runnable runn : runnsOnPause.toArray(new Runnable[0])) {
-            runn.run();
-        }
-    }
-
-    private void executeRunnsOnResume() {
-        //run all pending requested runnables
-        for (Runnable runn : runnsOnResume.toArray(new Runnable[0])) {
-            runn.run();
-        }
     }
 
     public enum PauseReason {USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED}
