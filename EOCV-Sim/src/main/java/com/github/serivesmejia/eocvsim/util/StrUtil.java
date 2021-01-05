@@ -28,4 +28,12 @@ public final class StrUtil {
 
     }
 
+    public static String getFileBaseName(String fileName) {
+        int index = fileName.lastIndexOf('.');
+        if(index == -1)
+            return fileName;
+        else
+            return fileName.substring(0, index);
+    }
+
 }

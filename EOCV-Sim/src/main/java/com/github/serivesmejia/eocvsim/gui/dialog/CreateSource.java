@@ -45,7 +45,7 @@ public class CreateSource {
         String[] sourceTypesStr = new String[sourceTypes.length - 1];
 
         for (int i = 0; i < sourceTypes.length - 1; i++) {
-            sourceTypesStr[i] = sourceTypes[i].toString();
+            sourceTypesStr[i] = sourceTypes[i].coolName;
         }
 
         JComboBox dropDown = new JComboBox(sourceTypesStr);
@@ -70,7 +70,7 @@ public class CreateSource {
 
         nextButton.addActionListener(e -> {
             close();
-            SourceType sourceType = SourceType.valueOf(dropDown.getSelectedItem().toString());
+            SourceType sourceType = SourceType.fromCoolName(dropDown.getSelectedItem().toString());
             new DialogFactory(eocvSim).createSourceDialog(sourceType);
         });
 

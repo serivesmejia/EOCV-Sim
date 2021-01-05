@@ -189,6 +189,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     class Parameters {
         var scanForPipelinesIn = "org.firstinspires"
+        var scanForTunableFieldsIn = "com.github.serivesmejia"
     }
 
 }

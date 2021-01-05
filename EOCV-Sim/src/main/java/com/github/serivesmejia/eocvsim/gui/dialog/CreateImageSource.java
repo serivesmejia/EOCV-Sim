@@ -5,6 +5,7 @@ import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
+import com.github.serivesmejia.eocvsim.util.StrUtil;
 import org.opencv.core.Size;
 
 import javax.swing.*;
@@ -207,6 +208,12 @@ public class CreateImageSource {
 
         if (CvUtil.checkImageValid(fileAbsPath)) {
             imgDirTextField.setText(fileAbsPath);
+
+            String fileName = StrUtil.getFileBaseName(f.getName());
+            if(!fileName.trim().equals("") && !eocvSim.inputSourceManager.isNameOnUse(fileName)) {
+                nameTextField.setText(fileName);
+            }
+
             selectedValidImage = true;
         } else {
             imgDirTextField.setText("Unable to load selected file.");
@@ -232,7 +239,8 @@ public class CreateImageSource {
     public void updateCreateBtt() {
         createButton.setEnabled(!nameTextField.getText().trim().equals("")
                 && validCameraSizeNumbers
-                && selectedValidImage);
+                && selectedValidImage
+                && !eocvSim.inputSourceManager.isNameOnUse(nameTextField.getText()));
     }
 
 }

@@ -3,9 +3,9 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
+import com.github.serivesmejia.eocvsim.util.StrUtil;
 import org.opencv.core.Size;
 
 import javax.swing.*;
@@ -212,6 +212,12 @@ public class CreateVideoSource {
 
         if (CvUtil.checkVideoValid(fileAbsPath)) {
             vidDirTextField.setText(fileAbsPath);
+
+            String fileName = StrUtil.getFileBaseName(f.getName());
+            if(!fileName.trim().equals("") && !eocvSim.inputSourceManager.isNameOnUse(fileName)) {
+                nameTextField.setText(fileName);
+            }
+
             selectedValidVideo = true;
         } else {
             vidDirTextField.setText("Unable to load selected file.");
@@ -237,7 +243,8 @@ public class CreateVideoSource {
     public void updateCreateBtt() {
         createButton.setEnabled(!nameTextField.getText().trim().equals("")
                 && validVideoSizeNumbers
-                && selectedValidVideo);
+                && selectedValidVideo
+                && !eocvSim.inputSourceManager.isNameOnUse(nameTextField.getText()));
     }
 
 }

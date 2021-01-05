@@ -162,21 +162,17 @@ public class Visualizer {
         JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
         fileNewSubmenu.add(fileNewInputSourceSubmenu);
 
-        JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
+        //add all input source types to top bar menu
+        for(SourceType type : SourceType.values()) {
+            if(type == SourceType.UNKNOWN) continue;
 
-        fileNewInputSourceImageItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(SourceType.IMAGE)
-        );
+            JMenuItem fileNewInputSourceItem = new JMenuItem(type.coolName);
+            fileNewInputSourceItem.addActionListener(e ->
+                dialogFactory.createSourceDialog(type)
+            );
 
-        fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
-
-        JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
-
-        fileNewInputSourceCameraItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(SourceType.CAMERA)
-        );
-
-        fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
+            fileNewInputSourceSubmenu.add(fileNewInputSourceItem);
+        }
 
         JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
 

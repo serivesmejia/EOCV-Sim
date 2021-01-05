@@ -12,7 +12,7 @@ public abstract class InputSource implements Comparable<InputSource> {
     protected transient boolean isPaused = false;
     private transient boolean beforeIsPaused = false;
 
-    protected int sortId = -1;
+    protected long createdOn = -1L;
 
     public abstract boolean init();
     public abstract void reset();
@@ -27,7 +27,7 @@ public abstract class InputSource implements Comparable<InputSource> {
 
     public final InputSource cloneSource() {
         InputSource source = internalCloneSource();
-        source.sortId = sortId;
+        source.createdOn = createdOn;
         return source;
     }
 
@@ -55,7 +55,7 @@ public abstract class InputSource implements Comparable<InputSource> {
 
     @Override
     public final int compareTo(InputSource source) {
-        return sortId > source.sortId ? 1 : -1;
+        return createdOn > source.createdOn ? 1 : -1;
     }
 
 }

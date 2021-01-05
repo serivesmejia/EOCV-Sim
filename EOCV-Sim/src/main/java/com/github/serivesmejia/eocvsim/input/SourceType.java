@@ -28,4 +28,13 @@ public enum SourceType {
         return UNKNOWN;
     }
 
+    public static SourceType fromCoolName(String coolName) {
+        for(SourceType sourceType : values()) {
+            if(sourceType.coolName == coolName) {
+                return sourceType;
+            }
+        }
+        return UNKNOWN;
+    }
+
 }

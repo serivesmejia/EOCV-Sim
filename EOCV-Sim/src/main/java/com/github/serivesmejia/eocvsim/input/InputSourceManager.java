@@ -26,12 +26,9 @@ public class InputSourceManager {
 
     public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 
-    private int biggestSortId = 0;
-
     public InputSourceManager(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
     }
-
     public void init() {
 
         Log.info("InputSourceManager", "Initializing...");
@@ -63,6 +60,7 @@ public class InputSourceManager {
 
             ImageSource src = new ImageSource(f.getAbsolutePath(), imgSize);
             src.isDefault = true;
+            src.createdOn = sources.size();
 
             addInputSource(sourceName, src);
 
@@ -96,10 +94,8 @@ public class InputSourceManager {
 
         sources.put(name, inputSource);
 
-        if(inputSource.sortId == -1)
-            inputSource.sortId = biggestSortId + 1;
-        else
-            biggestSortId = inputSource.sortId;
+        if(inputSource.createdOn == -1)
+            inputSource.createdOn = System.currentTimeMillis();
 
         if(!inputSource.isDefault) {
             inputSourceLoader.saveInputSource(name, inputSource);
@@ -177,10 +173,14 @@ public class InputSourceManager {
 
     }
 
+    public boolean isNameOnUse(String name) {
+        return sources.containsKey(name);
+    }
+
     public void pauseIfImage() {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
-        if (getSourceType(currentInputSource) == SourceType.IMAGE) {
+        if (SourceType.fromClass(currentInputSource.getClass()) == SourceType.IMAGE) {
             eocvSim.onMainUpdate.doOnce(() ->
                     eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
             );
@@ -213,7 +213,7 @@ public class InputSourceManager {
 
     public SourceType getSourceType(String sourceName) {
         InputSource source = sources.get(sourceName);
-        return getSourceType(source);
+        return SourceType.fromClass(source.getClass());
     }
 
     public InputSource[] getSortedInputSources() {
