@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim.util;
 import java.awt.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +35,10 @@ public final class StrUtil {
             return fileName;
         else
             return fileName.substring(0, index);
+    }
+
+    public static String random() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
 }
