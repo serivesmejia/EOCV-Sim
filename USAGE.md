@@ -135,3 +135,7 @@ Which then produces the following result:<br/>
 <img src='images/eocvsim_usage_telemetry.png' width='25%' height='25%'><br/>
 
 For further information about telemetry, you can check out the [SDK docs on Telemetry](https://ftctechnh.github.io/ftc_app/doc/javadoc/org/firstinspires/ftc/robotcore/external/Telemetry.html), note that not all the methods are implemented for EOCV-Sim
+
+# Variable Tuner
+
+From 2.0.0, there's a variable tuner implemented into the simulator, inspired by the one in FTC Dashboard, it allows to edit variables in real time seamlessly through Java reflection.
