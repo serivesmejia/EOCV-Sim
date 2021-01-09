@@ -73,6 +73,7 @@ public class Visualizer {
     public JScrollPane pipelineSelectorScroll = null;
     public JPanel pipelineButtonsContainer = null;
     public JToggleButton pipelinePauseBtt = null;
+    public JToggleButton pipelineRecordBtt = null;
 
     public JPanel sourceSelectorContainer = null;
     public volatile JList<String> sourceSelector = null;
@@ -136,6 +137,7 @@ public class Visualizer {
         pipelineSelectorScroll = new JScrollPane();
         pipelineButtonsContainer = new JPanel();
         pipelinePauseBtt = new JToggleButton("Pause");
+        pipelineRecordBtt = new JToggleButton("Record");
 
         sourceSelectorContainer = new JPanel();
         sourceSelector = new JList<>();
@@ -263,6 +265,7 @@ public class Visualizer {
         pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         pipelineButtonsContainer.add(pipelinePauseBtt);
+        pipelineButtonsContainer.add(pipelineRecordBtt);
 
         pipelineSelectorContainer.add(pipelineButtonsContainer);
 
@@ -427,6 +430,15 @@ public class Visualizer {
             pipelinePauseBtt.setText(selected ? "Resume" : "Pause");
             eocvSim.onMainUpdate.doOnce(() -> eocvSim.pipelineManager.setPaused(selected));
         });
+
+        pipelineRecordBtt.addActionListener(e -> eocvSim.onMainUpdate.doOnce(() -> {
+                if (pipelineRecordBtt.isSelected()) {
+                    if (!eocvSim.isCurrentlyRecording()) eocvSim.startRecordingSession();
+                } else {
+                    if (eocvSim.isCurrentlyRecording()) eocvSim.stopRecordingSession();
+                }
+            })
+        );
 
         //listener for changing pipeline
         pipelineSelector.addListSelectionListener(evt -> {

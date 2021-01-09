@@ -1,8 +1,10 @@
 package com.github.serivesmejia.eocvsim
 
 import com.github.serivesmejia.eocvsim.config.ConfigManager
+import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
+import com.github.serivesmejia.eocvsim.output.VideoRecordingSession
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.tuner.TunerManager
 
@@ -13,6 +15,9 @@ import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 
 import nu.pattern.OpenCV
+import org.opencv.core.Size
+import java.io.File
+import javax.swing.filechooser.FileFilter
 
 class EOCVSim(val params: Parameters = Parameters()) {
 
@@ -32,6 +37,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
     @JvmField val pipelineManager = PipelineManager(this) //we'll initialize pipeline manager after loading native lib
 
     @JvmField var tunerManager = TunerManager(this)
+
+    var currentRecordingSession: VideoRecordingSession? = null
 
     val fpsLimiter = FpsLimiter(30)
     val fpsCounter = FpsCounter()
@@ -107,10 +114,15 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 //if paused, it will simply run the pending update listeners
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
 
-                //when not paused, post the last pipeline mat to the viewport
-                if (!pipelineManager.paused)
-                    visualizer.viewport.postMat(pipelineManager.lastOutputMat)
+                //if last output mat is not null
+                pipelineManager.lastOutputMat?.let {
+                    //when not paused, post the last pipeline mat to the viewport
+                    if (!pipelineManager.paused) visualizer.viewport.postMat(it)
+                    //if there's an ongoing recording session, post the mat to the recording
+                    currentRecordingSession?.postMat(it)
+                }
 
+                //clear error telemetry messages
                 if (telemetry != null) {
                     telemetry.errItem.caption = ""
                     telemetry.errItem.setValue("")
@@ -169,6 +181,30 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         Thread({ EOCVSim().init() }, "main").start() //run next instance on a separate thread for the old one to get interrupted and ended
     }
+
+    fun startRecordingSession() {
+        if(currentRecordingSession == null) {
+            currentRecordingSession = VideoRecordingSession(30.0, configManager.config.videoRecordingSize)
+            currentRecordingSession!!.startRecordingSession()
+        }
+    }
+
+    fun stopRecordingSession() {
+        currentRecordingSession?.let { itVideo ->
+
+            itVideo.stopRecordingSession()
+
+            DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT).addCloseListener {
+                    i: Int, file: File, fileFilter: FileFilter ->
+                        onMainUpdate.doOnce {
+                            itVideo.saveTo(file)
+                            currentRecordingSession = null
+                        }
+                    }
+        }
+    }
+
+    fun isCurrentlyRecording() = currentRecordingSession != null
 
     private fun updateVisualizerTitle() {
 

@@ -99,7 +99,6 @@ public class DialogFactory {
                 for (FileFilter filter : filters) {
                     chooser.addChoosableFileFilter(filter);
                 }
-                chooser.setFileFilter(filters[0]);
             }
 
         }

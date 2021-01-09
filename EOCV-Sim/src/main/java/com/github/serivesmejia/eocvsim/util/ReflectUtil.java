@@ -9,19 +9,12 @@ import java.lang.reflect.Type;
 public class ReflectUtil {
 
     public static boolean hasSuperclass(Class<?> clazz, Class<?> superClass) {
-
-        Class<?> clazzSuper = clazz.getSuperclass();
-
-        while (clazzSuper != null) {
-            if (clazzSuper == superClass) {
-                return true;
-            }
-            //Didn't found, continue searching...
-            clazzSuper = clazzSuper.getSuperclass();
+        try {
+            clazz.asSubclass(superClass);
+            return true;
+        } catch (ClassCastException ex) {
+            return false;
         }
-
-        return false;
-
     }
 
     public static Type[] getTypeArgumentsFrom(Class<?> clazz) {
