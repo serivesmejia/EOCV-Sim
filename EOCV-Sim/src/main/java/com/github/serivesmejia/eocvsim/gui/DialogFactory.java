@@ -6,6 +6,7 @@ import com.github.serivesmejia.eocvsim.input.SourceType;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class DialogFactory {
 
         public void close() {
             chooser.setVisible(false);
-            executeCloseListeners(JFileChooser.CANCEL_OPTION, null, null);
+            executeCloseListeners(JFileChooser.CANCEL_OPTION, new File(""), new FileNameExtensionFilter("", ""));
         }
 
         public enum Mode {FILE_SELECT, DIRECTORY_SELECT, SAVE_FILE_SELECT}
