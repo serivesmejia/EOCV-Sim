@@ -77,7 +77,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val size: Size = Size(320.0,
                 val newSize = Size(inputW * bestRatio, inputH * bestRatio)
 
                 //get offsets so that we center the video instead of leaving it at (0,0)
-                //(basically the black bars you see everywhere)
+                //(basically the black bars you see)
                 val xOffset = (size.width - newSize.width) / 2
                 val yOffset = (size.height - newSize.height) / 2
 

@@ -3,6 +3,7 @@ package com.github.serivesmejia.eocvsim
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
+import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
 import com.github.serivesmejia.eocvsim.output.VideoRecordingSession
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
@@ -17,6 +18,7 @@ import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import nu.pattern.OpenCV
 import org.opencv.core.Size
 import java.io.File
+import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
 
 class EOCVSim(val params: Parameters = Parameters()) {
@@ -195,9 +197,17 @@ class EOCVSim(val params: Parameters = Parameters()) {
             itVideo.stopRecordingSession()
 
             DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT).addCloseListener {
-                    i: Int, file: File, fileFilter: FileFilter ->
+                    _: Int, file: File, _: FileFilter ->
                         onMainUpdate.doOnce {
-                            itVideo.saveTo(file)
+                            if(file.exists()) {
+                                SwingUtilities.invokeLater {
+                                    if(DialogFactory(this).createFileAlreadyExistsDialog() == FileAlreadyExists.UserChoice.REPLACE) {
+                                        onMainUpdate.doOnce { itVideo.saveTo(file) }
+                                    }
+                                }
+                            } else {
+                                itVideo.saveTo(file)
+                            }
                             currentRecordingSession = null
                         }
                     }
