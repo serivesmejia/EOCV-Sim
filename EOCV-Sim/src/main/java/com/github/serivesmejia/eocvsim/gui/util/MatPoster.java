@@ -63,7 +63,7 @@ public class MatPoster {
 
         for (MatRecycler.RecyclableMat m : postQueue) {
             if (m != null) {
-                matRecycler.returnMat(m);
+                m.returnMat();
             }
         }
 
@@ -94,7 +94,7 @@ public class MatPoster {
                     }
 
                     takenMat.release();
-                    matRecycler.returnMat(takenMat);
+                    takenMat.returnMat();
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();

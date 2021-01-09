@@ -16,7 +16,6 @@ import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 
 import nu.pattern.OpenCV
-import org.opencv.core.Size
 import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
@@ -42,8 +41,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     var currentRecordingSession: VideoRecordingSession? = null
 
-    val fpsLimiter = FpsLimiter(30)
+    val fpsLimiter = FpsLimiter(30.0)
     val fpsCounter = FpsCounter()
+    val pipelineFpsCounter = FpsCounter()
 
     enum class DestroyReason {
         USER_REQUESTED, THEME_CHANGING, RESTART
@@ -116,33 +116,35 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 //if paused, it will simply run the pending update listeners
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
 
+                if(!pipelineManager.paused)
+                    pipelineFpsCounter.update()
+
                 //if last output mat is not null
                 pipelineManager.lastOutputMat?.let {
                     //when not paused, post the last pipeline mat to the viewport
                     if (!pipelineManager.paused) visualizer.viewport.postMat(it)
                     //if there's an ongoing recording session, post the mat to the recording
-                    currentRecordingSession?.postMat(it)
+                    currentRecordingSession?.postMatAsync(it, fpsCounter.fps.toDouble())
                 }
 
                 //clear error telemetry messages
-                if (telemetry != null) {
-                    telemetry.errItem.caption = ""
-                    telemetry.errItem.setValue("")
-                }
+                telemetry?.errItem?.caption = ""
+                telemetry?.errItem?.setValue("")
 
             } catch (ex: Exception) {
                 Log.error("Error while processing pipeline", ex)
-                if (telemetry != null) {
-                    telemetry.errItem.caption = "[/!\\]"
-                    telemetry.errItem.setValue("Error while processing pipeline\nCheck console for details.")
-                    telemetry.update()
-                }
+
+                telemetry?.errItem?.caption = "[/!\\]"
+                telemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
+                telemetry?.update()
             }
 
             //updating displayed telemetry
             visualizer.updateTelemetry(pipelineManager.currentTelemetry)
 
-            if (!pipelineManager.paused) fpsCounter.update()
+            fpsCounter.update()
+
+            Log.info("avg ${fpsCounter.avgFps}")
 
             //limit FPS
             try {
@@ -186,7 +188,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     fun startRecordingSession() {
         if(currentRecordingSession == null) {
-            currentRecordingSession = VideoRecordingSession(30.0, configManager.config.videoRecordingSize)
+            currentRecordingSession = VideoRecordingSession(fpsLimiter.maxFPS, configManager.config.videoRecordingSize)
             currentRecordingSession!!.startRecordingSession()
         }
     }
@@ -214,11 +216,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
         }
     }
 
-    fun isCurrentlyRecording() = currentRecordingSession != null
+    fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
 
-        val pipelineFpsMsg = " (" + fpsCounter.fps + " Pipeline FPS)"
+        val pipelineFpsMsg = " (" + pipelineFpsCounter.fps + " Pipeline FPS)"
         val posterFpsMsg = " (" + visualizer.viewport.matPoster.fpsCounter.fps + " Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""

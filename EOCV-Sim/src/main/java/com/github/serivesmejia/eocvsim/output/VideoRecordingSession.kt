@@ -1,28 +1,42 @@
 package com.github.serivesmejia.eocvsim.output
 
+import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.aspectRatio
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.clipTo
+import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import org.opencv.videoio.VideoWriter
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import java.util.*
+import kotlin.math.roundToInt
 
 class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(320.0, 240.0), val isFramesRgb: Boolean = true) {
 
     private val videoWriter = VideoWriter()
     private val tempFile = File.createTempFile(StrUtil.random(), ".avi")
 
-    private var videoMat: Mat? = null
-    private val mat = Mat()
+    @Volatile private var videoMat: Mat? = null
 
-    var hasStarted = false
+    private val matPoster = MatPoster(fps.toInt())
+
+    private val fpsSync = FpsLimiter(fps)
+
+    @Volatile var hasStarted = false
         private set
-    var hasStopped = false
+    @Volatile var hasStopped = false
         private set
+
+    val isRecording: Boolean
+        get() {
+            return hasStarted && !hasStopped
+        }
+
+    init {
+        matPoster.addPostable { postMat(it) }
+    }
 
     fun startRecordingSession() {
         videoWriter.open(tempFile.toString(), VideoWriter.fourcc('M', 'J', 'P', 'G'), fps, videoSize)
@@ -30,7 +44,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
     }
 
     fun stopRecordingSession() {
-        videoWriter.release(); videoMat?.release(); mat.release()
+        videoWriter.release(); videoMat?.release(); matPoster.stop()
         hasStopped = true
     }
 
@@ -40,7 +54,19 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
         Files.delete(tempFile.toPath())
     }
 
+    fun postMatAsync(inputMat: Mat, fps: Double) {
+        if(fps < this.fps) {
+            repeat((this.fps / fps).roundToInt()) {
+                matPoster.post(inputMat)
+            }
+        } else {
+            matPoster.post(inputMat)
+        }
+    }
+
     fun postMat(inputMat: Mat) {
+
+        fpsSync.sync()
 
         if(!videoWriter.isOpened) return
 
@@ -51,13 +77,11 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
 
         //we need BGR frames
         if(isFramesRgb) {
-            Imgproc.cvtColor(inputMat, mat, Imgproc.COLOR_RGB2BGR)
-        } else {
-            inputMat.copyTo(mat)
+            Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_RGB2BGR)
         }
 
         if(inputMat.size() == videoSize) { //nice, the mat size is the exact same as the video size
-            videoWriter.write(mat);
+            videoWriter.write(inputMat);
         } else { //uh oh, this might get a bit harder here...
 
             val videoR = videoSize.aspectRatio()
@@ -65,7 +89,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
 
             //ok, we have the same aspect ratio, we can just scale to the required size
             if(videoR == inputR) {
-                Imgproc.resize(mat, videoMat, videoSize, 0.0, 0.0, Imgproc.INTER_AREA)
+                Imgproc.resize(inputMat, videoMat, videoSize, 0.0, 0.0, Imgproc.INTER_AREA)
                 videoWriter.write(videoMat)
             } else { //hmm, not the same aspect ratio, we'll need to do some fancy stuff here...
 
@@ -83,17 +107,16 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
                 val xOffset = (videoSize.width - newSize.width) / 2
                 val yOffset = (videoSize.height - newSize.height) / 2
 
-                Imgproc.resize(mat, mat, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
+                Imgproc.resize(inputMat, inputMat, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
 
                 val submat = videoMat!!.submat(Rect(Point(xOffset, yOffset), newSize))
-                mat.copyTo(submat);
+                inputMat.copyTo(submat);
 
                 videoWriter.write(videoMat)
 
             }
 
         }
-
     }
 
 }
