@@ -124,7 +124,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                     //when not paused, post the last pipeline mat to the viewport
                     if (!pipelineManager.paused) visualizer.viewport.postMat(it)
                     //if there's an ongoing recording session, post the mat to the recording
-                    currentRecordingSession?.postMatAsync(it, fpsCounter.fps.toDouble())
+                    currentRecordingSession?.postMatAsync(it)
                 }
 
                 //clear error telemetry messages
@@ -196,21 +196,26 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun stopRecordingSession() {
         currentRecordingSession?.let { itVideo ->
 
+            visualizer.pipelineRecordBtt.isEnabled = false
+
             itVideo.stopRecordingSession()
 
             DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT).addCloseListener {
-                    _: Int, file: File, _: FileFilter ->
+                    _: Int, file: File?, _: FileFilter? ->
                         onMainUpdate.doOnce {
-                            if(file.exists()) {
-                                SwingUtilities.invokeLater {
-                                    if(DialogFactory(this).createFileAlreadyExistsDialog() == FileAlreadyExists.UserChoice.REPLACE) {
-                                        onMainUpdate.doOnce { itVideo.saveTo(file) }
+                            if(file != null) {
+                                if (file.exists()) {
+                                    SwingUtilities.invokeLater {
+                                        if (DialogFactory(this).createFileAlreadyExistsDialog() == FileAlreadyExists.UserChoice.REPLACE) {
+                                            onMainUpdate.doOnce { itVideo.saveTo(file) }
+                                        }
                                     }
+                                } else {
+                                    itVideo.saveTo(file)
                                 }
-                            } else {
-                                itVideo.saveTo(file)
                             }
                             currentRecordingSession = null
+                            visualizer.pipelineRecordBtt.isEnabled = true
                         }
                     }
         }
