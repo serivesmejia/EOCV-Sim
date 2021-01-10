@@ -144,8 +144,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             fpsCounter.update()
 
-            Log.info("avg ${fpsCounter.avgFps}")
-
             //limit FPS
             try {
                 fpsLimiter.sync()

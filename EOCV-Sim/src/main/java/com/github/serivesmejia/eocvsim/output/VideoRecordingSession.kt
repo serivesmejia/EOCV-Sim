@@ -1,7 +1,6 @@
 package com.github.serivesmejia.eocvsim.output
 
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
-import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.aspectRatio
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.clipTo
@@ -14,14 +13,14 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlin.math.roundToInt
 
-class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(320.0, 240.0), val isFramesRgb: Boolean = true) {
+class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = Size(320.0, 240.0), val isFramesRgb: Boolean = true) {
 
     private val videoWriter = VideoWriter()
     private val tempFile = File.createTempFile(StrUtil.random(), ".avi")
 
     @Volatile private var videoMat: Mat? = null
 
-    private val matPoster = MatPoster(fps.toInt())
+    private val matPoster = MatPoster(videoFps.toInt())
 
     private val fpsCounter = FpsCounter()
 
@@ -40,7 +39,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
     }
 
     fun startRecordingSession() {
-        videoWriter.open(tempFile.toString(), VideoWriter.fourcc('M', 'J', 'P', 'G'), fps, videoSize)
+        videoWriter.open(tempFile.toString(), VideoWriter.fourcc('M', 'J', 'P', 'G'), videoFps, videoSize)
         hasStarted = true;
     }
 
@@ -75,7 +74,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
         }
 
         if(inputMat.size() == videoSize) { //nice, the mat size is the exact same as the video size
-            compensateFpsWrite(inputMat, fpsCounter.fps.toDouble(), fps)
+            compensateFpsWrite(inputMat, fpsCounter.fps.toDouble(), videoFps)
         } else { //uh oh, this might get a bit harder here...
 
             val videoR = videoSize.aspectRatio()
@@ -84,7 +83,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
             //ok, we have the same aspect ratio, we can just scale to the required size
             if(videoR == inputR) {
                 Imgproc.resize(inputMat, videoMat, videoSize, 0.0, 0.0, Imgproc.INTER_AREA)
-                compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), fps)
+                compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), videoFps)
             } else { //hmm, not the same aspect ratio, we'll need to do some fancy stuff here...
 
                 val inputW = inputMat.size().width
@@ -106,7 +105,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
                 val submat = videoMat!!.submat(Rect(Point(xOffset, yOffset), newSize))
                 inputMat.copyTo(submat);
 
-                compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), fps)
+                compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), videoFps)
 
             }
 
@@ -117,9 +116,7 @@ class VideoRecordingSession(val fps: Double = 30.0, val videoSize: Size = Size(3
 
     @Synchronized private fun compensateFpsWrite(mat: Mat, currentFps: Double, targetFps: Double) {
         if (currentFps < targetFps && currentFps > 0) {
-            val rep = (targetFps / currentFps).roundToInt()
-            Log.info("$rep $currentFps, $targetFps")
-            repeat(rep) {
+            repeat((targetFps / currentFps).roundToInt()) {
                 videoWriter.write(mat)
             }
         } else {
