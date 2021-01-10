@@ -9,7 +9,7 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class CrashReport(val causedByException: Exception) {
+class CrashReport(val causedByException: Throwable) {
 
     companion object {
         val OS_ARCH = System.getProperty("os.arch")
@@ -17,6 +17,7 @@ class CrashReport(val causedByException: Exception) {
         val OS_NAME = System.getProperty("os.name")
         val SYSUTIL_DETECTED_OS = SysUtil.getOS()
         val JAVA_VERSION = System.getProperty("java.version")
+        val JAVA_VENDOR = System.getProperty("java.vendor")
 
         val dtFormatter = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH.mm.ss")
     }
@@ -40,6 +41,7 @@ class CrashReport(val causedByException: Exception) {
         sb.appendLine("   Detected OS: $SYSUTIL_DETECTED_OS")
         sb.appendLine("   Architecture: $OS_ARCH")
         sb.appendLine("   Java version: $JAVA_VERSION")
+        sb.appendLine("   Java vendor: $JAVA_VENDOR")
         sb.appendLine("   Last memory usage: ${SysUtil.getMemoryUsageMB()} MB").appendLine()
 
         sb.appendLine("==========================================").appendLine()
@@ -74,7 +76,7 @@ class CrashReport(val causedByException: Exception) {
         val workingDir = File(System.getProperty("user.dir"))
         val dateTimeStr = dtFormatter.format(LocalDateTime.now())
 
-        val crashLogFile = workingDir + "/crashreport-eocvsim-$dateTimeStr.txt"
+        val crashLogFile = workingDir + "/crashreport-eocvsim-$dateTimeStr.log"
 
         saveCrashReport(crashLogFile)
 

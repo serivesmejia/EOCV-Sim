@@ -31,10 +31,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
         @Volatile private var alreadyInitializedOnce = false
-
-        init {
-            EOCVSimUncaughtExceptionHandler.register()
-        }
     }
 
     @JvmField val onMainUpdate = EventHandler("OnMainUpdate")
@@ -61,6 +57,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v$VERSION")
         Log.white()
+
+        EOCVSimUncaughtExceptionHandler.register()
 
         //loading native lib only once in the app runtime
         if (!alreadyInitializedOnce) {
@@ -163,7 +161,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 break
             }
 
-            throw InterruptedException()
+            throw Exception()
 
         }
 
