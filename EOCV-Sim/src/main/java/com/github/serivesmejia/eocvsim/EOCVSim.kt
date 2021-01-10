@@ -8,10 +8,13 @@ import com.github.serivesmejia.eocvsim.input.InputSourceManager
 import com.github.serivesmejia.eocvsim.output.VideoRecordingSession
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.tuner.TunerManager
+import com.github.serivesmejia.eocvsim.util.exception.EOCVSimUncaughtExceptionHandler
+import com.github.serivesmejia.eocvsim.util.FileFilters
 
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 
@@ -19,6 +22,7 @@ import nu.pattern.OpenCV
 import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
+import javax.swing.filechooser.FileNameExtensionFilter
 
 class EOCVSim(val params: Parameters = Parameters()) {
 
@@ -27,6 +31,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
         @Volatile private var alreadyInitializedOnce = false
+
+        init {
+            EOCVSimUncaughtExceptionHandler.register()
+        }
     }
 
     @JvmField val onMainUpdate = EventHandler("OnMainUpdate")
@@ -111,21 +119,12 @@ class EOCVSim(val params: Parameters = Parameters()) {
             if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue
 
             try {
-
                 //actually updating the pipeline
                 //if paused, it will simply run the pending update listeners
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
 
                 if(!pipelineManager.paused)
                     pipelineFpsCounter.update()
-
-                //if last output mat is not null
-                pipelineManager.lastOutputMat?.let {
-                    //when not paused, post the last pipeline mat to the viewport
-                    if (!pipelineManager.paused) visualizer.viewport.postMat(it)
-                    //if there's an ongoing recording session, post the mat to the recording
-                    currentRecordingSession?.postMatAsync(it)
-                }
 
                 //clear error telemetry messages
                 telemetry?.errItem?.caption = ""
@@ -137,6 +136,18 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 telemetry?.errItem?.caption = "[/!\\]"
                 telemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
                 telemetry?.update()
+            }
+
+            try {
+                //if last output mat is not null
+                pipelineManager.lastOutputMat?.let {
+                    //when not paused, post the last pipeline mat to the viewport
+                    if (!pipelineManager.paused) visualizer.viewport.postMat(it)
+                    //if there's an ongoing recording session, post the mat to the recording
+                    currentRecordingSession?.postMatAsync(it)
+                }
+            } catch (ex: Exception) {
+                Log.error("EOCVSim", "Error while posting Mat to viewport/recording", ex)
             }
 
             //updating displayed telemetry
@@ -152,6 +163,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 break
             }
 
+            throw InterruptedException()
+
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
@@ -162,6 +175,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
         val hexCode = Integer.toHexString(this.hashCode())
 
         Log.warn("EOCVSim", "Destroying current EOCVSim ($hexCode) due to $reason")
+
+        currentRecordingSession?.stopRecordingSession()
+        currentRecordingSession?.discardVideo()
+
         Log.info("EOCVSim", "Trying to save config file...")
 
         configManager.saveToFile()
@@ -191,6 +208,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         }
     }
 
+    //stopping recording session and saving file
     fun stopRecordingSession() {
         currentRecordingSession?.let { itVideo ->
 
@@ -198,20 +216,38 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             itVideo.stopRecordingSession()
 
-            DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT).addCloseListener {
-                    _: Int, file: File?, _: FileFilter? ->
+            DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, FileFilters.recordedVideoFilter)
+                    .addCloseListener { _: Int, file: File?, selectedFileFilter: FileFilter? ->
                         onMainUpdate.doOnce {
                             if(file != null) {
-                                if (file.exists()) {
+
+                                var correctedFile = File(file.absolutePath)
+                                val extension = SysUtil.getExtensionByStringHandling(file.name)
+
+                                if (selectedFileFilter is FileNameExtensionFilter) { //if user selected an extension
+                                    //get selected extension
+                                    correctedFile = file + "." + selectedFileFilter.extensions[0]
+                                } else if(extension.isPresent) {
+                                    if(!extension.get().equals("avi", true)) {
+                                        correctedFile = file + ".avi"
+                                    }
+                                } else {
+                                    correctedFile = file + ".avi"
+                                }
+
+                                if (correctedFile.exists()) {
                                     SwingUtilities.invokeLater {
                                         if (DialogFactory(this).createFileAlreadyExistsDialog() == FileAlreadyExists.UserChoice.REPLACE) {
-                                            onMainUpdate.doOnce { itVideo.saveTo(file) }
+                                            onMainUpdate.doOnce { itVideo.saveTo(correctedFile) }
                                         }
                                     }
                                 } else {
-                                    itVideo.saveTo(file)
+                                    itVideo.saveTo(correctedFile)
                                 }
+                            } else {
+                                itVideo.discardVideo()
                             }
+
                             currentRecordingSession = null
                             visualizer.pipelineRecordBtt.isEnabled = true
                         }

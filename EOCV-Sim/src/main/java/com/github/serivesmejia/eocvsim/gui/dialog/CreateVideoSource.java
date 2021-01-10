@@ -5,6 +5,7 @@ import com.github.serivesmejia.eocvsim.gui.DialogFactory;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
+import com.github.serivesmejia.eocvsim.util.FileFilters;
 import com.github.serivesmejia.eocvsim.util.StrUtil;
 import org.opencv.core.Size;
 
@@ -158,16 +159,11 @@ public class CreateVideoSource {
         heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
 
         selectDirButton.addActionListener(e -> {
-
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("Video Media",
-                    "avi", "mkv", "mov", "mp4");
-
-            DialogFactory.createFileChooser(createVideoSource, filter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
+            DialogFactory.createFileChooser(createVideoSource, FileFilters.videoMediaFilter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     videoFileSelected(selectedFile);
                 }
             });
-
         });
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {

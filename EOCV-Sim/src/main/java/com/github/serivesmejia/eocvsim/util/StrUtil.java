@@ -1,6 +1,8 @@
 package com.github.serivesmejia.eocvsim.util;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -39,6 +41,12 @@ public final class StrUtil {
 
     public static String random() {
         return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public static String fromException(Throwable ex) {
+        StringWriter writer = new StringWriter(256);
+        ex.printStackTrace(new PrintWriter(writer));
+        return writer.toString().trim();
     }
 
 }

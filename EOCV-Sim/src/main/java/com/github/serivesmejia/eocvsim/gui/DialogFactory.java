@@ -100,6 +100,9 @@ public class DialogFactory {
                 for (FileFilter filter : filters) {
                     chooser.addChoosableFileFilter(filter);
                 }
+                if(filters.length > 0) {
+                    chooser.setFileFilter(filters[0]);
+                }
             }
 
         }

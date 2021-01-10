@@ -54,6 +54,11 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
         Files.delete(tempFile.toPath())
     }
 
+    fun discardVideo() {
+        if(tempFile.exists())
+            Files.delete(tempFile.toPath())
+    }
+
     @Synchronized fun postMatAsync(inputMat: Mat) {
         if(!videoWriter.isOpened) return
         matPoster.post(inputMat)

@@ -66,6 +66,8 @@ public class Log {
     static public boolean TRACE = level <= LEVEL_TRACE;
     static private Logger logger = new Logger();
 
+    public static final StringBuilder fullLogs = new StringBuilder();
+
     private Log() {
     }
 
@@ -268,6 +270,7 @@ public class Log {
          * Prints the message to System.out. Called by the default implementation of {@link #log(int, String, String, Throwable)}.
          */
         protected void print(String message) {
+            fullLogs.append(message + "\n");
             System.out.println(message);
         }
     }
