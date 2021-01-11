@@ -24,6 +24,8 @@ Because OpenCV in Java uses a native library, which are platform specific, the s
 
 # Installation
 
+## Recommended installation method
+
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
@@ -55,6 +57,40 @@ No complicated setup is required, straight up importing the project into Intelli
             <img src='images/eocvsim_screenshot_installation_5.png' width='75%' height='75%'><br/>
             
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
+
+## Adding EOCV-Sim as a dependency
+
+   ### Gradle
+   ```groovy
+   repositories {
+       maven { url 'https://jitpack.com' } //add jitpack as a maven repo 
+   }
+   
+   dependencies {
+      implementation 'com.github.serivesmejia:EOCV-Sim:2.0.2' //add the EOCV-Sim dependency
+   }
+   ```
+   
+   ## Maven
+   
+   Adding the jitpack maven repo
+   ```xml
+    <repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+   ```
+   
+   Adding the EOCV-Sim dependecy
+   ```xml
+    <dependency>
+	    <groupId>com.github.serivesmejia</groupId>
+	    <artifactId>EOCV-Sim</artifactId>
+	    <version>2.0.2</version>
+	</dependency>
+   ```
 
 # Contact
 For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8237* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
