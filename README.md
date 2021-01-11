@@ -59,3 +59,75 @@ No complicated setup is required, straight up importing the project into Intelli
 # Contact
 For any quick troubleshooting or help, you can find me on Discord as *serivesmejia#8237* and on the FTC discord server. I'll be happy to assist you in any issue you might have :)<br/><br/>
 For bug reporting or feature requesting, use the [issues tab](https://github.com/serivesmejia/EOCV-Sim/issues) in this repository.
+
+# Change logs
+
+### [v2.0.2 - TaskBar hotfix](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.2)
+      
+  - This is the 5th release for EOCV-Sim.
+      
+      - Bugfixes:
+        
+        - Fixes UnsupportedOperationException with the TaskBar API in some operating system
+            
+### [v2.0.1 - TaskBar hotfix](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.1)
+      
+  - This is the 4th release for EOCV-Sim.
+
+      - Bugfixes:
+      
+        - Fixes ArrayIndexOutOfBoundsException when initial value of a boolean field was true which would make the sim enter into a frozen state.
+
+### [v2.0.0 - Major Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.0)
+      
+ - This is the 3rd release for EOCV-Sim.
+
+      - Changelog:
+      
+        - Added variable tuner for public non-final supported fields in the pipeline, accessible on the bottom part of the image viewport.
+        - Pipeline pause and resume option to save resources, pauses automatically with image sources for one-shot analysis
+        - Top Menu bar containing new features/convenient shortcuts:
+        - Save Mat to disk option in File submenu
+        - Restart feature in File submenu
+        - Shortcut for creating input sources under File -> New -> Input Source
+        - Settings menu under Edit submenu
+        - "About" information screen under Help submenu
+        - Appereance themes via the FlatLaf library, selectable in the settings window
+        - Telemetry now is passed to the pipeline via the constructor rather than an instance variable, check usage explaination for further details
+        - Mat visualizing into the viewport is now handled in another thread to improve performance
+        - Pipeline FPS are now capped at 30
+        - Zooming viewport is now supported, using mouse wheel while holding Ctrl key
+        
+      - Bugfixes:
+        
+        - Removed call to the gc in the main loop due to performance issues
+        - Fixed BufferedImage mem leak by recycling previously used buffered images and trying to flush them
+        - Some internal code cleaning & reestructuration
+        - Fixed issues with native lib loading (mostly on Mac) with the OpenCV package provided by 
+     
+### [v1.1.0 - Telemetry Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v1.1.0)
+      
+ - This is the 2rd release for EOCV-Sim.
+      
+      - Changelog:
+
+        - Added a Telemetry implementation displayed in the UI. Replicates the FTC SDK one, it can be used directly in pipelines.
+        - Added an option to define the CameraSource resolution when creation.
+        - Added MacOS support (thnx Noah)
+        - Changed default resolution to 320x280 everywhere since it is the most commonly used in EOCV
+        - Native libs are now downloaded by the simulator from another GitHub repo to avoid bloating the repository with heavy files
+        - Java libraries, such as classgraph, opencv and gson are now delivered in compiled jars to improve compile times
+       
+      - Bug fixes:
+       
+        - Fixed a bug where the InputSources would return a BGR Mat instead of RGB, which is the type EOCV gives.
+        - Regarding the last point, the visualizer now expects for the given mats to be RGB
+        - Improved general IO error handling everywhere, from file accessing to input sources reading, so that the simulator doesn’t enter in a freeze state if any IO related operation fails
+        - Improved multi threading handling for changing pipelines and inputsources.
+        - Fixed issue in Linux where the buttons would be moved to an incorrect position when resizing out and then trying to resize back to the original size
+ 
+ 
+### [v1.0.0 - Initial Release](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v1.0.0)
+      
+ - Initial EOCV-Sim release.
+      
