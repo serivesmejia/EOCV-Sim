@@ -106,7 +106,7 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
         
         - Fixes UnsupportedOperationException with the TaskBar API in some operating system
             
-### [v2.0.1 - TaskBar hotfix](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.1)
+### [v2.0.1 - BooleanField hotfix](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.1)
       
   - This is the 4th release for EOCV-Sim.
 
@@ -120,15 +120,16 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
       - Changelog:
       
+      	- Gradle is now used as the main build system
         - Added variable tuner for public non-final supported fields in the pipeline, accessible on the bottom part of the image viewport.
         - Pipeline pause and resume option to save resources, pauses automatically with image sources for one-shot analysis
         - Top Menu bar containing new features/convenient shortcuts:
-        - Save Mat to disk option in File submenu
-        - Restart feature in File submenu
-        - Shortcut for creating input sources under File -> New -> Input Source
-        - Settings menu under Edit submenu
-        - "About" information screen under Help submenu
-        - Appereance themes via the FlatLaf library, selectable in the settings window
+          - Save Mat to disk option in File submenu
+          - Restart feature in File submenu
+          - Shortcut for creating input sources under File -> New -> Input Source
+          - Settings menu under Edit submenu
+          - "About" information screen under Help submenu
+          - Appereance themes via the FlatLaf library, selectable in the settings window
         - Telemetry now is passed to the pipeline via the constructor rather than an instance variable, check usage explaination for further details
         - Mat visualizing into the viewport is now handled in another thread to improve performance
         - Pipeline FPS are now capped at 30
@@ -139,7 +140,7 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
         - Removed call to the gc in the main loop due to performance issues
         - Fixed BufferedImage mem leak by recycling previously used buffered images and trying to flush them
         - Some internal code cleaning & reestructuration
-        - Fixed issues with native lib loading (mostly on Mac) with the OpenCV package provided by 
+        - Fixed issues with native lib loading (mostly on Mac) with the OpenCV package provided by OpenPnP
      
 ### [v1.1.0 - Telemetry Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v1.1.0)
       
