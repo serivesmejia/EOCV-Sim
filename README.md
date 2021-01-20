@@ -2,6 +2,7 @@
 
 ![Java CI with Gradle](https://github.com/serivesmejia/EOCV-Sim/workflows/Java%20CI%20with%20Gradle/badge.svg)
 [![](https://jitpack.io/v/serivesmejia/EOCV-Sim.svg)](https://jitpack.io/#serivesmejia/EOCV-Sim)
+[![Run on Repl.it](https://repl.it/badge/github/serivesmejia/EOCV-Sim)](https://repl.it/github/serivesmejia/EOCV-Sim)
 
 
 # Welcome!
