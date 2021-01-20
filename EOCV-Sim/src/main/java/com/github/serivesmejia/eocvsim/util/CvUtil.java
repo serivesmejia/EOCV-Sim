@@ -1,5 +1,6 @@
 package com.github.serivesmejia.eocvsim.util;
 
+import com.github.serivesmejia.eocvsim.util.extension.CvExt;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Size;
@@ -119,6 +120,30 @@ public class CvUtil {
             return new Size(0, 0);
         }
 
+    }
+
+    public static Size scaleToFit(Size currentSize, Size targetSize) {
+        double targetAspectRatio = CvExt.aspectRatio(targetSize);
+        double currentAspectRatio = CvExt.aspectRatio(currentSize);
+
+        Log.info(currentSize + ", " + targetSize);
+        Log.info(currentAspectRatio + ", " + targetAspectRatio);
+
+        if(currentAspectRatio*100 == targetAspectRatio*100) {
+            Log.info("a");
+            return targetSize.clone();
+        } else {
+
+            double currentW = currentSize.width;
+            double currentH = currentSize.height;
+
+            double widthRatio = targetSize.width / currentW;
+            double heightRatio = targetSize.height / currentH;
+            double bestRatio = Math.max(widthRatio, heightRatio);
+
+            return new Size(currentW * bestRatio, currentH * bestRatio);
+
+        }
     }
 
 }

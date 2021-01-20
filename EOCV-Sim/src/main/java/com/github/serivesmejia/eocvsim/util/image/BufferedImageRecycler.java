@@ -70,7 +70,6 @@ public class BufferedImageRecycler {
     }
 
     public static class RecyclableBufferedImage extends BufferedImage {
-
         private int idx = -1;
         private volatile boolean checkedOut = false;
 
@@ -78,7 +77,6 @@ public class BufferedImageRecycler {
             super(width, height, imageType);
             this.idx = idx;
         }
-
     }
 
 }

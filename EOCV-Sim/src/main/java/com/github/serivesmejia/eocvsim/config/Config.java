@@ -9,6 +9,7 @@ public class Config {
     public volatile double zoom = 1;
     public volatile boolean storeZoom = true;
 
+    public volatile int maxFps = 30;
     public volatile boolean pauseOnImages = true;
 
     public volatile Size videoRecordingSize = new Size(640, 480);

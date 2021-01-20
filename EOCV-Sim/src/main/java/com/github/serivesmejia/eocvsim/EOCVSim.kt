@@ -19,6 +19,7 @@ import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 
 import nu.pattern.OpenCV
+import org.opencv.core.Size
 import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
@@ -30,6 +31,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val VERSION = "2.1.0"
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
+        @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
         @Volatile private var alreadyInitializedOnce = false
     }
 
@@ -39,7 +41,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     @JvmField val configManager = ConfigManager()
     @JvmField val inputSourceManager = InputSourceManager(this)
-    @JvmField val pipelineManager = PipelineManager(this) //we'll initialize pipeline manager after loading native lib
+    @JvmField val pipelineManager = PipelineManager(this)
 
     @JvmField var tunerManager = TunerManager(this)
 
@@ -91,7 +93,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         visualizer.pipelineSelector.selectedIndex = 0
 
         beginLoop()
-
     }
 
     private fun beginLoop() {
@@ -155,6 +156,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             //limit FPS
             try {
+                fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
                 fpsLimiter.sync()
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()

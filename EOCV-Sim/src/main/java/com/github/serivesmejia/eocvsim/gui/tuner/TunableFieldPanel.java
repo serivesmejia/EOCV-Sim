@@ -45,25 +45,21 @@ public class TunableFieldPanel extends JPanel {
         fields = new JTextField[tunableField.getGuiFieldAmount()];
 
         for (int i = 0; i < fields.length; i++) {
-
             TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
 
             field.setEditable(true);
             add(field);
 
             fields[i] = field;
-
         }
 
         comboBoxes = new JComboBox[tunableField.getGuiComboBoxAmount()];
 
         for (int i = 0; i < comboBoxes.length; i++) {
-
             TunableComboBox comboBox = new TunableComboBox(i, tunableField, eocvSim);
             add(comboBox);
 
             comboBoxes[i] = comboBox;
-
         }
 
     }

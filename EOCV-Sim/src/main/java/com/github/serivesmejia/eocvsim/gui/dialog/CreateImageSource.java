@@ -2,10 +2,12 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
+import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.FileFilters;
+import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.StrUtil;
 import org.opencv.core.Size;
 
@@ -22,24 +24,21 @@ public class CreateImageSource {
 
     public JTextField nameTextField = null;
 
+    public SizeFields sizeFieldsInput = null;
+
     public JTextField imgDirTextField = null;
-    public JTextField widthTextField = null;
-    public JTextField heightTextField = null;
 
     public JButton createButton = null;
     public boolean selectedValidImage = false;
     private EOCVSim eocvSim = null;
-    private boolean validCameraSizeNumbers = true;
 
     public CreateImageSource(JFrame parent, EOCVSim eocvSim) {
-
         createImageSource = new JDialog(parent);
         this.eocvSim = eocvSim;
 
         eocvSim.visualizer.childDialogs.add(createImageSource);
 
         initCreateImageSource();
-
     }
 
     public void initCreateImageSource() {
@@ -64,33 +63,10 @@ public class CreateImageSource {
 
         // Size part
 
-        JPanel sizePanel = new JPanel(new FlowLayout());
+        sizeFieldsInput = new SizeFields();
+        sizeFieldsInput.onChange.doPersistent(this::updateCreateBtt);
 
-        JLabel sizeLabel = new JLabel("Size: ");
-        sizeLabel.setHorizontalAlignment(JLabel.LEFT);
-
-        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH), 4);
-
-        sizePanel.add(sizeLabel);
-        sizePanel.add(widthTextField);
-
-        JLabel xSizeLabel = new JLabel(" x ");
-        xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        heightTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_HEIGHT), 4);
-
-        sizePanel.add(xSizeLabel);
-        sizePanel.add(heightTextField);
-
-        contentsPanel.add(sizePanel);
-
-        contentsPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-
-        sizePanel.add(xSizeLabel);
-        sizePanel.add(heightTextField);
-
-        contentsPanel.add(sizePanel);
-
+        contentsPanel.add(sizeFieldsInput);
         contentsPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         //Name part
@@ -98,7 +74,7 @@ public class CreateImageSource {
         JPanel namePanel = new JPanel(new FlowLayout());
 
         JLabel nameLabel = new JLabel("Source name: ");
-        sizeLabel.setHorizontalAlignment(JLabel.LEFT);
+        nameLabel.setHorizontalAlignment(JLabel.LEFT);
 
         nameTextField = new JTextField("ImageSource-" + (eocvSim.inputSourceManager.sources.size() + 1), 15);
 
@@ -126,45 +102,12 @@ public class CreateImageSource {
 
         // Additional stuff & events
 
-        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, EOCVSim.DEFAULT_EOCV_WIDTH);
-        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, EOCVSim.DEFAULT_EOCV_HEIGHT);
-
-        DocumentListener validSizeNumberListener = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                changed(e);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                changed(e);
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                changed(e);
-            }
-
-            public void changed(DocumentEvent e) {
-                try {
-                    Integer.parseInt(widthTextField.getText());
-                    Integer.parseInt(heightTextField.getText());
-                    validCameraSizeNumbers = true;
-                } catch (Throwable ex) {
-                    validCameraSizeNumbers = false;
-                }
-                updateCreateBtt();
-            }
-        };
-
-        widthTextField.getDocument().addDocumentListener(validSizeNumberListener);
-        heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
-
         selectDirButton.addActionListener(e -> {
-
             DialogFactory.createFileChooser(createImageSource, FileFilters.imagesFilter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     imageFileSelected(selectedFile);
                 }
             });
-
         });
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -186,8 +129,8 @@ public class CreateImageSource {
         });
 
         createButton.addActionListener(e -> {
-            int width = Integer.parseInt(widthTextField.getText());
-            int height = Integer.parseInt(heightTextField.getText());
+            double width = sizeFieldsInput.getLastValidWidth();
+            double height = sizeFieldsInput.getLastValidHeight();
             createSource(nameTextField.getText(), imgDirTextField.getText(), new Size(width, height));
             close();
         });
@@ -211,6 +154,11 @@ public class CreateImageSource {
             if(!fileName.trim().equals("") && !eocvSim.inputSourceManager.isNameOnUse(fileName)) {
                 nameTextField.setText(fileName);
             }
+
+            Size size = CvUtil.scaleToFit(CvUtil.getImageSize(fileAbsPath), EOCVSim.DEFAULT_EOCV_SIZE);
+
+            sizeFieldsInput.getWidthTextField().setText(String.valueOf(size.width));
+            sizeFieldsInput.getHeightTextField().setText(String.valueOf(size.height));
 
             selectedValidImage = true;
         } else {
@@ -236,7 +184,7 @@ public class CreateImageSource {
 
     public void updateCreateBtt() {
         createButton.setEnabled(!nameTextField.getText().trim().equals("")
-                && validCameraSizeNumbers
+                && sizeFieldsInput.getValid()
                 && selectedValidImage
                 && !eocvSim.inputSourceManager.isNameOnUse(nameTextField.getText()));
     }

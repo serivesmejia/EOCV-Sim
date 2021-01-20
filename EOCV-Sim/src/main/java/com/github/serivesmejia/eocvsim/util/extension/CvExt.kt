@@ -6,10 +6,10 @@ import org.opencv.core.Size
 
 object CvExt {
 
-    fun Size.aspectRatio() = width / height
-    fun Mat.aspectRatio() = size().aspectRatio()
+    @JvmStatic fun Size.aspectRatio() = height / width
+    @JvmStatic fun Mat.aspectRatio() = size().aspectRatio()
 
-    fun Size.clipTo(size: Size): Size {
+    @JvmStatic fun Size.clipTo(size: Size): Size {
         width = Range.clip(width, 0.0, size.width)
         height = Range.clip(height, 0.0, size.height)
         return this
