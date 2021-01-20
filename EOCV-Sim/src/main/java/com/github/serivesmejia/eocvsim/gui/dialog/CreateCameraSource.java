@@ -114,8 +114,6 @@ public class CreateCameraSource {
         createButton.addActionListener(e -> {
 
             int camId = Integer.parseInt(cameraIdField.getText());
-            double width = sizeFieldsInput.getLastValidWidth();
-            double height = sizeFieldsInput.getLastValidHeight();
 
             statusLabel.setText("Trying to open camera, please wait...");
             cameraIdField.setEditable(false);
@@ -125,7 +123,7 @@ public class CreateCameraSource {
                 if (testCamera(camId)) {
                     close();
                     if (wasCancelled) return;
-                    createSource(nameTextField.getText(), camId, new Size(width, height));
+                    createSource(nameTextField.getText(), camId, sizeFieldsInput.getCurrentSize());
                     eocvSim.visualizer.updateSourcesList();
                 } else {
                     cameraIdField.setEditable(true);

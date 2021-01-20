@@ -129,12 +129,9 @@ public class CreateVideoSource {
         });
 
         createButton.addActionListener(e -> {
-            double width = sizeFieldsInput.getLastValidWidth();
-            double height = sizeFieldsInput.getLastValidHeight();
-            createSource(nameTextField.getText(), vidDirTextField.getText(), new Size(width, height));
+            createSource(nameTextField.getText(), vidDirTextField.getText(), sizeFieldsInput.getCurrentSize());
             close();
         });
-
 
         // Status label part
         cancelButton.addActionListener(e -> close());

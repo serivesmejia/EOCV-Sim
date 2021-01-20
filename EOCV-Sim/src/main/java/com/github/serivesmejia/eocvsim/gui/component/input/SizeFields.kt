@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.ValidCharactersDocumentFilter
 import com.github.serivesmejia.eocvsim.gui.util.extension.SwingExt.documentFilter
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import org.opencv.core.Size
 import java.awt.Color
 import java.awt.FlowLayout
 import java.util.*
@@ -13,8 +14,13 @@ import javax.swing.JTextField
 import javax.swing.border.LineBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import kotlin.math.roundToInt
 
-class SizeFields(allowDecimalValues: Boolean = false, descriptiveText: String = "Size: ") : JPanel(FlowLayout()) {
+class SizeFields(
+        initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
+        allowDecimalValues: Boolean = false,
+        descriptiveText: String = "Size: ")
+    : JPanel(FlowLayout()) {
 
     val widthTextField = JTextField(4)
     val heightTextField = JTextField(4)
@@ -22,11 +28,29 @@ class SizeFields(allowDecimalValues: Boolean = false, descriptiveText: String = 
     private val widthValidator: ValidCharactersDocumentFilter
     private val heightValidator: ValidCharactersDocumentFilter
 
+    @get:Synchronized
     val lastValidWidth: Double
         get() = widthValidator.lastValid
 
+    @get:Synchronized
+    val currentWidth: Double
+        get() = widthTextField.text.toDouble()
+
+    @get:Synchronized
     val lastValidHeight: Double
         get() = heightValidator.lastValid
+
+    @get:Synchronized
+    val currentHeight: Double
+        get() = heightTextField.text.toDouble()
+
+    @get:Synchronized
+    val lastValidSize: Size
+        get() = Size(lastValidWidth, lastValidHeight)
+
+    @get:Synchronized
+    val currentSize: Size
+        get() = Size(currentWidth, currentHeight)
 
     private val validChars = ArrayList<Char>()
 
@@ -47,11 +71,11 @@ class SizeFields(allowDecimalValues: Boolean = false, descriptiveText: String = 
 
         widthTextField.documentFilter = widthValidator
         widthTextField.document.addDocumentListener(BorderChangerListener(widthTextField, widthValidator, onChange))
-        widthTextField.text = EOCVSim.DEFAULT_EOCV_WIDTH.toString()
+        widthTextField.text = "${ if(allowDecimalValues) { initialSize.width } else { initialSize.width.roundToInt() } }"
 
         heightTextField.documentFilter = heightValidator
         heightTextField.document.addDocumentListener(BorderChangerListener(heightTextField, heightValidator, onChange))
-        heightTextField.text = EOCVSim.DEFAULT_EOCV_HEIGHT.toString()
+        heightTextField.text = "${ if(allowDecimalValues) { initialSize.height } else { initialSize.height.roundToInt() }  }"
 
         val sizeLabel = JLabel(descriptiveText)
         sizeLabel.horizontalAlignment = JLabel.LEFT

@@ -13,5 +13,4 @@ object  FileFilters {
 
     @JvmField var recordedVideoFilter = FileNameExtensionFilter("AVI (*.avi)", "avi")
 
-
 }

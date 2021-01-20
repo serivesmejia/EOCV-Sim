@@ -129,9 +129,7 @@ public class CreateImageSource {
         });
 
         createButton.addActionListener(e -> {
-            double width = sizeFieldsInput.getLastValidWidth();
-            double height = sizeFieldsInput.getLastValidHeight();
-            createSource(nameTextField.getText(), imgDirTextField.getText(), new Size(width, height));
+            createSource(nameTextField.getText(), imgDirTextField.getText(), sizeFieldsInput.getCurrentSize());
             close();
         });
 

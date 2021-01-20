@@ -2,7 +2,9 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
+import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
+import org.opencv.core.Size;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,24 +12,25 @@ import java.awt.*;
 public class Configuration {
 
     private final EOCVSim eocvSim;
-    public JPanel contents = new JPanel(new GridLayout(4, 1));
+    public JPanel contents = new JPanel(new GridLayout(5, 1));
     public JComboBox<String> themeComboBox = new JComboBox<>();
 
     public JButton acceptButton = new JButton("Accept");
 
     public JCheckBox storeZoomCheckBox = new JCheckBox();
     public JCheckBox pauseOnImageCheckBox = new JCheckBox();
+
+    public SizeFields videoRecordingSize = null;
+
     JDialog configuration;
 
     public Configuration(JFrame parent, EOCVSim eocvSim) {
-
         configuration = new JDialog(parent);
         this.eocvSim = eocvSim;
 
         eocvSim.visualizer.childDialogs.add(configuration);
 
         initConfiguration();
-
     }
 
     private void initConfiguration() {
@@ -37,7 +40,7 @@ public class Configuration {
         configuration.setModal(true);
 
         configuration.setTitle("Settings");
-        configuration.setSize(350, 230);
+        configuration.setSize(350, 240);
 
         //theme selection
         JPanel themePanel = new JPanel(new FlowLayout());
@@ -80,6 +83,14 @@ public class Configuration {
 
         contents.add(pauseOnImagePanel);
 
+        videoRecordingSize = new SizeFields(config.videoRecordingSize, false, "Video Rec. Size: ");
+
+        videoRecordingSize.onChange.doPersistent(() -> {
+            acceptButton.setEnabled(videoRecordingSize.getValid());
+        });
+
+        contents.add(videoRecordingSize);
+
         //accept button
         JPanel acceptPanel = new JPanel(new FlowLayout());
         acceptPanel.add(acceptButton);
@@ -91,7 +102,7 @@ public class Configuration {
 
         contents.add(acceptPanel);
 
-        contents.setBorder(BorderFactory.createEmptyBorder(25, 0, 25, 0));
+        contents.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         configuration.add(contents);
 
@@ -112,6 +123,7 @@ public class Configuration {
         config.simTheme = userSelectedTheme;
         config.storeZoom = storeZoomCheckBox.isSelected();
         config.pauseOnImages = pauseOnImageCheckBox.isSelected();
+        config.videoRecordingSize = videoRecordingSize.getCurrentSize();
 
         eocvSim.configManager.saveToFile(); //update config file
 
