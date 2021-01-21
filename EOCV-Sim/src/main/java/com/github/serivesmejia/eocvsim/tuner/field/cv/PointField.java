@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.tuner.field;
+package com.github.serivesmejia.eocvsim.tuner.field.cv;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;

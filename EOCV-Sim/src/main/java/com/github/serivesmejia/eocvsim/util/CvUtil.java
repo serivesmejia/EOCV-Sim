@@ -86,11 +86,11 @@ public class CvUtil {
             capture.read(img);
             capture.release();
 
-            if (img != null && !img.empty()) { //image is valid
+            if (!img.empty()) { //image is valid
                 img.release();
                 return true;
             } else { //image is not valid
-                if(img != null) img.release();
+                img.release();
                 return false;
             }
 

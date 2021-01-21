@@ -2,7 +2,7 @@ package com.github.serivesmejia.eocvsim.util
 
 import javax.swing.filechooser.FileNameExtensionFilter
 
-object  FileFilters {
+object FileFilters {
 
     @JvmField val imagesFilter = FileNameExtensionFilter("Images",
             "jpg", "jpeg", "jpe", "jp2", "bmp", "png", "tiff", "tif")

@@ -107,7 +107,14 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
 
                 Imgproc.resize(inputMat, inputMat, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
 
+                //get submat of the exact required size and offset position from the "videoMat",
+                //which has the user-defined size of the current video.
                 val submat = videoMat!!.submat(Rect(Point(xOffset, yOffset), newSize))
+
+                //then we copy our adjusted mat into the gotten submat. since a submat is just
+                //a reference to the parent mat, when we copy here our data will be actually
+                //copied to the actual mat, and so our new mat will be of the correct size and
+                //centered with the required offset
                 inputMat.copyTo(submat);
 
                 compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), videoFps)
@@ -119,6 +126,8 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
         }
     }
 
+    //compensating for variable fps, we write the same mat multiple
+    //times so that our video stays in sync with the correct speed.
     @Synchronized private fun compensateFpsWrite(mat: Mat, currentFps: Double, targetFps: Double) {
         if (currentFps < targetFps && currentFps > 0) {
             repeat((targetFps / currentFps).roundToInt()) {

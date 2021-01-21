@@ -70,11 +70,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     }
 
+    @SuppressWarnings("unchecked")
     fun addPipelineClass(C: Class<*>) {
         try {
             pipelines.add(C as Class<out OpenCvPipeline>)
-        } catch (ex: Throwable) {
-            ex.printStackTrace()
+        } catch (ex: Exception) {
+            Log.error("PipelineManager", "Error while adding pipeline class", ex)
             Log.error("PipelineManager", "Unable to cast " + C.name + " to OpenCvPipeline class.")
             Log.error("PipelineManager", "Remember that the pipeline class should extend OpenCvPipeline")
         }
@@ -131,6 +132,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
             Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
             Log.info("PipelineManager", "Make sure your pipeline implements a public constructor with no parameters or with a Telemetry parameter")
+
+            eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
             Log.white()
 

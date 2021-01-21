@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BufferedImageGiver {
+public class DynamicBufferedImageRecycler {
 
     private final HashMap<Dimension, BufferedImageRecycler> recyclers = new HashMap<>();
 

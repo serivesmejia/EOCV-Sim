@@ -3,13 +3,12 @@ package com.github.serivesmejia.eocvsim.gui.component;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
-import com.github.serivesmejia.eocvsim.util.image.BufferedImageGiver;
+import com.github.serivesmejia.eocvsim.util.image.DynamicBufferedImageRecycler;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.qualcomm.robotcore.util.Range;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
@@ -24,7 +23,7 @@ public class Viewport extends JPanel {
     private Mat lastVisualizedMat = null;
     private Mat lastVisualizedScaledMat = null;
 
-    private final BufferedImageGiver buffImgGiver = new BufferedImageGiver();
+    private final DynamicBufferedImageRecycler buffImgGiver = new DynamicBufferedImageRecycler();
 
     private volatile BufferedImage lastBuffImage;
 
@@ -46,11 +45,11 @@ public class Viewport extends JPanel {
 
     }
 
-    public synchronized void postMat(Mat mat) {
+    public synchronized void postMatAsync(Mat mat) {
         matPoster.post(mat);
     }
 
-    public synchronized void visualizeScaleMat(Mat mat) {
+    public synchronized void postMat(Mat mat) {
 
         if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
 
@@ -84,7 +83,7 @@ public class Viewport extends JPanel {
         poster.addPostable((m) -> {
             try {
                 Imgproc.cvtColor(m, m, Imgproc.COLOR_RGB2BGR);
-                visualizeScaleMat(m);
+                postMat(m);
             } catch(Exception ex) {
                 Log.error("Viewport-Postable", "Couldn't visualize last mat", ex);
             }
@@ -108,7 +107,7 @@ public class Viewport extends JPanel {
         this.scale = scale;
 
         if(lastVisualizedMat != null && scaleChanged)
-            visualizeScaleMat(lastVisualizedMat);
+            postMat(lastVisualizedMat);
 
     }
 

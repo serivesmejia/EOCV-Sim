@@ -2,19 +2,9 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.tuner.field.BooleanField;
-import com.github.serivesmejia.eocvsim.tuner.field.PointField;
-import com.github.serivesmejia.eocvsim.tuner.field.ScalarField;
-import com.github.serivesmejia.eocvsim.tuner.field.StringField;
-import com.github.serivesmejia.eocvsim.tuner.field.numeric.DoubleField;
-import com.github.serivesmejia.eocvsim.tuner.field.numeric.FloatField;
-import com.github.serivesmejia.eocvsim.tuner.field.numeric.IntegerField;
-import com.github.serivesmejia.eocvsim.tuner.field.numeric.LongField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.AnnotatedTunableFieldScanner;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.ReflectUtil;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Constructor;
@@ -42,7 +32,7 @@ public class TunerManager {
     public void init() {
 
         if(tunableFieldsTypes == null) {
-            tunableFieldsTypes = new AnnotatedTunableFieldScanner("com.github.serivesmejia")
+            tunableFieldsTypes = new AnnotatedTunableFieldScanner(eocvSim.getParams().getScanForTunableFieldsIn())
                                 .lookForTunableFields();
         }
 

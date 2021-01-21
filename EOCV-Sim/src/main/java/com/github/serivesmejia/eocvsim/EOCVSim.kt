@@ -141,7 +141,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 //if last output mat is not null
                 pipelineManager.lastOutputMat?.let {
                     //when not paused, post the last pipeline mat to the viewport
-                    if (!pipelineManager.paused) visualizer.viewport.postMat(it)
+                    if (!pipelineManager.paused) visualizer.viewport.postMatAsync(it)
                     //if there's an ongoing recording session, post the mat to the recording
                     currentRecordingSession?.postMatAsync(it)
                 }
