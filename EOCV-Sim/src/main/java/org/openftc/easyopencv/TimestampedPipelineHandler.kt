@@ -21,22 +21,37 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.util.fps
+package org.openftc.easyopencv
 
-class FpsLimiter(var maxFPS: Double = 30.0) {
+import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 
-    @Volatile private var start = 0.0
-    @Volatile private var diff = 0.0
-    @Volatile private var wait = 0.0
+class TimestampedPipelineHandler() {
 
-    @Throws(InterruptedException::class)
-    fun sync() {
-        wait = 1.0 / (maxFPS / 1000.0)
-        diff = System.currentTimeMillis() - start
-        if (diff < wait) {
-            Thread.sleep((wait - diff).toLong())
-        }
-        start = System.currentTimeMillis().toDouble()
+    private var timestampedPipeline: TimestampedOpenCvPipeline? = null
+
+    private var lastNanos = 0L
+
+    //update called from the pipelineManager onUpdate event handler
+    fun update() {
+        if(lastNanos == 0L) updateLastNanos()
+
+        timestampedPipeline?.setTimestamp(System.nanoTime() - lastNanos)
+
+        updateLastNanos()
+    }
+
+    fun pipelineChange(newPipeline: OpenCvPipeline?) {
+        timestampedPipeline = if(newPipeline is TimestampedOpenCvPipeline) { newPipeline } else { null }
+    }
+
+    //registering event listeners in the pipelineManager
+    fun attachToPipelineManager(pipelineManager: PipelineManager) {
+        pipelineManager.onPipelineChange.doPersistent { pipelineChange(pipelineManager.currentPipeline) }
+        pipelineManager.onUpdate.doPersistent { update() }
+    }
+
+    private fun updateLastNanos() {
+        lastNanos = System.nanoTime();
     }
 
 }
