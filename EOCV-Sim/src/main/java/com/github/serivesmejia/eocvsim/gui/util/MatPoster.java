@@ -39,22 +39,25 @@ public class MatPoster {
     private final EvictingBlockingQueue<MatRecycler.RecyclableMat> postQueue;
     private final MatRecycler matRecycler;
 
-    private final Thread posterThread = new Thread(new PosterRunnable(), "MatPoster-Thread");
+    private final String name;
+
+    private final Thread posterThread;
 
     public final FpsCounter fpsCounter = new FpsCounter();
 
     private volatile boolean hasPosterThreadStarted = false;
 
-    public MatPoster(int maxQueueItems) {
-
+    public MatPoster(String name, int maxQueueItems) {
         postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
         matRecycler = new MatRecycler(maxQueueItems + 2);
+        posterThread = new Thread(new PosterRunnable(), "MatPoster-" + name + "-Thread");
+
+        this.name = name;
 
         postQueue.setEvictAction((m) -> {
             matRecycler.returnMat(m);
             m.release();
         }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
-
     }
 
     public void post(Mat m) {
@@ -63,7 +66,7 @@ public class MatPoster {
         if (!posterThread.isAlive() && !hasPosterThreadStarted) posterThread.start();
 
         if (m == null || m.empty()) {
-            Log.warn("MatPoster", "Tried to post empty or null mat, skipped this frame.");
+            Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
             return;
         }
 
@@ -80,7 +83,7 @@ public class MatPoster {
 
     public void stop() {
 
-        Log.info("MatPoster", "Destroying...");
+        Log.info("MatPoster-" + name, "Destroying...");
 
         posterThread.interrupt();
 
@@ -128,7 +131,7 @@ public class MatPoster {
 
             }
 
-            Log.warn("MatPoster-Thread", "Thread interrupted (" + Integer.toHexString(hashCode()) + ")");
+            Log.warn("MatPoster-" + name +"-Thread", "Thread interrupted (" + Integer.toHexString(hashCode()) + ")");
 
         }
     }

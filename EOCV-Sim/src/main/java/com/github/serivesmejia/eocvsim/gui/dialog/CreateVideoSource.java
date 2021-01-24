@@ -30,7 +30,9 @@ import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.FileFilters;
+import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.StrUtil;
+import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
 import javax.swing.*;
@@ -169,7 +171,9 @@ public class CreateVideoSource {
 
         String fileAbsPath = f.getAbsolutePath();
 
-        if (CvUtil.checkVideoValid(fileAbsPath)) {
+        Mat videoMat = CvUtil.readOnceFromVideo(fileAbsPath);
+
+        if (videoMat != null && !videoMat.empty()) {
             vidDirTextField.setText(fileAbsPath);
 
             String fileName = StrUtil.getFileBaseName(f.getName());
@@ -177,11 +181,20 @@ public class CreateVideoSource {
                 nameTextField.setText(fileName);
             }
 
+            Size newSize = CvUtil.scaleToFit(videoMat.size(), EOCVSim.DEFAULT_EOCV_SIZE);
+
+            Log.info(newSize.toString());
+
+            this.sizeFieldsInput.getWidthTextField().setText(String.valueOf(Math.round(newSize.width)));
+            this.sizeFieldsInput.getHeightTextField().setText(String.valueOf(Math.round(newSize.height)));
+
             selectedValidVideo = true;
         } else {
             vidDirTextField.setText("Unable to load selected file.");
             selectedValidVideo = false;
         }
+
+        if(videoMat != null) videoMat.release();
 
         updateCreateBtt();
 

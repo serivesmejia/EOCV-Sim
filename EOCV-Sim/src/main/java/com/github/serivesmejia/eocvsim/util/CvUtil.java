@@ -123,7 +123,6 @@ public class CvUtil {
 
     }
 
-
     public static Size getImageSize(String imagePath) {
 
         try {
@@ -139,8 +138,49 @@ public class CvUtil {
                 return new Size(0, 0);
             }
 
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             return new Size(0, 0);
+        }
+
+    }
+
+    public static Size getVideoSize(String videoPath) {
+
+        try {
+
+            VideoCapture capture = new VideoCapture();
+
+            Mat img = new Mat();
+
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            Size size = img.size();
+            img.release();
+
+            return size;
+
+        } catch (Exception ex) {
+            return new Size();
+        }
+
+    }
+
+    public static Mat readOnceFromVideo(String videoPath) {
+
+        VideoCapture capture = new VideoCapture();
+
+        Mat img = new Mat();
+
+        try {
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            return img;
+        } catch (Exception ex) {
+            return img;
         }
 
     }
@@ -152,8 +192,7 @@ public class CvUtil {
         Log.info(currentSize + ", " + targetSize);
         Log.info(currentAspectRatio + ", " + targetAspectRatio);
 
-        if(currentAspectRatio*100 == targetAspectRatio*100) {
-            Log.info("a");
+        if(currentAspectRatio == targetAspectRatio) {
             return targetSize.clone();
         } else {
 
@@ -162,7 +201,7 @@ public class CvUtil {
 
             double widthRatio = targetSize.width / currentW;
             double heightRatio = targetSize.height / currentH;
-            double bestRatio = Math.max(widthRatio, heightRatio);
+            double bestRatio = Math.min(widthRatio, heightRatio);
 
             return new Size(currentW * bestRatio, currentH * bestRatio);
 

@@ -43,7 +43,7 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
 
     @Volatile private var videoMat: Mat? = null
 
-    private val matPoster = MatPoster(videoFps.toInt())
+    private val matPoster = MatPoster("VideoRec", videoFps.toInt())
 
     private val fpsCounter = FpsCounter()
 

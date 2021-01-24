@@ -63,7 +63,7 @@ public class Viewport extends JPanel {
 
         add(image, new GridBagConstraints());
 
-        matPoster = new MatPoster(maxQueueItems);
+        matPoster = new MatPoster("Viewport", maxQueueItems);
         attachToPoster(matPoster);
 
     }
