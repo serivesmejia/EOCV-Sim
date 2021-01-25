@@ -23,11 +23,8 @@
 
 package com.github.serivesmejia.eocvsim.gui.theme;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+import com.formdev.flatlaf.*;
+import com.formdev.flatlaf.intellijthemes.*;
 
 import javax.swing.*;
 
@@ -36,16 +33,21 @@ public enum Theme {
     Default(() -> {
         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
     }),
-
     Light(FlatLightLaf::install),
-    Intellij(FlatIntelliJLaf::install),
     Dark(FlatDarkLaf::install),
     Darcula(FlatDarculaLaf::install),
+    Light_Intellij(FlatIntelliJLaf::install),
+    Light_Flat_Intellij(FlatLightFlatIJTheme::install),
+    Cyan_Light_Intellij(FlatCyanLightIJTheme::install),
+    High_Contrast_Intellij(FlatHighContrastIJTheme::install),
+    Dracula_Intellij(FlatDraculaIJTheme::install),
+    Dark_Flat_Intellij(FlatDarkFlatIJTheme::install),
+    Spacegray_Intellij(FlatSpacegrayIJTheme::install),
     Material_Dark_Intellij(FlatMaterialDesignDarkIJTheme::install);
 
-    ThemeRunnable installRunn;
+    ThemeInstaller installRunn;
 
-    Theme(ThemeRunnable installRunn) {
+    Theme(ThemeInstaller installRunn) {
         this.installRunn = installRunn;
     }
 

@@ -7,7 +7,7 @@ import java.io.File
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
-class FileSelector(columns: Int = 18, val  vararg fileFilters: FileFilter?) : JPanel(FlowLayout()) {
+class FileSelector(columns: Int = 18, vararg fileFilters: FileFilter?) : JPanel(FlowLayout()) {
 
     constructor(columns: Int = 10) : this(columns, null)
 
@@ -25,8 +25,8 @@ class FileSelector(columns: Int = 18, val  vararg fileFilters: FileFilter?) : JP
         dirTextField.isEditable = false
 
         selectDirButton.addActionListener {
-            val frame = SwingUtilities.getWindowAncestor(this) as JFrame
-            DialogFactory.createFileChooser(frame, fileFilters.toTypedArray()).addCloseListener { returnVal: Int, selectedFile: File?, selectedFileFilter: FileFilter? ->
+            val frame = SwingUtilities.getWindowAncestor(this)
+            DialogFactory.createFileChooser(frame, *fileFilters).addCloseListener { returnVal: Int, selectedFile: File?, selectedFileFilter: FileFilter? ->
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     lastSelectedFile = selectedFile
                     lastSelectedFileFilter = selectedFileFilter

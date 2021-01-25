@@ -68,7 +68,7 @@ public class Viewport extends JPanel {
 
     }
 
-    public synchronized void postMatAsync(Mat mat) {
+    public void postMatAsync(Mat mat) {
         matPoster.post(mat);
     }
 
