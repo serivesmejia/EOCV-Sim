@@ -121,7 +121,7 @@ public class DialogFactory {
 
             if (filters != null) {
                 for (FileFilter filter : filters) {
-                    chooser.addChoosableFileFilter(filter);
+                    if(filter != null) chooser.addChoosableFileFilter(filter);
                 }
                 if(filters.length > 0) {
                     chooser.setFileFilter(filters[0]);

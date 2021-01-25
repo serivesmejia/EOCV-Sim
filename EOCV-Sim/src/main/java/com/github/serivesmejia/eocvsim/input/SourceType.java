@@ -53,7 +53,7 @@ public enum SourceType {
 
     public static SourceType fromCoolName(String coolName) {
         for(SourceType sourceType : values()) {
-            if(sourceType.coolName == coolName) {
+            if(sourceType.coolName.equalsIgnoreCase(coolName)) {
                 return sourceType;
             }
         }

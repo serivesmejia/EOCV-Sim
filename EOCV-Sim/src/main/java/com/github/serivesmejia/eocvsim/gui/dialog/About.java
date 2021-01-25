@@ -66,7 +66,7 @@ public class About {
         about.setModal(true);
 
         about.setTitle("About");
-        about.setSize(430, 290);
+        about.setSize(445, 290);
 
         JPanel contents = new JPanel(new GridLayout(2, 1));
         contents.setAlignmentX(Component.CENTER_ALIGNMENT);

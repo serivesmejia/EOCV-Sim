@@ -24,32 +24,29 @@
 package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.DialogFactory;
+import com.github.serivesmejia.eocvsim.gui.component.input.FileSelector;
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields;
-import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.FileFilters;
-import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.StrUtil;
 import org.opencv.core.Size;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
 public class CreateImageSource {
 
-    public JDialog createImageSource = null;
+    public JDialog createImageSource;
 
     public JTextField nameTextField = null;
 
     public SizeFields sizeFieldsInput = null;
 
-    public JTextField imgDirTextField = null;
+    public FileSelector imageFileSelector = null;
 
     public JButton createButton = null;
     public boolean selectedValidImage = false;
@@ -73,16 +70,12 @@ public class CreateImageSource {
 
         JPanel contentsPanel = new JPanel(new GridLayout(4, 1));
 
-        JPanel imgDirPanel = new JPanel(new FlowLayout());
+        //file select part
 
-        imgDirTextField = new JTextField(18);
-        imgDirTextField.setEditable(false);
-        JButton selectDirButton = new JButton("Select file...");
+        imageFileSelector = new FileSelector(18, FileFilters.imagesFilter);
+        imageFileSelector.onFileSelect.doPersistent(() -> imageFileSelected(imageFileSelector.getLastSelectedFile()));
 
-        imgDirPanel.add(imgDirTextField);
-        imgDirPanel.add(selectDirButton);
-
-        contentsPanel.add(imgDirPanel);
+        contentsPanel.add(imageFileSelector);
 
         // Size part
 
@@ -125,14 +118,6 @@ public class CreateImageSource {
 
         // Additional stuff & events
 
-        selectDirButton.addActionListener(e -> {
-            DialogFactory.createFileChooser(createImageSource, FileFilters.imagesFilter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    imageFileSelected(selectedFile);
-                }
-            });
-        });
-
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 changed();
@@ -152,7 +137,7 @@ public class CreateImageSource {
         });
 
         createButton.addActionListener(e -> {
-            createSource(nameTextField.getText(), imgDirTextField.getText(), sizeFieldsInput.getCurrentSize());
+            createSource(nameTextField.getText(), imageFileSelector.getLastSelectedFile().getAbsolutePath(), sizeFieldsInput.getCurrentSize());
             close();
         });
 
@@ -169,7 +154,6 @@ public class CreateImageSource {
         String fileAbsPath = f.getAbsolutePath();
 
         if (CvUtil.checkImageValid(fileAbsPath)) {
-            imgDirTextField.setText(fileAbsPath);
 
             String fileName = StrUtil.getFileBaseName(f.getName());
             if(!fileName.trim().equals("") && !eocvSim.inputSourceManager.isNameOnUse(fileName)) {
@@ -183,7 +167,7 @@ public class CreateImageSource {
 
             selectedValidImage = true;
         } else {
-            imgDirTextField.setText("Unable to load selected file.");
+            imageFileSelector.getDirTextField().setText("Unable to load selected file.");
             selectedValidImage = false;
         }
 

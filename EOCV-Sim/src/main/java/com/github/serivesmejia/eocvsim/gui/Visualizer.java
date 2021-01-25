@@ -23,11 +23,11 @@
 
 package com.github.serivesmejia.eocvsim.gui;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
-import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
@@ -69,8 +69,6 @@ public class Visualizer {
 
     private final EOCVSim eocvSim;
     private final DialogFactory dialogFactory;
-
-    private final ThemeInstaller themeInstaller = new ThemeInstaller();
 
     public JFrame frame = null;
 
@@ -141,7 +139,7 @@ public class Visualizer {
         }
 
         try {
-            themeInstaller.installTheme(theme);
+            theme.install();
         } catch (Exception e) {
             Log.error("Visualizer", "Failed to set theme " + theme.name(), e);
         }
@@ -321,7 +319,7 @@ public class Visualizer {
         sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         //different icons
-        sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
+        sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, FlatLaf.isLafDark()));
 
         sourceSelectorCreateBtt.addActionListener(e -> {
             if (CreateSource.alreadyOpened) return;

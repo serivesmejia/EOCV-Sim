@@ -23,4 +23,33 @@
 
 package com.github.serivesmejia.eocvsim.gui.theme;
 
-public enum Theme {Default, Light, Intellij, Dark, Darcula, Material_Dark_Intellij}
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatMaterialDesignDarkIJTheme;
+
+import javax.swing.*;
+
+public enum Theme {
+
+    Default(() -> {
+        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+    }),
+
+    Light(FlatLightLaf::install),
+    Intellij(FlatIntelliJLaf::install),
+    Dark(FlatDarkLaf::install),
+    Darcula(FlatDarculaLaf::install),
+    Material_Dark_Intellij(FlatMaterialDesignDarkIJTheme::install);
+
+    ThemeRunnable installRunn;
+
+    Theme(ThemeRunnable installRunn) {
+        this.installRunn = installRunn;
+    }
+
+    public void install() throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
+        installRunn.install();
+    }
+}
