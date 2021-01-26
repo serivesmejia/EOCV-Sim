@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.DialogFactory;
+import com.github.serivesmejia.eocvsim.gui.component.input.FileSelector;
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.VideoSource;
@@ -48,7 +49,7 @@ public class CreateVideoSource {
 
     public JTextField nameTextField = null;
 
-    public JTextField vidDirTextField = null;
+    public FileSelector fileSelectorVideo = null;
 
     public SizeFields sizeFieldsInput = null;
 
@@ -77,16 +78,14 @@ public class CreateVideoSource {
 
         JPanel contentsPanel = new JPanel(new GridLayout(4, 1));
 
-        JPanel vidDirPanel = new JPanel(new FlowLayout());
+        //file select
+        fileSelectorVideo = new FileSelector(18, FileFilters.videoMediaFilter);
 
-        vidDirTextField = new JTextField(18);
-        vidDirTextField.setEditable(false);
-        JButton selectDirButton = new JButton("Select file...");
+        fileSelectorVideo.onFileSelect.doPersistent(() ->
+                videoFileSelected(fileSelectorVideo.getLastSelectedFile())
+        );
 
-        vidDirPanel.add(vidDirTextField);
-        vidDirPanel.add(selectDirButton);
-
-        contentsPanel.add(vidDirPanel);
+        contentsPanel.add(fileSelectorVideo);
 
         // Size part
 
@@ -126,15 +125,6 @@ public class CreateVideoSource {
         //Add contents
         createVideoSource.getContentPane().add(contentsPanel, BorderLayout.CENTER);
 
-        // Additional stuff & events
-        selectDirButton.addActionListener(e -> {
-            DialogFactory.createFileChooser(createVideoSource, FileFilters.videoMediaFilter).addCloseListener((returnVal, selectedFile, selectedFileFilter) -> {
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    videoFileSelected(selectedFile);
-                }
-            });
-        });
-
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 changed();
@@ -154,7 +144,7 @@ public class CreateVideoSource {
         });
 
         createButton.addActionListener(e -> {
-            createSource(nameTextField.getText(), vidDirTextField.getText(), sizeFieldsInput.getCurrentSize());
+            createSource(nameTextField.getText(), fileSelectorVideo.getLastSelectedFile().getAbsolutePath(), sizeFieldsInput.getCurrentSize());
             close();
         });
 
@@ -174,7 +164,6 @@ public class CreateVideoSource {
         Mat videoMat = CvUtil.readOnceFromVideo(fileAbsPath);
 
         if (videoMat != null && !videoMat.empty()) {
-            vidDirTextField.setText(fileAbsPath);
 
             String fileName = StrUtil.getFileBaseName(f.getName());
             if(!fileName.trim().equals("") && !eocvSim.inputSourceManager.isNameOnUse(fileName)) {
@@ -190,7 +179,7 @@ public class CreateVideoSource {
 
             selectedValidVideo = true;
         } else {
-            vidDirTextField.setText("Unable to load selected file.");
+            fileSelectorVideo.getDirTextField().setText("Unable to load selected file.");
             selectedValidVideo = false;
         }
 
