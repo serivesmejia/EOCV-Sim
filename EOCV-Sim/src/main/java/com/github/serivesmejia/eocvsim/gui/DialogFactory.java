@@ -36,11 +36,7 @@ import java.util.ArrayList;
 
 public class DialogFactory {
 
-    private final EOCVSim eocvSim;
-
-    public DialogFactory(EOCVSim eocvSim) {
-        this.eocvSim = eocvSim;
-    }
+    private DialogFactory() { }
 
     public static FileChooser createFileChooser(Component parent, FileChooser.Mode mode, FileFilter... filters) {
         FileChooser fileChooser = new FileChooser(parent, mode, filters);
@@ -60,7 +56,7 @@ public class DialogFactory {
         return createFileChooser(parent, null, new FileFilter[0]);
     }
 
-    public void createSourceDialog(SourceType type) {
+    public static void createSourceDialog(EOCVSim eocvSim, SourceType type) {
         invokeLater(() -> {
             switch (type) {
                 case IMAGE:
@@ -75,19 +71,19 @@ public class DialogFactory {
         });
     }
 
-    public void createSourceDialog() {
+    public static void createSourceDialog(EOCVSim eocvSim) {
         invokeLater(() -> new CreateSource(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public void createConfigDialog() {
+    public static void createConfigDialog(EOCVSim eocvSim) {
         invokeLater(() -> new Configuration(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public void createAboutDialog() {
+    public static void createAboutDialog(EOCVSim eocvSim) {
         invokeLater(() -> new About(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public FileAlreadyExists.UserChoice createFileAlreadyExistsDialog() {
+    public static FileAlreadyExists.UserChoice createFileAlreadyExistsDialog(EOCVSim eocvSim) {
         return new FileAlreadyExists(eocvSim.visualizer.frame, eocvSim).run();
     }
 
@@ -118,6 +114,7 @@ public class DialogFactory {
                 // disable the "All files" option.
                 chooser.setAcceptAllFileFilterUsed(false);
             }
+
 
             if (filters != null) {
                 for (FileFilter filter : filters) {

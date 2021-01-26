@@ -168,7 +168,7 @@ public final class GuiUtil {
                         if (!selectedFile.exists()) {
                             saveImage = true;
                         } else {
-                            FileAlreadyExists.UserChoice userChoice = new DialogFactory(eocvSim).createFileAlreadyExistsDialog(); //create confirm dialog
+                            FileAlreadyExists.UserChoice userChoice = DialogFactory.createFileAlreadyExistsDialog(eocvSim); //create confirm dialog
                             saveImage = userChoice == FileAlreadyExists.UserChoice.REPLACE;
                         }
 

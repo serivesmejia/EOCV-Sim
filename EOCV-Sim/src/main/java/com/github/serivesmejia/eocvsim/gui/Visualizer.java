@@ -68,7 +68,6 @@ public class Visualizer {
     private final ArrayList<Runnable> onInitFinishedRunns = new ArrayList<>();
 
     private final EOCVSim eocvSim;
-    private final DialogFactory dialogFactory;
 
     public JFrame frame = null;
 
@@ -123,7 +122,6 @@ public class Visualizer {
 
     public Visualizer(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
-        dialogFactory = new DialogFactory(eocvSim);
     }
 
     public void init(Theme theme) {
@@ -190,7 +188,7 @@ public class Visualizer {
 
             JMenuItem fileNewInputSourceItem = new JMenuItem(type.coolName);
             fileNewInputSourceItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(type)
+                DialogFactory.createSourceDialog(eocvSim, type)
             );
 
             fileNewInputSourceSubmenu.add(fileNewInputSourceItem);
@@ -219,7 +217,7 @@ public class Visualizer {
         JMenuItem editSettings = new JMenuItem("Settings");
 
         editSettings.addActionListener(e ->
-                dialogFactory.createConfigDialog()
+                DialogFactory.createConfigDialog(eocvSim)
         );
 
         editMenu.add(editSettings);
@@ -231,7 +229,7 @@ public class Visualizer {
         JMenuItem helpAbout = new JMenuItem("About");
 
         helpAbout.addActionListener((e) ->
-                dialogFactory.createAboutDialog()
+                DialogFactory.createAboutDialog(eocvSim)
         );
 
         helpMenu.add(helpAbout);
@@ -323,7 +321,7 @@ public class Visualizer {
 
         sourceSelectorCreateBtt.addActionListener(e -> {
             if (CreateSource.alreadyOpened) return;
-            new DialogFactory(eocvSim).createSourceDialog();
+            DialogFactory.createSourceDialog(eocvSim);
         });
 
         sourceSelectorContainer.add(sourceSelectorScrollContainer);

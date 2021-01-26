@@ -92,7 +92,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.info("PipelineManager", "Found " + pipelines.size + " pipeline(s)")
         Log.white()
 
-        //we don't need to do anything else with it other than attaching it
+        //we don't need to do anything else with it other than doing this
         //since it will attach to the "update" and "pipeline change" event
         //handlers by passing the "this" instance.
         timestampedPipelineHandler.attachToPipelineManager(this)

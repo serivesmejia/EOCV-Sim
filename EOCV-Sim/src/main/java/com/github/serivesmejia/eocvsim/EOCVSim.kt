@@ -258,7 +258,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
                                 if (correctedFile.exists()) {
                                     SwingUtilities.invokeLater {
-                                        if (DialogFactory(this).createFileAlreadyExistsDialog() == FileAlreadyExists.UserChoice.REPLACE) {
+                                        if (DialogFactory.createFileAlreadyExistsDialog(this) == FileAlreadyExists.UserChoice.REPLACE) {
                                             onMainUpdate.doOnce { itVideo.saveTo(correctedFile) }
                                         }
                                     }

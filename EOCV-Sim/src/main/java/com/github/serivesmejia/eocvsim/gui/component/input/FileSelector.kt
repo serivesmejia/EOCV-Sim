@@ -7,9 +7,15 @@ import java.io.File
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
-class FileSelector(columns: Int = 18, vararg fileFilters: FileFilter?) : JPanel(FlowLayout()) {
+class FileSelector(columns: Int = 18,
+                   mode: DialogFactory.FileChooser.Mode,
+                   vararg fileFilters: FileFilter?) : JPanel(FlowLayout()) {
 
-    constructor(columns: Int = 10) : this(columns, null)
+    constructor(columns: Int) : this(columns, DialogFactory.FileChooser.Mode.FILE_SELECT)
+
+    constructor(columns: Int, vararg fileFilters: FileFilter?) : this(columns, DialogFactory.FileChooser.Mode.FILE_SELECT, *fileFilters)
+
+    constructor(columns: Int, mode: DialogFactory.FileChooser.Mode) : this(columns, mode, null)
 
     @JvmField val onFileSelect = EventHandler("OnFileSelect")
 
@@ -26,7 +32,7 @@ class FileSelector(columns: Int = 18, vararg fileFilters: FileFilter?) : JPanel(
 
         selectDirButton.addActionListener {
             val frame = SwingUtilities.getWindowAncestor(this)
-            DialogFactory.createFileChooser(frame, *fileFilters).addCloseListener { returnVal: Int, selectedFile: File?, selectedFileFilter: FileFilter? ->
+            DialogFactory.createFileChooser(frame, mode, *fileFilters).addCloseListener { returnVal: Int, selectedFile: File?, selectedFileFilter: FileFilter? ->
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     lastSelectedFile = selectedFile
                     lastSelectedFileFilter = selectedFileFilter

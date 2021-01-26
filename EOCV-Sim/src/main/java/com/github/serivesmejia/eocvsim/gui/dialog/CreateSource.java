@@ -94,7 +94,7 @@ public class CreateSource {
         nextButton.addActionListener(e -> {
             close();
             SourceType sourceType = SourceType.fromCoolName(dropDown.getSelectedItem().toString());
-            new DialogFactory(eocvSim).createSourceDialog(sourceType);
+            DialogFactory.createSourceDialog(eocvSim, sourceType);
         });
 
         chooseSource.setResizable(false);
