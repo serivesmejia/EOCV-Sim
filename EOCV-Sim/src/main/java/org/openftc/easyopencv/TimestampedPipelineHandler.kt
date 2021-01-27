@@ -25,13 +25,12 @@ package org.openftc.easyopencv
 
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 
-class TimestampedPipelineHandler() {
+class TimestampedPipelineHandler {
 
     private var timestampedPipeline: TimestampedOpenCvPipeline? = null
-
     private var lastNanos = 0L
 
-    //update called from the pipelineManager onUpdate event handler
+    //update called from the attached pipelineManager onUpdate event handler
     fun update() {
         if(lastNanos == 0L) updateLastNanos()
 
@@ -41,7 +40,7 @@ class TimestampedPipelineHandler() {
     }
 
     fun pipelineChange(newPipeline: OpenCvPipeline?) {
-        timestampedPipeline = if(newPipeline is TimestampedOpenCvPipeline) { newPipeline } else { null }
+        timestampedPipeline = if(newPipeline is TimestampedOpenCvPipeline) newPipeline else null
     }
 
     //registering event listeners in the pipelineManager

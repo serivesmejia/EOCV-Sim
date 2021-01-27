@@ -186,6 +186,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 break
             }
 
+            throw Exception()
+
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
@@ -279,7 +281,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-
         val pipelineFpsMsg = " (" + pipelineFpsCounter.fps + " Pipeline FPS)"
         val posterFpsMsg = " (" + visualizer.viewport.matPoster.fpsCounter.fps + " Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
@@ -293,7 +294,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         } else {
             visualizer.setTitleMessage(pipelineManager.currentPipelineName + msg)
         }
-
     }
 
     class Parameters {
