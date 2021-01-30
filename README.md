@@ -14,8 +14,6 @@ transfer it onto your robot!
 
 <img src='images/eocvsim_screenshot_1.png' width='75%' height='75%'>
 
-# Compatibility
-
 Because OpenCV in Java uses a native library, which are platform specific, the simulator is currently limited to the following platforms:
 
 * Windows x64 (tested)
