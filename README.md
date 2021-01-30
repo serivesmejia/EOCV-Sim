@@ -122,6 +122,23 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
 # Change logs
 
+  ### [v2.1.0 - Video Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.1.0)
+
+   - This is the 6th release for EOCV-Sim
+
+      - Changelog: 
+
+        - Added support for VideoSources! You can now input your pipeline with a moving video (*.avi format is the most supported and tested, other codecs might depend on the OS you're using)
+        - Added support for video recording, accessible at the bottom of the pipeline selector. Save format is AVI
+        - Added a new TunableField type: RectField, which handles the OpenCV type "Rect" (might be useful for rect pipelines 👀)
+        - Improved uncaught exception handling and added a crash report generator
+        - Added support for more themes from FlatLaf
+        - Added new config option to change the output video recording size
+        - Added support for EOCV's TimestampedOpenCvPipeline
+        - Internals:
+    		- Major rewrite to kotlin! (Still mostly Java but that might change soon)
+    		- A bit of code cleaning and restructuring 
+
 ### [v2.0.2 - TaskBar hotfix](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.0.2)
       
   - This is the 5th release for EOCV-Sim.
