@@ -185,9 +185,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 Thread.currentThread().interrupt()
                 break
             }
-
-            throw Exception()
-
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
