@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":TeamCode:runSimulator" />
+          <option value="runSim" />
         </list>
       </option>
       <option name="vmOptions" value="-Xms20m -Xmx100m" />

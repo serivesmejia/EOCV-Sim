@@ -11,7 +11,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
-task(runSimulator, dependsOn: 'classes', type: JavaExec) {
+
+task(runSim, dependsOn: 'classes', type: JavaExec) {
     main = 'com.github.serivesmejia.eocvsim.Main'
     classpath = sourceSets.main.runtimeClasspath
 }
