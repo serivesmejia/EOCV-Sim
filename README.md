@@ -57,6 +57,31 @@ No complicated setup is required, straight up importing the project into Intelli
             
 ### And you're ready to go! Refer to the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details on how to utilize the simulator.<br/>
 
+## From the command-line
+
+   1) Clone EOCV-Sim repo and cd to the cloned folder
+   
+	 git clone https://github.com/serivesmejia/EOCV-Sim.git
+	 cd EOCV-Sim	
+   \**Or it can also be manually downloaded as a ZIP file from GitHub*<br/>
+
+   2) Run EOCV-Sim through gradle:
+  
+	 gradlew runSim
+	 
+   \**On some command lines (like Windows PowerShell) you might need to execute "./gradlew" instead*<br/>
+	 
+#### And that's it! You might need to wait a bit for gradle to download all the dependencies but EOCV-Sim will open eventually.
+	 
+## From repl.it
+
+   1) Click [here](https://repl.it/github/serivesmejia/EOCV-Sim) to go to repl.it, you might require to create an account if you haven't already. Once you do that, it will automatically create a new project and start cloning the EOCV-Sim repo.
+ 
+   2) After the cloning is finished, click on the green "Run" button at the top and EOCV-Sim should start.
+  
+   \**Please note that this method is not widely supported and you might run into some issues or lack of some functionality.*<br/>
+	 
+	
 ## Adding EOCV-Sim as a dependency
 
    ### Gradle
