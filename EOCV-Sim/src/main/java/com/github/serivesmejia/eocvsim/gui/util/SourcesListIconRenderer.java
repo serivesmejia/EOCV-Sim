@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui.util;
 
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;
@@ -13,29 +36,53 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
     public static ImageIcon ICON_IMG = null;
     public static ImageIcon ICON_WEBCAM = null;
+    public static ImageIcon ICON_VIDEO = null;
+
+    private static BufferedImage ICON_IMG_BI = null;
+    private static BufferedImage ICON_WEBCAM_BI = null;
+    private static BufferedImage ICON_VIDEO_BI = null;
+
+    private static boolean colorsInverted = false;
+
+    public static final int ICO_W = 15;
+    public static final int ICO_H = 15;
 
     public InputSourceManager sourceManager = null;
 
-    public SourcesListIconRenderer(InputSourceManager sourceManager, boolean isDarkTheme) throws IOException {
+    static {
+        try {
+            ICON_IMG_BI = GuiUtil.loadBufferedImage("/images/icon/ico_img.png");
+            ICON_WEBCAM_BI = GuiUtil.loadBufferedImage("/images/icon/ico_cam.png");
+            ICON_VIDEO_BI = GuiUtil.loadBufferedImage("/images/icon/ico_vid.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static void invertIconColors() {
+        GuiUtil.invertBufferedImageColors(ICON_IMG_BI);
+        GuiUtil.invertBufferedImageColors(ICON_WEBCAM_BI);
+        GuiUtil.invertBufferedImageColors(ICON_VIDEO_BI);
+    }
+
+    public SourcesListIconRenderer(InputSourceManager sourceManager, boolean isDarkTheme) {
         if (isDarkTheme) {
-
-            BufferedImage ICON_IMG_BI = GuiUtil.loadBufferedImage("/images/icon/ico_img.png");
-            BufferedImage ICON_WEBCAM_BI = GuiUtil.loadBufferedImage("/images/icon/ico_cam.png");
-
-            GuiUtil.invertBufferedImageColors(ICON_IMG_BI);
-            GuiUtil.invertBufferedImageColors(ICON_WEBCAM_BI);
-
-            ICON_IMG = scaleImage(new ImageIcon(ICON_IMG_BI), 15, 15);
-            ICON_WEBCAM = scaleImage(new ImageIcon(ICON_WEBCAM_BI), 15, 15);
-
+            if(!colorsInverted) {
+                invertIconColors();
+                colorsInverted = true;
+            }
         } else {
-            ICON_IMG = scaleImage(GuiUtil.loadImageIcon("/images/icon/ico_img.png"), 15, 15);
-            ICON_WEBCAM = scaleImage(GuiUtil.loadImageIcon("/images/icon/ico_cam.png"), 15, 15);
+            if(colorsInverted) {
+                invertIconColors();
+                colorsInverted = false;
+            }
         }
 
-        this.sourceManager = sourceManager;
+        ICON_IMG = scaleImage(new ImageIcon(ICON_IMG_BI), ICO_W, ICO_H);
+        ICON_WEBCAM = scaleImage(new ImageIcon(ICON_WEBCAM_BI), ICO_H, ICO_W);
+        ICON_VIDEO = scaleImage(new ImageIcon(ICON_VIDEO_BI), ICO_W, ICO_H);
 
+        this.sourceManager = sourceManager;
     }
 
     @Override
@@ -56,6 +103,9 @@ public class SourcesListIconRenderer extends DefaultListCellRenderer {
                 break;
             case CAMERA:
                 label.setIcon(ICON_WEBCAM);
+                break;
+            case VIDEO:
+                label.setIcon(ICON_VIDEO);
                 break;
         }
 

@@ -1,10 +1,35 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.util;
 
+import com.github.serivesmejia.eocvsim.util.extension.CvExt;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoCapture;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -72,6 +97,32 @@ public class CvUtil {
 
     }
 
+    public static boolean checkVideoValid(String videoPath) {
+
+        try {
+
+            VideoCapture capture = new VideoCapture();
+
+            Mat img = new Mat();
+
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            if (!img.empty()) { //image is valid
+                img.release();
+                return true;
+            } else { //image is not valid
+                img.release();
+                return false;
+            }
+
+        } catch (Exception ex) {
+            return false;
+        }
+
+    }
+
     public static Size getImageSize(String imagePath) {
 
         try {
@@ -87,10 +138,74 @@ public class CvUtil {
                 return new Size(0, 0);
             }
 
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             return new Size(0, 0);
         }
 
+    }
+
+    public static Size getVideoSize(String videoPath) {
+
+        try {
+
+            VideoCapture capture = new VideoCapture();
+
+            Mat img = new Mat();
+
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            Size size = img.size();
+            img.release();
+
+            return size;
+
+        } catch (Exception ex) {
+            return new Size();
+        }
+
+    }
+
+    public static Mat readOnceFromVideo(String videoPath) {
+
+        VideoCapture capture = new VideoCapture();
+
+        Mat img = new Mat();
+
+        try {
+            capture.open(videoPath);
+            capture.read(img);
+            capture.release();
+
+            return img;
+        } catch (Exception ex) {
+            return img;
+        }
+
+    }
+
+    public static Size scaleToFit(Size currentSize, Size targetSize) {
+        double targetAspectRatio = CvExt.aspectRatio(targetSize);
+        double currentAspectRatio = CvExt.aspectRatio(currentSize);
+
+        Log.info(currentSize + ", " + targetSize);
+        Log.info(currentAspectRatio + ", " + targetAspectRatio);
+
+        if(currentAspectRatio == targetAspectRatio) {
+            return targetSize.clone();
+        } else {
+
+            double currentW = currentSize.width;
+            double currentH = currentSize.height;
+
+            double widthRatio = targetSize.width / currentW;
+            double heightRatio = targetSize.height / currentH;
+            double bestRatio = Math.min(widthRatio, heightRatio);
+
+            return new Size(currentW * bestRatio, currentH * bestRatio);
+
+        }
     }
 
 }

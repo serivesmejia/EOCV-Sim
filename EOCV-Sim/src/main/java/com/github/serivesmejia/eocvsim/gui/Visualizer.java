@@ -1,15 +1,38 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
-import com.github.serivesmejia.eocvsim.gui.theme.ThemeInstaller;
 import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
-import com.github.serivesmejia.eocvsim.input.InputSourceManager;
+import com.github.serivesmejia.eocvsim.input.SourceType;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 
@@ -24,8 +47,6 @@ import java.awt.Taskbar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 
 public class Visualizer {
 
@@ -47,9 +68,6 @@ public class Visualizer {
     private final ArrayList<Runnable> onInitFinishedRunns = new ArrayList<>();
 
     private final EOCVSim eocvSim;
-    private final DialogFactory dialogFactory;
-
-    private final ThemeInstaller themeInstaller = new ThemeInstaller();
 
     public JFrame frame = null;
 
@@ -74,6 +92,7 @@ public class Visualizer {
     public JScrollPane pipelineSelectorScroll = null;
     public JPanel pipelineButtonsContainer = null;
     public JToggleButton pipelinePauseBtt = null;
+    public JToggleButton pipelineRecordBtt = null;
 
     public JPanel sourceSelectorContainer = null;
     public volatile JList<String> sourceSelector = null;
@@ -103,7 +122,6 @@ public class Visualizer {
 
     public Visualizer(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
-        dialogFactory = new DialogFactory(eocvSim);
     }
 
     public void init(Theme theme) {
@@ -119,7 +137,7 @@ public class Visualizer {
         }
 
         try {
-            themeInstaller.installTheme(theme);
+            theme.install();
         } catch (Exception e) {
             Log.error("Visualizer", "Failed to set theme " + theme.name(), e);
         }
@@ -137,6 +155,7 @@ public class Visualizer {
         pipelineSelectorScroll = new JScrollPane();
         pipelineButtonsContainer = new JPanel();
         pipelinePauseBtt = new JToggleButton("Pause");
+        pipelineRecordBtt = new JToggleButton("Record");
 
         sourceSelectorContainer = new JPanel();
         sourceSelector = new JList<>();
@@ -163,21 +182,17 @@ public class Visualizer {
         JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
         fileNewSubmenu.add(fileNewInputSourceSubmenu);
 
-        JMenuItem fileNewInputSourceImageItem = new JMenuItem("Image");
+        //add all input source types to top bar menu
+        for(SourceType type : SourceType.values()) {
+            if(type == SourceType.UNKNOWN) continue;
 
-        fileNewInputSourceImageItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(InputSourceManager.SourceType.IMAGE)
-        );
+            JMenuItem fileNewInputSourceItem = new JMenuItem(type.coolName);
+            fileNewInputSourceItem.addActionListener(e ->
+                DialogFactory.createSourceDialog(eocvSim, type)
+            );
 
-        fileNewInputSourceSubmenu.add(fileNewInputSourceImageItem);
-
-        JMenuItem fileNewInputSourceCameraItem = new JMenuItem("Camera");
-
-        fileNewInputSourceCameraItem.addActionListener(e ->
-                dialogFactory.createSourceDialog(InputSourceManager.SourceType.CAMERA)
-        );
-
-        fileNewInputSourceSubmenu.add(fileNewInputSourceCameraItem);
+            fileNewInputSourceSubmenu.add(fileNewInputSourceItem);
+        }
 
         JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
 
@@ -191,9 +206,7 @@ public class Visualizer {
 
         JMenuItem fileRestart = new JMenuItem("Restart");
 
-        fileRestart.addActionListener((e) ->
-                eocvSim.runOnMainThread(eocvSim::restart)
-        );
+        fileRestart.addActionListener((e) -> eocvSim.onMainUpdate.doOnce(eocvSim::restart));
 
         fileMenu.add(fileRestart);
 
@@ -204,7 +217,7 @@ public class Visualizer {
         JMenuItem editSettings = new JMenuItem("Settings");
 
         editSettings.addActionListener(e ->
-                dialogFactory.createConfigDialog()
+                DialogFactory.createConfigDialog(eocvSim)
         );
 
         editMenu.add(editSettings);
@@ -216,7 +229,7 @@ public class Visualizer {
         JMenuItem helpAbout = new JMenuItem("About");
 
         helpAbout.addActionListener((e) ->
-                dialogFactory.createAboutDialog()
+                DialogFactory.createAboutDialog(eocvSim)
         );
 
         helpMenu.add(helpAbout);
@@ -270,6 +283,7 @@ public class Visualizer {
         pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         pipelineButtonsContainer.add(pipelinePauseBtt);
+        pipelineButtonsContainer.add(pipelineRecordBtt);
 
         pipelineSelectorContainer.add(pipelineButtonsContainer);
 
@@ -302,15 +316,12 @@ public class Visualizer {
         sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        try {
-            sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, themeInstaller.isInstalledThemeDark()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //different icons
+        sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager, FlatLaf.isLafDark()));
 
         sourceSelectorCreateBtt.addActionListener(e -> {
             if (CreateSource.alreadyOpened) return;
-            new DialogFactory(eocvSim).createSourceDialog();
+            DialogFactory.createSourceDialog(eocvSim);
         });
 
         sourceSelectorContainer.add(sourceSelectorScrollContainer);
@@ -427,7 +438,7 @@ public class Visualizer {
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                eocvSim.runOnMainThread(eocvSim::destroy);
+                eocvSim.onMainUpdate.doOnce((Runnable) eocvSim::destroy);
             }
         });
 
@@ -435,8 +446,17 @@ public class Visualizer {
         pipelinePauseBtt.addActionListener(e -> {
             boolean selected = pipelinePauseBtt.isSelected();
             pipelinePauseBtt.setText(selected ? "Resume" : "Pause");
-            eocvSim.runOnMainThread(() -> eocvSim.pipelineManager.setPaused(selected));
+            eocvSim.onMainUpdate.doOnce(() -> eocvSim.pipelineManager.setPaused(selected));
         });
+
+        pipelineRecordBtt.addActionListener(e -> eocvSim.onMainUpdate.doOnce(() -> {
+                if (pipelineRecordBtt.isSelected()) {
+                    if (!eocvSim.isCurrentlyRecording()) eocvSim.startRecordingSession();
+                } else {
+                    if (eocvSim.isCurrentlyRecording()) eocvSim.stopRecordingSession();
+                }
+            })
+        );
 
         //listener for changing pipeline
         pipelineSelector.addListSelectionListener(evt -> {
@@ -445,7 +465,7 @@ public class Visualizer {
                 int pipeline = pipelineSelector.getSelectedIndex();
 
                 if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-                    if (!eocvSim.pipelineManager.isPaused()) {
+                    if (!eocvSim.pipelineManager.getPaused()) {
                         eocvSim.pipelineManager.requestChangePipeline(pipeline);
                         beforeSelectedPipeline = pipeline;
                     } else {
@@ -474,7 +494,7 @@ public class Visualizer {
                     String source = model.getElementAt(sourceSelector.getSelectedIndex());
 
                     if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
-                        if (!eocvSim.pipelineManager.isPaused()) {
+                        if (!eocvSim.pipelineManager.getPaused()) {
 
                             eocvSim.inputSourceManager.requestSetInputSource(source);
                             beforeSelectedSource = source;
@@ -506,7 +526,7 @@ public class Visualizer {
         //handling onViewportTapped evts
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                OpenCvPipeline pipeline = eocvSim.pipelineManager.currentPipeline;
+                OpenCvPipeline pipeline = eocvSim.pipelineManager.getCurrentPipeline();
                 if(pipeline != null) pipeline.onViewportTapped();
             }
         });
@@ -514,7 +534,7 @@ public class Visualizer {
         // delete input source
         sourceSelectorDeleteBtt.addActionListener(e -> {
             String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-            eocvSim.runOnMainThread(() -> {
+            eocvSim.onMainUpdate.doOnce(() -> {
                 eocvSim.inputSourceManager.deleteInputSource(source);
                 updateSourcesList();
             });
@@ -616,7 +636,7 @@ public class Visualizer {
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.pipelines) {
+        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.getPipelines()) {
             listModel.addElement(pipelineClass.getSimpleName());
         }
 
@@ -632,8 +652,8 @@ public class Visualizer {
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        for (Map.Entry<String, InputSource> entry : eocvSim.inputSourceManager.sources.entrySet()) {
-            listModel.addElement(entry.getKey());
+        for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
+            listModel.addElement(source.getName());
         }
 
         sourceSelector.setFixedCellWidth(240);

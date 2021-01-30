@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui.util;
 
 import com.github.serivesmejia.eocvsim.util.Log;
@@ -16,22 +39,25 @@ public class MatPoster {
     private final EvictingBlockingQueue<MatRecycler.RecyclableMat> postQueue;
     private final MatRecycler matRecycler;
 
-    private final Thread posterThread = new Thread(new PosterRunnable(), "MatPoster-Thread");
+    private final String name;
+
+    private final Thread posterThread;
 
     public final FpsCounter fpsCounter = new FpsCounter();
 
     private volatile boolean hasPosterThreadStarted = false;
 
-    public MatPoster(int maxQueueItems) {
-
+    public MatPoster(String name, int maxQueueItems) {
         postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
         matRecycler = new MatRecycler(maxQueueItems + 2);
+        posterThread = new Thread(new PosterRunnable(), "MatPoster-" + name + "-Thread");
+
+        this.name = name;
 
         postQueue.setEvictAction((m) -> {
             matRecycler.returnMat(m);
             m.release();
         }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
-
     }
 
     public void post(Mat m) {
@@ -40,7 +66,7 @@ public class MatPoster {
         if (!posterThread.isAlive() && !hasPosterThreadStarted) posterThread.start();
 
         if (m == null || m.empty()) {
-            Log.warn("MatPoster", "Tried to post empty or null mat, skipped this frame.");
+            Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
             return;
         }
 
@@ -57,13 +83,13 @@ public class MatPoster {
 
     public void stop() {
 
-        Log.info("MatPoster", "Destroying...");
+        Log.info("MatPoster-" + name, "Destroying...");
 
         posterThread.interrupt();
 
         for (MatRecycler.RecyclableMat m : postQueue) {
             if (m != null) {
-                matRecycler.returnMat(m);
+                m.returnMat();
             }
         }
 
@@ -94,7 +120,7 @@ public class MatPoster {
                     }
 
                     takenMat.release();
-                    matRecycler.returnMat(takenMat);
+                    takenMat.returnMat();
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -105,7 +131,7 @@ public class MatPoster {
 
             }
 
-            Log.warn("MatPoster-Thread", "Thread interrupted (" + Integer.toHexString(hashCode()) + ")");
+            Log.warn("MatPoster-" + name +"-Thread", "Thread interrupted (" + Integer.toHexString(hashCode()) + ")");
 
         }
     }

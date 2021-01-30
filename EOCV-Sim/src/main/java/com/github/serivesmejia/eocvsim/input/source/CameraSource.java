@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.input.source;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
@@ -17,13 +40,16 @@ public class CameraSource extends InputSource {
     @Expose
     private final int webcamIndex;
     private transient VideoCapture camera = null;
-    private transient Mat lastFramePaused = null;
-    private transient Mat lastFrame = null;
+
+    private transient MatRecycler.RecyclableMat lastFramePaused = null;
+    private transient MatRecycler.RecyclableMat lastFrame = null;
+
     private transient boolean initialized = false;
+
     @Expose
     private volatile Size size;
 
-    private volatile transient MatRecycler matRecycler = new MatRecycler(2);
+    private volatile transient MatRecycler matRecycler;
 
     public CameraSource(int webcamIndex, Size size) {
         this.webcamIndex = webcamIndex;
@@ -44,7 +70,7 @@ public class CameraSource extends InputSource {
             return false;
         }
 
-        if (matRecycler == null) matRecycler = new MatRecycler(2);
+        if (matRecycler == null) matRecycler = new MatRecycler(4);
 
         MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 
@@ -66,8 +92,12 @@ public class CameraSource extends InputSource {
     public void reset() {
 
         if (!initialized) return;
+        if (camera != null && camera.isOpened()) camera.release();
 
-        if (camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
+        if(lastFrame != null && lastFrame.isCheckedOut())
+            lastFrame.returnMat();
+        if(lastFramePaused != null && lastFramePaused.isCheckedOut())
+            lastFramePaused.returnMat();
 
         camera = null;
         initialized = false;
@@ -76,7 +106,7 @@ public class CameraSource extends InputSource {
 
     @Override
     public void close() {
-        if (camera != null && Objects.requireNonNull(camera).isOpened()) camera.release();
+        if (camera != null && camera.isOpened()) camera.release();
     }
 
     @Override
@@ -86,20 +116,29 @@ public class CameraSource extends InputSource {
             return lastFramePaused;
         } else if (lastFramePaused != null) {
             lastFramePaused.release();
+            lastFramePaused.returnMat();
             lastFramePaused = null;
         }
 
-        if (lastFrame == null) lastFrame = new Mat();
+        if (lastFrame == null) lastFrame = matRecycler.takeMat();
         if (camera == null) return lastFrame;
 
-        camera.read(lastFrame);
+        MatRecycler.RecyclableMat newFrame = matRecycler.takeMat();
 
-        if (lastFrame.empty()) return lastFrame;
+        camera.read(newFrame);
+
+        if (newFrame.empty()) {
+            newFrame.returnMat();
+            return lastFrame;
+        }
 
         if (size == null) size = lastFrame.size();
 
-        Imgproc.cvtColor(lastFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
-        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_CUBIC);
+        Imgproc.cvtColor(newFrame, lastFrame, Imgproc.COLOR_BGR2RGB);
+        Imgproc.resize(lastFrame, lastFrame, size, 0.0, 0.0, Imgproc.INTER_AREA);
+
+        newFrame.release();
+        newFrame.returnMat();
 
         return lastFrame;
 
@@ -109,30 +148,34 @@ public class CameraSource extends InputSource {
     public void onPause() {
 
         if (lastFrame != null) lastFrame.release();
-        if (lastFramePaused == null) lastFramePaused = new Mat();
+        if (lastFramePaused == null) lastFramePaused = matRecycler.takeMat();
 
         camera.read(lastFramePaused);
 
         Imgproc.cvtColor(lastFramePaused, lastFramePaused, Imgproc.COLOR_BGR2RGB);
-        Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_LINEAR);
+        Imgproc.resize(lastFramePaused, lastFramePaused, size, 0.0, 0.0, Imgproc.INTER_AREA);
 
         update();
 
         camera.release();
         camera = null;
-        System.gc();
+
     }
 
     @Override
     public void onResume() {
+
         Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.checkCameraDialogPleaseWait(name);
+
         camera = new VideoCapture();
         camera.open(webcamIndex);
+
         apwdCam.destroyDialog();
+
     }
 
     @Override
-    public InputSource cloneSource() {
+    protected InputSource internalCloneSource() {
         return new CameraSource(webcamIndex, size);
     }
 

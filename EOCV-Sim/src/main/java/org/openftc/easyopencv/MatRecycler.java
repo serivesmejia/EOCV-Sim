@@ -21,6 +21,7 @@
 
 package org.openftc.easyopencv;
 
+import com.github.serivesmejia.eocvsim.util.Log;
 import org.opencv.core.Mat;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -81,12 +82,29 @@ public class MatRecycler {
         }
     }
 
+    @Override
+    public void finalize() {
+        releaseAll();
+    }
+
     public final class RecyclableMat extends Mat {
+
         private int idx = -1;
         private volatile boolean checkedOut = false;
 
         private RecyclableMat(int idx) {
             this.idx = idx;
         }
+
+        public void returnMat() {
+            try {
+                MatRecycler.this.returnMat(this);
+            } catch(IllegalArgumentException ex) {
+                Log.warn("RecyclableMat", "Tried to return a Mat which was already returned", ex);
+            }
+        }
+
+        public boolean isCheckedOut() { return checkedOut; }
+
     }
 }

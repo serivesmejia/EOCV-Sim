@@ -1,19 +1,10 @@
 plugins {
     id 'java'
     id 'maven'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.30-M1'
 }
 
-group 'com.github.serivesmejia'
-version '2.0.0'
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_9
-    targetCompatibility = JavaVersion.VERSION_1_9
-}
-
-repositories {
-    mavenCentral()
-}
+apply from: '../build.common.gradle'
 
 dependencies {
     implementation 'org.openpnp:opencv:4.3.0-2'
@@ -21,4 +12,5 @@ dependencies {
     implementation 'io.github.classgraph:classgraph:4.8.94'
     implementation 'com.formdev:flatlaf:0.45'
     implementation 'com.formdev:flatlaf-intellij-themes:0.45'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }

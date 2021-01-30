@@ -1,15 +1,37 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui.component;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.config.Config;
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
-import com.github.serivesmejia.eocvsim.util.image.BufferedImageGiver;
+import com.github.serivesmejia.eocvsim.util.image.DynamicBufferedImageRecycler;
 import com.github.serivesmejia.eocvsim.util.CvUtil;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.qualcomm.robotcore.util.Range;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
@@ -24,7 +46,7 @@ public class Viewport extends JPanel {
     private Mat lastVisualizedMat = null;
     private Mat lastVisualizedScaledMat = null;
 
-    private final BufferedImageGiver buffImgGiver = new BufferedImageGiver();
+    private final DynamicBufferedImageRecycler buffImgGiver = new DynamicBufferedImageRecycler();
 
     private volatile BufferedImage lastBuffImage;
 
@@ -41,16 +63,16 @@ public class Viewport extends JPanel {
 
         add(image, new GridBagConstraints());
 
-        matPoster = new MatPoster(maxQueueItems);
+        matPoster = new MatPoster("Viewport", maxQueueItems);
         attachToPoster(matPoster);
 
     }
 
-    public synchronized void postMat(Mat mat) {
+    public void postMatAsync(Mat mat) {
         matPoster.post(mat);
     }
 
-    public synchronized void visualizeScaleMat(Mat mat) {
+    public synchronized void postMat(Mat mat) {
 
         if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
 
@@ -68,7 +90,7 @@ public class Viewport extends JPanel {
         double finalScale = Math.max(0.1, Math.min(3, scale * calcScale));
 
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
-        Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_LINEAR); //resize mat to lastVisualizedScaledMat
+        Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_AREA); //resize mat to lastVisualizedScaledMat
 
         lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 2);
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
@@ -84,7 +106,7 @@ public class Viewport extends JPanel {
         poster.addPostable((m) -> {
             try {
                 Imgproc.cvtColor(m, m, Imgproc.COLOR_RGB2BGR);
-                visualizeScaleMat(m);
+                postMat(m);
             } catch(Exception ex) {
                 Log.error("Viewport-Postable", "Couldn't visualize last mat", ex);
             }
@@ -108,7 +130,7 @@ public class Viewport extends JPanel {
         this.scale = scale;
 
         if(lastVisualizedMat != null && scaleChanged)
-            visualizeScaleMat(lastVisualizedMat);
+            postMat(lastVisualizedMat);
 
     }
 

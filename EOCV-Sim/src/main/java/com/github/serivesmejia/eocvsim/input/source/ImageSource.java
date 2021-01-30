@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.input.source;
 
 import com.github.serivesmejia.eocvsim.input.InputSource;
@@ -48,7 +71,10 @@ public class ImageSource extends InputSource {
     @Override
     public void onPause() {
         //if(img != null) img.release();
-        System.gc();
+    }
+
+    @Override
+    public void onResume() {
     }
 
     @Override
@@ -57,12 +83,12 @@ public class ImageSource extends InputSource {
         if (!initialized) return;
 
         if (lastCloneTo != null) {
-            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo.returnMat();
             lastCloneTo = null;
         }
 
         if (img != null) {
-            matRecycler.returnMat(img);
+            img.returnMat();
             img = null;
         }
 
@@ -80,7 +106,7 @@ public class ImageSource extends InputSource {
         }
 
         if (lastCloneTo != null) {
-            matRecycler.returnMat(lastCloneTo);
+            lastCloneTo.returnMat();
             lastCloneTo = null;
         }
 
@@ -102,7 +128,7 @@ public class ImageSource extends InputSource {
         readMat.release();
 
         if (this.size != null) {
-            Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_CUBIC);
+            Imgproc.resize(img, img, this.size, 0.0, 0.0, Imgproc.INTER_AREA);
         } else {
             this.size = img.size();
         }
@@ -115,7 +141,6 @@ public class ImageSource extends InputSource {
     public Mat update() {
 
         if (isPaused) return lastCloneTo;
-
         if (lastCloneTo == null) lastCloneTo = matRecycler.takeMat();
 
         if (img == null) return null;
@@ -127,7 +152,7 @@ public class ImageSource extends InputSource {
     }
 
     @Override
-    public InputSource cloneSource() {
+    protected InputSource internalCloneSource() {
         return new ImageSource(imgPath, size);
     }
 

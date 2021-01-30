@@ -1,6 +1,30 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui.dialog;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.input.source.CameraSource;
 import org.opencv.core.Size;
@@ -10,8 +34,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class CreateCameraSource {
 
@@ -20,24 +42,24 @@ public class CreateCameraSource {
     public JTextField cameraIdField = null;
     public JButton createButton = null;
 
-    public JTextField widthTextField = null;
-    public JTextField heightTextField = null;
+    public SizeFields sizeFieldsInput = null;
 
     public JTextField nameTextField = null;
+
     public boolean wasCancelled = false;
     private boolean validCameraIdNumber = true;
-    private boolean validCameraSizeNumbers = true;
+
     private final EOCVSim eocvSim;
 
-    public CreateCameraSource(JFrame parent, EOCVSim eocvSim) {
+    private volatile String initialSourceName = "";
 
+    public CreateCameraSource(JFrame parent, EOCVSim eocvSim) {
         createCameraSource = new JDialog(parent);
         this.eocvSim = eocvSim;
 
         eocvSim.visualizer.childDialogs.add(createCameraSource);
 
         initCreateImageSource();
-
     }
 
     public void initCreateImageSource() {
@@ -70,6 +92,7 @@ public class CreateCameraSource {
         JLabel nameLabel = new JLabel("Source name: ");
 
         nameTextField = new JTextField("CameraSource-" + (eocvSim.inputSourceManager.sources.size() + 1), 15);
+        initialSourceName = nameTextField.getName();
 
         namePanel.add(nameLabel);
         namePanel.add(nameTextField);
@@ -77,45 +100,20 @@ public class CreateCameraSource {
         contentsPanel.add(namePanel);
 
         // Size part
+        sizeFieldsInput = new SizeFields();
+        sizeFieldsInput.onChange.doPersistent(this::updateCreateBtt);
 
-        JPanel sizePanel = new JPanel(new FlowLayout());
-
-        JLabel sizeLabel = new JLabel("Size: ");
-        sizeLabel.setHorizontalAlignment(JLabel.LEFT);
-
-        widthTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_WIDTH), 4);
-
-        sizePanel.add(sizeLabel);
-        sizePanel.add(widthTextField);
-
-        JLabel xSizeLabel = new JLabel(" x ");
-        xSizeLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        heightTextField = new JTextField(String.valueOf(EOCVSim.DEFAULT_EOCV_HEIGHT), 4);
-
-        sizePanel.add(xSizeLabel);
-        sizePanel.add(heightTextField);
-
-        contentsPanel.add(sizePanel);
-
-        contentsPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-
-        sizePanel.add(xSizeLabel);
-        sizePanel.add(heightTextField);
-
-        contentsPanel.add(sizePanel);
+        contentsPanel.add(sizeFieldsInput);
 
         contentsPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         // Status label part
-
         JLabel statusLabel = new JLabel("Click \"create\" to test camera.");
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
 
         contentsPanel.add(statusLabel);
 
         // Bottom buttons
-
         JPanel buttonsPanel = new JPanel(new FlowLayout());
         createButton = new JButton("Create");
 
@@ -135,74 +133,37 @@ public class CreateCameraSource {
         // Additional stuff & events
 
         GuiUtil.jTextFieldOnlyNumbers(cameraIdField, -100, 0);
-        GuiUtil.jTextFieldOnlyNumbers(widthTextField, 0, EOCVSim.DEFAULT_EOCV_WIDTH);
-        GuiUtil.jTextFieldOnlyNumbers(heightTextField, 0, EOCVSim.DEFAULT_EOCV_HEIGHT);
 
-        DocumentListener validSizeNumberListener = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                changed(e);
-            }
+        createButton.addActionListener(e -> {
 
-            public void removeUpdate(DocumentEvent e) {
-                changed(e);
-            }
+            int camId = Integer.parseInt(cameraIdField.getText());
 
-            public void insertUpdate(DocumentEvent e) {
-                changed(e);
-            }
+            statusLabel.setText("Trying to open camera, please wait...");
+            cameraIdField.setEditable(false);
+            createButton.setEnabled(false);
 
-            public void changed(DocumentEvent e) {
-                try {
-                    Integer.parseInt(widthTextField.getText());
-                    Integer.parseInt(heightTextField.getText());
-                    validCameraSizeNumbers = true;
-                } catch (Throwable ex) {
-                    validCameraSizeNumbers = false;
+            eocvSim.onMainUpdate.doOnce(() -> {
+                if (testCamera(camId)) {
+                    close();
+                    if (wasCancelled) return;
+                    createSource(nameTextField.getText(), camId, sizeFieldsInput.getCurrentSize());
+                    eocvSim.visualizer.updateSourcesList();
+                } else {
+                    cameraIdField.setEditable(true);
+                    createButton.setEnabled(true);
+                    statusLabel.setText("Failed to open camera, try with another index.");
                 }
-                updateCreateBtt();
-            }
-        };
+            });
 
-        widthTextField.getDocument().addDocumentListener(validSizeNumberListener);
-        heightTextField.getDocument().addDocumentListener(validSizeNumberListener);
-
-        createButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                int camId = Integer.parseInt(cameraIdField.getText());
-                int width = Integer.parseInt(widthTextField.getText());
-                int height = Integer.parseInt(heightTextField.getText());
-
-                statusLabel.setText("Trying to open camera, please wait...");
-                cameraIdField.setEditable(false);
-                createButton.setEnabled(false);
-
-                eocvSim.runOnMainThread(() -> {
-                    if (testCamera(camId)) {
-                        close();
-                        if (wasCancelled) return;
-                        createSource(nameTextField.getText(), camId, new Size(width, height));
-                        eocvSim.visualizer.updateSourcesList();
-                    } else {
-                        cameraIdField.setEditable(true);
-                        createButton.setEnabled(true);
-                        statusLabel.setText("Failed to open camera, try with another index.");
-                    }
-                });
-
-            }
         });
 
         cameraIdField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 changed();
             }
-
             public void removeUpdate(DocumentEvent e) {
                 changed();
             }
-
             public void insertUpdate(DocumentEvent e) {
                 changed();
             }
@@ -210,8 +171,14 @@ public class CreateCameraSource {
             public void changed() {
                 try {
                     Integer.parseInt(cameraIdField.getText());
+
+                    String sourceName = "Camera " + cameraIdField.getText();
+                    if(!eocvSim.inputSourceManager.isNameOnUse(sourceName)) {
+                        nameTextField.setText(sourceName);
+                    }
+
                     validCameraIdNumber = true;
-                } catch (Throwable ex) {
+                } catch (Exception ex) {
                     validCameraIdNumber = false;
                 }
                 updateCreateBtt();
@@ -222,26 +189,20 @@ public class CreateCameraSource {
             public void changedUpdate(DocumentEvent e) {
                 changed();
             }
-
             public void removeUpdate(DocumentEvent e) {
                 changed();
             }
-
             public void insertUpdate(DocumentEvent e) {
                 changed();
             }
-
             public void changed() {
                 updateCreateBtt();
             }
         });
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                wasCancelled = true;
-                close();
-            }
+        cancelButton.addActionListener(e -> {
+            wasCancelled = true;
+            close();
         });
 
         createCameraSource.setResizable(false);
@@ -256,7 +217,6 @@ public class CreateCameraSource {
     }
 
     public boolean testCamera(int camIndex) {
-
         VideoCapture camera = new VideoCapture();
         camera.open(camIndex);
 
@@ -265,11 +225,10 @@ public class CreateCameraSource {
         camera.release();
 
         return wasOpened;
-
     }
 
     public void createSource(String sourceName, int index, Size size) {
-        eocvSim.runOnMainThread(() -> {
+        eocvSim.onMainUpdate.doOnce(() -> {
             eocvSim.inputSourceManager.addInputSource(sourceName, new CameraSource(index, size));
             eocvSim.visualizer.updateSourcesList();
         });
@@ -278,7 +237,8 @@ public class CreateCameraSource {
     public void updateCreateBtt() {
         createButton.setEnabled(!nameTextField.getText().trim().equals("")
                 && validCameraIdNumber
-                && validCameraSizeNumbers);
+                && sizeFieldsInput.getValid()
+                && !eocvSim.inputSourceManager.isNameOnUse(nameTextField.getText()));
     }
 
 }

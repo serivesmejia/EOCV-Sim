@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
@@ -13,37 +36,33 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class InputSourceManager {
 
     private final EOCVSim eocvSim;
+
     public volatile Mat lastMatFromSource = null;
     public volatile InputSource currentInputSource = null;
+
     public volatile HashMap<String, InputSource> sources = new HashMap<>();
+
     public InputSourceLoader inputSourceLoader = new InputSourceLoader();
 
     public InputSourceManager(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
     }
-
-    public static SourceType getSourceType(InputSource source) {
-
-        switch (source.getClass().getSimpleName()) {
-            case "ImageSource":
-                return SourceType.IMAGE;
-            case "CameraSource":
-                return SourceType.CAMERA;
-        }
-
-        return SourceType.UNKNOWN;
-
-    }
-
     public void init() {
 
         Log.info("InputSourceManager", "Initializing...");
+
+        if(lastMatFromSource == null)
+            lastMatFromSource = new Mat();
+
+        Size size = new Size(320, 240);
+        createDefaultImgInputSource("/images/ug_4.jpg", "ug_eocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
+        createDefaultImgInputSource("/images/ug_1.jpg", "ug_eocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
+        createDefaultImgInputSource("/images/ug_0.jpg", "ug_eocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
 
         inputSourceLoader.loadInputSourcesFromFile();
 
@@ -51,14 +70,8 @@ public class InputSourceManager {
             addInputSource(entry.getKey(), entry.getValue());
         }
 
-        Size size = new Size(320, 240);
-        createDefaultImgInputSource("/images/ug_4.jpg", "ug_eocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
-        createDefaultImgInputSource("/images/ug_1.jpg", "ug_eocvsim_1.jpg", "Ultimate Goal 1 Ring", size);
-        createDefaultImgInputSource("/images/ug_0.jpg", "ug_eocvsim_0.jpg", "Ultimate Goal 0 Ring", size);
-
-        lastMatFromSource = new Mat();
-
         Log.white();
+
 
     }
 
@@ -70,6 +83,7 @@ public class InputSourceManager {
 
             ImageSource src = new ImageSource(f.getAbsolutePath(), imgSize);
             src.isDefault = true;
+            src.createdOn = sources.size();
 
             addInputSource(sourceName, src);
 
@@ -79,16 +93,15 @@ public class InputSourceManager {
     }
 
     public void update(boolean isPaused) {
-
-        if (currentInputSource == null) return;
+        if(currentInputSource == null) return;
         currentInputSource.setPaused(isPaused);
 
         try {
-            lastMatFromSource = currentInputSource.update();
-        } catch (Throwable ex) {
+            Mat m = currentInputSource.update();
+            if(m != null) m.copyTo(lastMatFromSource);;
+        } catch (Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }
-
     }
 
     public void addInputSource(String name, InputSource inputSource) {
@@ -104,8 +117,13 @@ public class InputSourceManager {
 
         sources.put(name, inputSource);
 
-        inputSourceLoader.saveInputSource(name, inputSource);
-        inputSourceLoader.saveInputSourcesToFile();
+        if(inputSource.createdOn == -1)
+            inputSource.createdOn = System.currentTimeMillis();
+
+        if(!inputSource.isDefault) {
+            inputSourceLoader.saveInputSource(name, inputSource);
+            inputSourceLoader.saveInputSourcesToFile();
+        }
 
         Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
 
@@ -178,37 +196,28 @@ public class InputSourceManager {
 
     }
 
+    public boolean isNameOnUse(String name) {
+        return sources.containsKey(name);
+    }
+
     public void pauseIfImage() {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
-        if (getSourceType(currentInputSource) == SourceType.IMAGE) {
-            eocvSim.runOnMainThread(new Runnable() {
-                @Override
-                public void run() {
-                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS);
-                }
-            });
+        if (SourceType.fromClass(currentInputSource.getClass()) == SourceType.IMAGE) {
+            eocvSim.onMainUpdate.doOnce(() ->
+                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
+            );
         }
     }
 
     public void pauseIfImageTwoFrames() {
         //if the new input source is an image, we will pause the next frame
         //to execute one shot analysis on images and save resources.
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                pauseIfImage();
-            }
-        });
+        eocvSim.onMainUpdate.doOnce(this::pauseIfImage);
     }
 
     public void requestSetInputSource(String name) {
-        eocvSim.runOnMainThread(new Runnable() {
-            @Override
-            public void run() {
-                setInputSource(name);
-            }
-        });
+        eocvSim.onMainUpdate.doOnce(() -> setInputSource(name));
     }
 
     public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
@@ -218,12 +227,7 @@ public class InputSourceManager {
         if (getSourceType(sourceName) == SourceType.CAMERA) {
             apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
                     new Dimension(300, 150), true);
-            apwdCam.onCancel(new Runnable() {
-                @Override
-                public void run() {
-                    System.exit(0);
-                }
-            });
+            apwdCam.onCancel(() -> System.exit(0));
         }
 
         return apwdCam;
@@ -231,17 +235,15 @@ public class InputSourceManager {
     }
 
     public SourceType getSourceType(String sourceName) {
-
         InputSource source = sources.get(sourceName);
-
-        return getSourceType(source);
-
+        return SourceType.fromClass(source.getClass());
     }
 
-    public enum SourceType {
-        IMAGE,
-        CAMERA,
-        UNKNOWN
+    public InputSource[] getSortedInputSources() {
+        ArrayList<InputSource> sources = new ArrayList<>(this.sources.values());
+        Collections.sort(sources);
+
+        return sources.toArray(new InputSource[0]);
     }
 
 }
