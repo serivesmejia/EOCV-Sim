@@ -14,7 +14,7 @@ transfer it onto your robot!
 
 <img src='images/eocvsim_screenshot_1.png' width='75%' height='75%'>
 
-Because OpenCV in Java uses a native library, which are platform specific, the simulator is currently limited to the following platforms:
+Since OpenCV in Java uses a native library, which is platform specific, the simulator is currently limited to the following platforms:
 
 * Windows x64 (tested)
 * Windows x32 (untested)
@@ -91,7 +91,7 @@ No complicated setup is required, straight up importing the project into Intelli
    }
    
    dependencies {
-      implementation 'com.github.serivesmejia:EOCV-Sim:2.0.2' //add the EOCV-Sim dependency
+      implementation 'com.github.serivesmejia:EOCV-Sim:2.1.0' //add the EOCV-Sim dependency
    }
    ```
    
@@ -112,7 +112,7 @@ No complicated setup is required, straight up importing the project into Intelli
     <dependency>
 	    <groupId>com.github.serivesmejia</groupId>
 	    <artifactId>EOCV-Sim</artifactId>
-	    <version>2.0.2</version>
+	    <version>2.1.0</version>
 	</dependency>
    ```
 
