@@ -115,6 +115,22 @@ class EOCVSim(val params: Parameters = Parameters()) {
         visualizer.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
         visualizer.pipelineSelector.selectedIndex = 0
 
+        pipelineManager.pipelineOutputPoster.addPostable {
+            try {
+                //if last output mat is not null
+                it.let {
+                    visualizer.viewport.postMatAsync(it)
+                    //if there's an ongoing recording session, post the mat to the recording
+                    currentRecordingSession?.postMatAsync(it)
+                }
+            } catch (ex: Exception) {
+                Log.error("EOCVSim", "Error while posting Mat to viewport/recording", ex)
+            }
+
+            //updating displayed telemetry
+            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
+        }
+
         beginLoop()
     }
 
@@ -141,12 +157,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue
 
             try {
-                //actually updating the pipeline
-                //if paused, it will simply run the pending update listeners
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
-
-                if(!pipelineManager.paused)
-                    pipelineFpsCounter.update()
 
                 //clear error telemetry messages
                 telemetry?.errItem?.caption = ""
@@ -160,31 +171,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 telemetry?.update()
             }
 
-            try {
-                //if last output mat is not null
-                pipelineManager.lastOutputMat?.let {
-                    //when not paused, post the last pipeline mat to the viewport
-                    if (!pipelineManager.paused) visualizer.viewport.postMatAsync(it)
-                    //if there's an ongoing recording session, post the mat to the recording
-                    currentRecordingSession?.postMatAsync(it)
-                }
-            } catch (ex: Exception) {
-                Log.error("EOCVSim", "Error while posting Mat to viewport/recording", ex)
-            }
-
-            //updating displayed telemetry
-            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
-
-            fpsCounter.update()
-
             //limit FPS
-            try {
-                fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
-                fpsLimiter.sync()
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-                break
-            }
+            fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")

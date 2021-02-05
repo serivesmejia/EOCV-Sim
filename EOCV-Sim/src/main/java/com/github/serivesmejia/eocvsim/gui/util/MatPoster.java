@@ -63,7 +63,7 @@ public class MatPoster {
     public void post(Mat m) {
 
         //start mat posting thread if it hasn't been started yet
-        if (!posterThread.isAlive() && !hasPosterThreadStarted) posterThread.start();
+        if (!posterThread.isAlive() && !hasPosterThreadStarted && postables.size() != 0) posterThread.start();
 
         if (m == null || m.empty()) {
             Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
@@ -75,6 +75,10 @@ public class MatPoster {
 
         postQueue.offer(recycledMat);
 
+    }
+
+    public Mat pull() throws InterruptedException {
+        return postQueue.take();
     }
 
     public void addPostable(Postable postable) {
@@ -107,7 +111,7 @@ public class MatPoster {
             hasPosterThreadStarted = true;
             while (!Thread.interrupted()) {
 
-                if (postQueue.size() == 0) continue; //skip if we have no queued frames
+                if (postQueue.size() == 0 || postables.size() == 0) continue; //skip if we have no queued frames
 
                 fpsCounter.update();
 

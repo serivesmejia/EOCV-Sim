@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.pipeline
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -33,6 +34,7 @@ import org.openftc.easyopencv.TimestampedPipelineHandler
 import java.awt.Dimension
 import java.lang.reflect.Constructor
 import java.util.*
+import java.util.concurrent.Executors
 
 class PipelineManager(var eocvSim: EOCVSim) {
 
@@ -41,14 +43,19 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmField val onPause = EventHandler("OnPipelinePause")
     @JvmField val onResume = EventHandler("OnPipelineResume")
 
+    lateinit var pipelineOutputPoster: MatPoster
+    private lateinit var pipelineInputPoster: MatPoster
+
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
-    var currentPipeline: OpenCvPipeline? = null
+    @Volatile var currentPipeline: OpenCvPipeline? = null
         private set
     var currentPipelineName = ""
         private set
     var currentPipelineIndex = -1
         private set
+
+    @Volatile private var lastPipeline: OpenCvPipeline? = null
 
     var currentTelemetry: Telemetry? = null
         private set
@@ -81,6 +88,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Initializing...")
 
+        pipelineOutputPoster = MatPoster("PipelineOutput", 5)
+        pipelineInputPoster = MatPoster("PipelineInput", 5)
+
         //add default pipeline
         addPipelineClass(DefaultPipeline::class.java)
 
@@ -100,6 +110,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
         lastOutputMat = Mat()
         requestChangePipeline(0) //change to the default pipeline
 
+        pipelineInputPoster.addPostable { itMat ->
+            currentPipeline?.let {
+                pipelineOutputPoster.post(it.processFrame(itMat))
+            }
+            eocvSim.fpsCounter.update()
+            eocvSim.fpsLimiter.sync()
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -114,20 +132,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun update(inputMat: Mat) {
-
         onUpdate.run()
-
-        if (paused) {
-            if (lastOutputMat == null || lastOutputMat!!.empty()) lastOutputMat = inputMat
-            return
-        }
-
-        lastOutputMat = if (currentPipeline != null) {
-            currentPipeline!!.processFrame(inputMat)
-        } else {
-            inputMat
-        }
-
+        pipelineInputPoster.post(inputMat)
+        lastPipeline = currentPipeline
     }
 
     fun changePipeline(index: Int) {
