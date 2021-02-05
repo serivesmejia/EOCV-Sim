@@ -48,8 +48,12 @@ public class MatPoster {
     private volatile boolean hasPosterThreadStarted = false;
 
     public MatPoster(String name, int maxQueueItems) {
-        postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
-        matRecycler = new MatRecycler(maxQueueItems + 2);
+        this(name, new MatRecycler(maxQueueItems + 2));
+    }
+
+    public MatPoster(String name, MatRecycler recycler) {
+        postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(recycler.getSize()));
+        matRecycler = recycler;
         posterThread = new Thread(new PosterRunnable(), "MatPoster-" + name + "-Thread");
 
         this.name = name;

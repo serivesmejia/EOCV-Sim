@@ -27,8 +27,11 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
+import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
+import org.openftc.easyopencv.MatRecycler
 import org.openftc.easyopencv.OpenCvPipeline
 import org.openftc.easyopencv.TimestampedPipelineHandler
 import java.awt.Dimension
@@ -46,6 +49,10 @@ class PipelineManager(var eocvSim: EOCVSim) {
     lateinit var pipelineOutputPoster: MatPoster
     private lateinit var pipelineInputPoster: MatPoster
 
+    private lateinit var matRecycler: MatRecycler
+
+    private val pipelineFpsSync = FpsLimiter(30.0)
+
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
     @Volatile var currentPipeline: OpenCvPipeline? = null
@@ -57,7 +64,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     @Volatile private var lastPipeline: OpenCvPipeline? = null
 
-    var currentTelemetry: Telemetry? = null
+    @Volatile var currentTelemetry: Telemetry? = null
         private set
 
     @Volatile var lastOutputMat: Mat? = null
@@ -88,8 +95,10 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Initializing...")
 
-        pipelineOutputPoster = MatPoster("PipelineOutput", 5)
-        pipelineInputPoster = MatPoster("PipelineInput", 5)
+        matRecycler = MatRecycler(eocvSim.configManager.config.maxFps*2);
+
+        pipelineOutputPoster = MatPoster("PipelineOutput", matRecycler)
+        pipelineInputPoster = MatPoster("PipelineInput", matRecycler)
 
         //add default pipeline
         addPipelineClass(DefaultPipeline::class.java)
@@ -110,12 +119,24 @@ class PipelineManager(var eocvSim: EOCVSim) {
         lastOutputMat = Mat()
         requestChangePipeline(0) //change to the default pipeline
 
+        //actually processing the pipeline here
         pipelineInputPoster.addPostable { itMat ->
             currentPipeline?.let {
-                pipelineOutputPoster.post(it.processFrame(itMat))
+                try {
+                    pipelineOutputPoster.post(it.processFrame(itMat))
+
+                    //clear error telemetry messages
+                    currentTelemetry?.errItem?.caption = ""
+                    currentTelemetry?.errItem?.setValue("")
+                } catch (ex: Exception) {
+                    Log.error("Error while processing pipeline", ex)
+
+                    currentTelemetry?.errItem?.caption = "[/!\\]"
+                    currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
+                    currentTelemetry?.update()
+                }
             }
-            eocvSim.fpsCounter.update()
-            eocvSim.fpsLimiter.sync()
+            pipelineFpsSync.sync();
         }
 
     }
@@ -134,6 +155,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun update(inputMat: Mat) {
         onUpdate.run()
         pipelineInputPoster.post(inputMat)
+
+        pipelineFpsSync.maxFPS = eocvSim.configManager.config.maxFps.toDouble()
+
         lastPipeline = currentPipeline
     }
 

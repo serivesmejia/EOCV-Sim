@@ -143,8 +143,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         while (!Thread.interrupted()) {
 
-            val telemetry = pipelineManager.currentTelemetry
-
             //run all pending requested runnables
             onMainUpdate.run()
 
@@ -156,23 +154,16 @@ class EOCVSim(val params: Parameters = Parameters()) {
             //if we don't have a mat from the inputsource, we'll just skip this frame.
             if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue
 
-            try {
-                pipelineManager.update(inputSourceManager.lastMatFromSource)
-
-                //clear error telemetry messages
-                telemetry?.errItem?.caption = ""
-                telemetry?.errItem?.setValue("")
-
-            } catch (ex: Exception) {
-                Log.error("Error while processing pipeline", ex)
-
-                telemetry?.errItem?.caption = "[/!\\]"
-                telemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
-                telemetry?.update()
-            }
+            pipelineManager.update(inputSourceManager.lastMatFromSource)
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
+
+            try {
+                fpsLimiter.sync();
+            } catch(ex: InterruptedException) {
+                break
+            }
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
