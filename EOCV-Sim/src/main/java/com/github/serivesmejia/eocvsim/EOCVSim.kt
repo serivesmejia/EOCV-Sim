@@ -117,12 +117,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         pipelineManager.pipelineOutputPoster.addPostable {
             try {
-                //if last output mat is not null
-                it.let {
-                    visualizer.viewport.postMatAsync(it)
-                    //if there's an ongoing recording session, post the mat to the recording
-                    currentRecordingSession?.postMatAsync(it)
-                }
+                visualizer.viewport.postMatAsync(it)
+                //if there's an ongoing recording session, post the mat to the recording
+                currentRecordingSession?.postMatAsync(it)
             } catch (ex: Exception) {
                 Log.error("EOCVSim", "Error while posting Mat to viewport/recording", ex)
             }
@@ -158,7 +155,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
-
             try {
                 fpsLimiter.sync();
             } catch(ex: InterruptedException) {

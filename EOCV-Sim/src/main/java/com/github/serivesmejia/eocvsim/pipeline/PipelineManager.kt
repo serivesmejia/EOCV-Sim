@@ -27,17 +27,14 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
-import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
-import org.openftc.easyopencv.MatRecycler
 import org.openftc.easyopencv.OpenCvPipeline
 import org.openftc.easyopencv.TimestampedPipelineHandler
 import java.awt.Dimension
 import java.lang.reflect.Constructor
 import java.util.*
-import java.util.concurrent.Executors
 
 class PipelineManager(var eocvSim: EOCVSim) {
 
@@ -48,8 +45,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     lateinit var pipelineOutputPoster: MatPoster
     private lateinit var pipelineInputPoster: MatPoster
-
-    private lateinit var matRecycler: MatRecycler
 
     private val pipelineFpsSync = FpsLimiter(30.0)
 
@@ -95,10 +90,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Initializing...")
 
-        matRecycler = MatRecycler(eocvSim.configManager.config.maxFps*2);
-
-        pipelineOutputPoster = MatPoster("PipelineOutput", matRecycler)
-        pipelineInputPoster = MatPoster("PipelineInput", matRecycler)
+        pipelineOutputPoster = MatPoster.createWithoutRecyler("PipelineOutput", eocvSim.configManager.config.maxFps)
+        pipelineInputPoster = MatPoster("PipelineInput", eocvSim.configManager.config.maxFps)
 
         //add default pipeline
         addPipelineClass(DefaultPipeline::class.java)
@@ -122,21 +115,23 @@ class PipelineManager(var eocvSim: EOCVSim) {
         //actually processing the pipeline here
         pipelineInputPoster.addPostable { itMat ->
             currentPipeline?.let {
-                try {
-                    pipelineOutputPoster.post(it.processFrame(itMat))
+                synchronized(pipelineInputPoster) {
+                    try {
+                        pipelineOutputPoster.post(it.processFrame(itMat))
 
-                    //clear error telemetry messages
-                    currentTelemetry?.errItem?.caption = ""
-                    currentTelemetry?.errItem?.setValue("")
-                } catch (ex: Exception) {
-                    Log.error("Error while processing pipeline", ex)
+                        //clear error telemetry messages
+                        currentTelemetry?.errItem?.caption = ""
+                        currentTelemetry?.errItem?.setValue("")
+                    } catch (ex: Exception) {
+                        Log.error("Error while processing pipeline", ex)
 
-                    currentTelemetry?.errItem?.caption = "[/!\\]"
-                    currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
-                    currentTelemetry?.update()
+                        currentTelemetry?.errItem?.caption = "[/!\\]"
+                        currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
+                        currentTelemetry?.update()
+                    }
                 }
             }
-            pipelineFpsSync.sync();
+            pipelineFpsSync.sync()
         }
 
     }

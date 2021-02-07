@@ -36,7 +36,7 @@ public class MatPoster {
 
     private final ArrayList<Postable> postables = new ArrayList<>();
 
-    private final EvictingBlockingQueue<MatRecycler.RecyclableMat> postQueue;
+    private final EvictingBlockingQueue<Mat> postQueue;
     private final MatRecycler matRecycler;
 
     private final String name;
@@ -47,45 +47,63 @@ public class MatPoster {
 
     private volatile boolean hasPosterThreadStarted = false;
 
+    public static MatPoster createWithoutRecyler(String name, int maxQueueItems) {
+        return new MatPoster(name, maxQueueItems, null);
+    }
+
     public MatPoster(String name, int maxQueueItems) {
         this(name, new MatRecycler(maxQueueItems + 2));
     }
 
     public MatPoster(String name, MatRecycler recycler) {
-        postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(recycler.getSize()));
+        this(name, recycler.getSize(), recycler);
+    }
+
+    public MatPoster(String name, int maxQueueItems, MatRecycler recycler) {
+        postQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<>(maxQueueItems));
         matRecycler = recycler;
         posterThread = new Thread(new PosterRunnable(), "MatPoster-" + name + "-Thread");
 
         this.name = name;
 
         postQueue.setEvictAction((m) -> {
-            matRecycler.returnMat(m);
-            m.release();
+            synchronized(MatPoster.this) {
+                if (m instanceof MatRecycler.RecyclableMat) {
+                    ((MatRecycler.RecyclableMat) m).returnMat();
+                }
+
+                m.release();
+            }
         }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
     }
 
-    public void post(Mat m) {
 
-        //start mat posting thread if it hasn't been started yet
-        if (!posterThread.isAlive() && !hasPosterThreadStarted && postables.size() != 0) posterThread.start();
-
+    public synchronized void post(Mat m) {
         if (m == null || m.empty()) {
             Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
             return;
         }
 
-        MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
-        m.copyTo(recycledMat);
+        if(matRecycler != null) {
+            MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
+            m.copyTo(recycledMat);
 
-        postQueue.offer(recycledMat);
-
+            postQueue.offer(recycledMat);
+        } else {
+            postQueue.offer(m);
+        }
     }
 
-    public Mat pull() throws InterruptedException {
+    public synchronized Mat pull() throws InterruptedException {
         return postQueue.take();
     }
 
     public void addPostable(Postable postable) {
+        //start mat posting thread if it hasn't been started yet
+        if (!posterThread.isAlive() && !hasPosterThreadStarted) {
+            posterThread.start();
+        }
+
         postables.add(postable);
     }
 
@@ -95,9 +113,11 @@ public class MatPoster {
 
         posterThread.interrupt();
 
-        for (MatRecycler.RecyclableMat m : postQueue) {
+        for (Mat m : postQueue) {
             if (m != null) {
-                m.returnMat();
+                if(m instanceof MatRecycler.RecyclableMat) {
+                    ((MatRecycler.RecyclableMat)m).returnMat();
+                }
             }
         }
 
@@ -117,24 +137,29 @@ public class MatPoster {
 
                 if (postQueue.size() == 0 || postables.size() == 0) continue; //skip if we have no queued frames
 
-                fpsCounter.update();
+                synchronized(MatPoster.this) {
+                    fpsCounter.update();
 
-                try {
+                    try {
 
-                    MatRecycler.RecyclableMat takenMat = postQueue.take();
+                        Mat takenMat = postQueue.take();
 
-                    for (Postable postable : postables) {
-                        postable.post(takenMat);
+                        for (Postable postable : postables) {
+                            postable.post(takenMat);
+                        }
+
+                        takenMat.release();
+
+                        if (takenMat instanceof MatRecycler.RecyclableMat) {
+                            ((MatRecycler.RecyclableMat) takenMat).returnMat();
+                        }
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    } catch (Exception ex) {
+                        continue;
                     }
-
-                    takenMat.release();
-                    takenMat.returnMat();
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    break;
-                } catch (Exception ex) {
-                    continue;
                 }
 
             }

@@ -101,10 +101,12 @@ public class MatRecycler {
         }
 
         public void returnMat() {
-            try {
-                MatRecycler.this.returnMat(this);
-            } catch(IllegalArgumentException ex) {
-                Log.warn("RecyclableMat", "Tried to return a Mat which was already returned", ex);
+            synchronized(MatRecycler.this) {
+                try {
+                    MatRecycler.this.returnMat(this);
+                } catch (IllegalArgumentException ex) {
+                    Log.warn("RecyclableMat", "Tried to return a Mat which was already returned", ex);
+                }
             }
         }
 
