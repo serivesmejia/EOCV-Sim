@@ -121,27 +121,23 @@ class PipelineManager(var eocvSim: EOCVSim) {
             currentPipeline?.let { itPipeline ->
 
                 pipelineOutputPoster?.let { itPoster ->
+                    try {
+                        itPoster.post(itPipeline.processFrame(itMat))
 
-                    synchronized(pipelineInputPoster) {
-                        try {
-                            itPoster.post(itPipeline.processFrame(itMat))
+                        //clear error telemetry messages
+                        currentTelemetry?.errItem?.caption = ""
+                        currentTelemetry?.errItem?.setValue("")
+                    } catch (ex: Exception) {
+                        Log.error("Error while processing pipeline", ex)
 
-                            //clear error telemetry messages
-                            currentTelemetry?.errItem?.caption = ""
-                            currentTelemetry?.errItem?.setValue("")
-                        } catch (ex: Exception) {
-                            Log.error("Error while processing pipeline", ex)
-
-                            currentTelemetry?.errItem?.caption = "[/!\\]"
-                            currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
-                            currentTelemetry?.update()
-                        }
+                        currentTelemetry?.errItem?.caption = "[/!\\]"
+                        currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
+                        currentTelemetry?.update()
                     }
-
                 }
-            }
 
-            pipelineFpsSync.sync()
+                pipelineFpsSync.sync()
+            }
         }
 
     }
@@ -159,8 +155,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     fun update(inputMat: Mat) {
         onUpdate.run()
-        pipelineInputPoster.post(inputMat)
 
+        if(!paused) {
+            pipelineInputPoster.post(inputMat)
+        }
+
+        pipelineInputPoster.paused = paused
         pipelineFpsSync.maxFPS = eocvSim.configManager.config.maxFps.toDouble()
 
         lastPipeline = currentPipeline

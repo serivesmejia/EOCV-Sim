@@ -47,6 +47,8 @@ public class MatPoster {
 
     private final Object lock = new Object();
 
+    private volatile boolean paused = false;
+
     private volatile boolean hasPosterThreadStarted = false;
 
     public static MatPoster createWithoutRecyler(String name, int maxQueueItems) {
@@ -129,6 +131,18 @@ public class MatPoster {
 
     }
 
+    public void setPaused(boolean paused) {
+        synchronized(lock) {
+            this.paused = paused;
+        }
+    }
+
+    public boolean getPaused() {
+        synchronized(lock) {
+            return paused;
+        }
+    }
+
     public interface Postable {
         void post(Mat m);
     }
@@ -138,6 +152,10 @@ public class MatPoster {
         public void run() {
             hasPosterThreadStarted = true;
             while (!Thread.interrupted()) {
+
+                while(paused && !Thread.currentThread().isInterrupted()) {
+                    Thread.yield();
+                }
 
                 if (postQueue.size() == 0 || postables.size() == 0) continue; //skip if we have no queued frames
 
