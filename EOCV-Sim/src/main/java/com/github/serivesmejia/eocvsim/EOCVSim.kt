@@ -71,7 +71,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
     var currentRecordingSession: VideoRecordingSession? = null
 
     val fpsLimiter = FpsLimiter(30.0)
-    val fpsCounter = FpsCounter()
     val pipelineFpsCounter = FpsCounter()
 
     enum class DestroyReason {
@@ -115,19 +114,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         visualizer.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
         visualizer.pipelineSelector.selectedIndex = 0
 
-        pipelineManager.pipelineOutputPoster.addPostable {
-            try {
-                visualizer.viewport.postMatAsync(it)
-                //if there's an ongoing recording session, post the mat to the recording
-                currentRecordingSession?.postMatAsync(it)
-            } catch (ex: Exception) {
-                Log.error("EOCVSim", "Error while posting Mat to viewport/recording", ex)
-            }
-
-            //updating displayed telemetry
-            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
-        }
-
         beginLoop()
     }
 
@@ -137,6 +123,20 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.white()
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
+
+        pipelineManager.pipelineOutputPoster = visualizer.viewport.matPoster
+
+        pipelineManager.pipelineOutputPoster?.addPostable {
+            try {
+                //if there's an ongoing recording session, post the mat to the recording
+                currentRecordingSession?.postMatAsync(it)
+            } catch (ex: Exception) {
+                Log.error("EOCVSim", "Error while posting Mat to ecording", ex)
+            }
+
+            //updating displayed telemetry
+            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
+        }
 
         while (!Thread.interrupted()) {
 
@@ -253,11 +253,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-        val pipelineFpsMsg = " (" + pipelineFpsCounter.fps + " Pipeline FPS)"
-        val posterFpsMsg = " (" + visualizer.viewport.matPoster.fpsCounter.fps + " Poster FPS)"
+        val pipelineFpsMsg = " (${pipelineManager.pipelineFpsCounter.fps} Pipeline FPS)"
+        val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""
-        val memoryMsg = " (" + SysUtil.getMemoryUsageMB() + " MB Java memory used)"
+        val memoryMsg = " (${SysUtil.getMemoryUsageMB()} MB Java memory used)"
 
         val msg = isRecording + pipelineFpsMsg + posterFpsMsg + isPaused + memoryMsg
 

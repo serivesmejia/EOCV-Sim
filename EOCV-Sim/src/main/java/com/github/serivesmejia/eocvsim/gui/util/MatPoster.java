@@ -45,6 +45,8 @@ public class MatPoster {
 
     public final FpsCounter fpsCounter = new FpsCounter();
 
+    private final Object lock = new Object();
+
     private volatile boolean hasPosterThreadStarted = false;
 
     public static MatPoster createWithoutRecyler(String name, int maxQueueItems) {
@@ -67,35 +69,37 @@ public class MatPoster {
         this.name = name;
 
         postQueue.setEvictAction((m) -> {
-            synchronized(MatPoster.this) {
+            synchronized(lock) {
                 if (m instanceof MatRecycler.RecyclableMat) {
                     ((MatRecycler.RecyclableMat) m).returnMat();
                 }
-
                 m.release();
             }
         }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
     }
 
+    public void post(Mat m) {
+        synchronized(lock) {
+            if (m == null || m.empty()) {
+                Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
+                return;
+            }
 
-    public synchronized void post(Mat m) {
-        if (m == null || m.empty()) {
-            Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
-            return;
-        }
+            if (matRecycler != null) {
+                MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
+                m.copyTo(recycledMat);
 
-        if(matRecycler != null) {
-            MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
-            m.copyTo(recycledMat);
-
-            postQueue.offer(recycledMat);
-        } else {
-            postQueue.offer(m);
+                postQueue.offer(recycledMat);
+            } else {
+                postQueue.offer(m);
+            }
         }
     }
 
-    public synchronized Mat pull() throws InterruptedException {
-        return postQueue.take();
+    public  Mat pull() throws InterruptedException {
+        synchronized(lock) {
+            return postQueue.take();
+        }
     }
 
     public void addPostable(Postable postable) {
@@ -137,11 +141,10 @@ public class MatPoster {
 
                 if (postQueue.size() == 0 || postables.size() == 0) continue; //skip if we have no queued frames
 
-                synchronized(MatPoster.this) {
+                synchronized(lock) {
                     fpsCounter.update();
 
                     try {
-
                         Mat takenMat = postQueue.take();
 
                         for (Postable postable : postables) {
@@ -153,7 +156,6 @@ public class MatPoster {
                         if (takenMat instanceof MatRecycler.RecyclableMat) {
                             ((MatRecycler.RecyclableMat) takenMat).returnMat();
                         }
-
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;

@@ -27,6 +27,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
@@ -43,7 +44,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmField val onPause = EventHandler("OnPipelinePause")
     @JvmField val onResume = EventHandler("OnPipelineResume")
 
-    lateinit var pipelineOutputPoster: MatPoster
+    @Volatile var pipelineOutputPoster: MatPoster? = null
     private lateinit var pipelineInputPoster: MatPoster
 
     private val pipelineFpsSync = FpsLimiter(30.0)
@@ -79,6 +80,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
             return field
         }
 
+    val pipelineFpsCounter: FpsCounter
+        get() = pipelineInputPoster.fpsCounter
+
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
 
@@ -90,7 +94,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Initializing...")
 
-        pipelineOutputPoster = MatPoster.createWithoutRecyler("PipelineOutput", eocvSim.configManager.config.maxFps)
         pipelineInputPoster = MatPoster("PipelineInput", eocvSim.configManager.config.maxFps)
 
         //add default pipeline
@@ -114,23 +117,30 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         //actually processing the pipeline here
         pipelineInputPoster.addPostable { itMat ->
-            currentPipeline?.let {
-                synchronized(pipelineInputPoster) {
-                    try {
-                        pipelineOutputPoster.post(it.processFrame(itMat))
 
-                        //clear error telemetry messages
-                        currentTelemetry?.errItem?.caption = ""
-                        currentTelemetry?.errItem?.setValue("")
-                    } catch (ex: Exception) {
-                        Log.error("Error while processing pipeline", ex)
+            currentPipeline?.let { itPipeline ->
 
-                        currentTelemetry?.errItem?.caption = "[/!\\]"
-                        currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
-                        currentTelemetry?.update()
+                pipelineOutputPoster?.let { itPoster ->
+
+                    synchronized(pipelineInputPoster) {
+                        try {
+                            itPoster.post(itPipeline.processFrame(itMat))
+
+                            //clear error telemetry messages
+                            currentTelemetry?.errItem?.caption = ""
+                            currentTelemetry?.errItem?.setValue("")
+                        } catch (ex: Exception) {
+                            Log.error("Error while processing pipeline", ex)
+
+                            currentTelemetry?.errItem?.caption = "[/!\\]"
+                            currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
+                            currentTelemetry?.update()
+                        }
                     }
+
                 }
             }
+
             pipelineFpsSync.sync()
         }
 
