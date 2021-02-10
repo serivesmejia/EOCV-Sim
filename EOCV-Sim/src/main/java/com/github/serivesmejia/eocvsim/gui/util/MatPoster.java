@@ -148,9 +148,14 @@ public class MatPoster {
     }
 
     private class PosterRunnable implements Runnable {
+
+        private Mat postableMat = new Mat();
+
         @Override
         public void run() {
             hasPosterThreadStarted = true;
+
+
             while (!Thread.interrupted()) {
 
                 while(paused && !Thread.currentThread().isInterrupted()) {
@@ -166,7 +171,8 @@ public class MatPoster {
                         Mat takenMat = postQueue.take();
 
                         for (Postable postable : postables) {
-                            postable.post(takenMat);
+                            takenMat.copyTo(postableMat);
+                            postable.post(postableMat);
                         }
 
                         takenMat.release();
