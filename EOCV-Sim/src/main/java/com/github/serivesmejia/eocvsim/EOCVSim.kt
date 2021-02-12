@@ -32,21 +32,15 @@ import com.github.serivesmejia.eocvsim.input.InputSourceManager
 import com.github.serivesmejia.eocvsim.output.VideoRecordingSession
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.tuner.TunerManager
-import com.github.serivesmejia.eocvsim.util.exception.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.FileFilters
-
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
-import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
+import com.github.serivesmejia.eocvsim.util.exception.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
-import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
-
 import nu.pattern.OpenCV
-import org.opencv.core.Scalar
 import org.opencv.core.Size
-import org.opencv.imgproc.Imgproc
 import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
@@ -154,15 +148,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
             inputSourceManager.update(pipelineManager.paused)
             tunerManager.update()
 
-            //if we don't have a mat from the input source, we'll just skip this frame.
-            if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue
-
-            pipelineManager.update(inputSourceManager.lastMatFromSource)
+            pipelineManager.update(inputSourceManager.matPoster.pull())
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
 
-            Log.info("update lol")
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")

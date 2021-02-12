@@ -165,7 +165,6 @@ public class MatPoster {
         public void run() {
             hasPosterThreadStarted = true;
 
-
             while (!Thread.interrupted()) {
 
                 while(paused && !Thread.currentThread().isInterrupted()) {

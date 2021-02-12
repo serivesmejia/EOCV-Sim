@@ -40,7 +40,7 @@ import java.util.*
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_STUCK_DETECT_MS = 3000L
+        const val PIPELINE_TIMEOUT_MS = 3000L
     }
 
     @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
@@ -67,9 +67,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @Volatile var currentTelemetry: Telemetry? = null
         private set
 
-    @Volatile var lastOutputMat: Mat? = null
-        private set
-
     @Volatile var paused = false
         private set
         get() {
@@ -89,8 +86,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
-
-    @Volatile private var lastPipelineUpdateMillis = 0L
 
     enum class PauseReason {
         USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED
@@ -118,61 +113,16 @@ class PipelineManager(var eocvSim: EOCVSim) {
         //handlers by passing the "this" instance.
         timestampedPipelineHandler.attachToPipelineManager(this)
 
-        lastOutputMat = Mat()
         requestChangePipeline(0) //change to the default pipeline
-
-        //actually processing the pipeline here
-        pipelineInputPoster.addPostable { itMat ->
-
-            currentPipeline?.let { itPipeline ->
-
-                pipelineOutputPoster?.let { itPoster ->
-                    try {
-                        itPoster.synchronizedPost(itPipeline.processFrame(itMat))
-
-                        //clear error telemetry messages
-                        currentTelemetry?.errItem?.caption = ""
-                        currentTelemetry?.errItem?.setValue("")
-                    } catch (ex: Exception) {
-                        Log.error("PipelineManager-Postable", "Error while processing pipeline", ex)
-
-                        currentTelemetry?.errItem?.caption = "[/!\\]"
-                        currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
-                        currentTelemetry?.update()
-                    } finally {
-                        lastPipelineUpdateMillis = System.currentTimeMillis()
-                    }
-
-                    pipelineFpsSync.sync()
-                }
-
-            }
-        }
-
     }
 
     fun update(inputMat: Mat) {
         onUpdate.run()
 
-        if(!paused) {
-            //to avoid volatile issues
-            val currLastPipelineUpdateMillis = lastPipelineUpdateMillis;
+        val pipelineJob = GlobalScope.launch {
+            withTimeout(PIPELINE_TIMEOUT_MS) {
 
-            if(currLastPipelineUpdateMillis > PIPELINE_STUCK_DETECT_MS) {
-                val timeSecs = ((System.currentTimeMillis() - currLastPipelineUpdateMillis) / 1000L).toDouble()
-
-                currentTelemetry?.errItem?.caption = "[/!\\]"
-                currentTelemetry?.errItem?.setValue("Pipeline is taking too\nlong to processFrame!\n($timeSecs seconds so far)")
-                currentTelemetry?.update()
-            } else {
-                currentTelemetry?.errItem?.caption = ""
-                currentTelemetry?.errItem?.setValue("")
-                currentTelemetry?.update()
             }
-
-            pipelineInputPoster.post(inputMat.clone())
-        } else {
-            pipelineInputPoster.clearQueue()
         }
 
         pipelineInputPoster.paused = paused

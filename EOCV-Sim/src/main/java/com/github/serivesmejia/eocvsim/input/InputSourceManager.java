@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.input;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
+import com.github.serivesmejia.eocvsim.gui.util.MatPoster;
 import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
@@ -42,22 +43,21 @@ public class InputSourceManager {
 
     private final EOCVSim eocvSim;
 
-    public volatile Mat lastMatFromSource = null;
     public volatile InputSource currentInputSource = null;
 
     public volatile HashMap<String, InputSource> sources = new HashMap<>();
 
-    public InputSourceLoader inputSourceLoader = new InputSourceLoader();
+    public final InputSourceLoader inputSourceLoader = new InputSourceLoader();
+
+    public MatPoster matPoster = null;
 
     public InputSourceManager(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
     }
+
     public void init() {
 
         Log.info("InputSourceManager", "Initializing...");
-
-        if(lastMatFromSource == null)
-            lastMatFromSource = new Mat();
 
         Size size = new Size(320, 240);
         createDefaultImgInputSource("/images/ug_4.jpg", "ug_eocvsim_4.jpg", "Ultimate Goal 4 Ring", size);
@@ -72,6 +72,7 @@ public class InputSourceManager {
 
         Log.white();
 
+        matPoster = new MatPoster("InputSources", eocvSim.getConfig().maxFps);
 
     }
 
@@ -98,7 +99,7 @@ public class InputSourceManager {
 
         try {
             Mat m = currentInputSource.update();
-            if(m != null) m.copyTo(lastMatFromSource);
+            if(m != null) matPoster.post(m);
         } catch (Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }

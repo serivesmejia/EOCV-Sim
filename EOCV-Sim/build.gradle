@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'maven'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.30-M1'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.21'
 }
 
 apply from: '../build.common.gradle'
@@ -12,5 +12,6 @@ dependencies {
     implementation 'io.github.classgraph:classgraph:4.8.94'
     implementation 'com.formdev:flatlaf:0.45'
     implementation 'com.formdev:flatlaf-intellij-themes:0.45'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version'
 }

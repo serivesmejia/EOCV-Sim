@@ -17,6 +17,11 @@ compileKotlin {
     }
 }
 
+ext {
+    kotlin_version = "1.4.21"
+    kotlinx_coroutines_version = "1.3.9"
+}
+
 tasks.withType(Jar) {
     manifest {
         attributes['Main-Class'] = 'com.github.serivesmejia.eocvsim.Main'
