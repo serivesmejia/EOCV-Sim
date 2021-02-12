@@ -58,7 +58,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
         @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
-        @Volatile private var alreadyInitializedOnce = false
+
+        private var alreadyInitializedOnce = false
     }
 
     @JvmField val onMainUpdate = EventHandler("OnMainUpdate")
@@ -149,13 +150,14 @@ class EOCVSim(val params: Parameters = Parameters()) {
             inputSourceManager.update(pipelineManager.paused)
             tunerManager.update()
 
-            //if we don't have a mat from the inputsource, we'll just skip this frame.
+            //if we don't have a mat from the input source, we'll just skip this frame.
             if (inputSourceManager.lastMatFromSource == null || inputSourceManager.lastMatFromSource.empty()) continue
 
             pipelineManager.update(inputSourceManager.lastMatFromSource)
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
+
             try {
                 fpsLimiter.sync();
             } catch(ex: InterruptedException) {

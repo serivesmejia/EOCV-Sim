@@ -39,6 +39,10 @@ import java.util.*
 
 class PipelineManager(var eocvSim: EOCVSim) {
 
+    companion object {
+        const val PIPELINE_STUCK_DETECT_MS = 3000L
+    }
+
     @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
     @JvmField val onPipelineChange = EventHandler("OnPipelineChange")
     @JvmField val onPause = EventHandler("OnPipelinePause")
@@ -86,6 +90,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
 
+    @Volatile private var lastPipelineUpdateMillis = 0L
+
     enum class PauseReason {
         USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED
     }
@@ -122,7 +128,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
                 pipelineOutputPoster?.let { itPoster ->
                     try {
-                        itPoster.post(itPipeline.processFrame(itMat))
+                        itPoster.synchronizedPost(itPipeline.processFrame(itMat))
 
                         //clear error telemetry messages
                         currentTelemetry?.errItem?.caption = ""
@@ -133,13 +139,44 @@ class PipelineManager(var eocvSim: EOCVSim) {
                         currentTelemetry?.errItem?.caption = "[/!\\]"
                         currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
                         currentTelemetry?.update()
+                    } finally {
+                        lastPipelineUpdateMillis = System.currentTimeMillis()
                     }
+
+                    pipelineFpsSync.sync()
                 }
 
-                pipelineFpsSync.sync()
             }
         }
 
+    }
+
+    fun update(inputMat: Mat) {
+        onUpdate.run()
+
+        if(!paused) {
+            //to avoid volatile issues
+            val currLastPipelineUpdateMillis = lastPipelineUpdateMillis;
+
+            if(currLastPipelineUpdateMillis > PIPELINE_STUCK_DETECT_MS) {
+                val timeSecs = (System.currentTimeMillis() - currLastPipelineUpdateMillis) / 1000
+
+                currentTelemetry?.errItem?.caption = "[/!\\]"
+                currentTelemetry?.errItem?.setValue("Pipeline is taking too\nlong to processFrame!\n($timeSecs seconds so far)")
+                currentTelemetry?.update()
+            } else {
+                currentTelemetry?.errItem?.caption = ""
+                currentTelemetry?.errItem?.setValue("")
+                currentTelemetry?.update()
+            }
+
+            pipelineInputPoster.post(inputMat)
+        }
+
+        pipelineInputPoster.paused = paused
+        pipelineFpsSync.maxFPS = eocvSim.configManager.config.maxFps.toDouble()
+
+        lastPipeline = currentPipeline
     }
 
     @SuppressWarnings("unchecked")
@@ -153,21 +190,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
-    fun update(inputMat: Mat) {
-        onUpdate.run()
-
-        if(!paused) {
-            pipelineInputPoster.post(inputMat)
-        }
-
-        pipelineInputPoster.paused = paused
-        pipelineFpsSync.maxFPS = eocvSim.configManager.config.maxFps.toDouble()
-
-        lastPipeline = currentPipeline
-    }
-
     fun changePipeline(index: Int) {
-
         if (index == currentPipelineIndex) return
 
         var nextPipeline: OpenCvPipeline? = null
@@ -231,7 +254,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         if (eocvSim.configManager.config.pauseOnImages) eocvSim.inputSourceManager.pauseIfImageTwoFrames() //pause next frame if current selected inputsource is an image
 
         onPipelineChange.run()
-
     }
 
     fun requestChangePipeline(index: Int) {
@@ -244,7 +266,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun setPaused(paused: Boolean, pauseReason: PauseReason) {
-
         this.paused = paused
 
         if (this.paused) {
@@ -256,7 +277,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         eocvSim.visualizer.pipelinePauseBtt.isSelected = this.paused
-
     }
 
     fun togglePause() {

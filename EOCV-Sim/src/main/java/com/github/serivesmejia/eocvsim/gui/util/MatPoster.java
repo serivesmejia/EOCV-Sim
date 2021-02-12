@@ -81,26 +81,40 @@ public class MatPoster {
     }
 
     public void post(Mat m) {
-        synchronized(lock) {
-            if (m == null || m.empty()) {
-                Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
-                return;
-            }
+        if (m == null || m.empty()) {
+            Log.warn("MatPoster-" + name, "Tried to post empty or null mat, skipped this frame.");
+            return;
+        }
 
-            if (matRecycler != null) {
-                MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
-                m.copyTo(recycledMat);
+        if (matRecycler != null) {
+            MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
+            m.copyTo(recycledMat);
 
-                postQueue.offer(recycledMat);
-            } else {
-                postQueue.offer(m);
-            }
+            postQueue.offer(recycledMat);
+        } else {
+            postQueue.offer(m);
         }
     }
 
-    public  Mat pull() throws InterruptedException {
+    public void synchronizedPost(Mat m) {
+        synchronize(() -> post(m));
+    }
+
+    public Mat pull() throws InterruptedException {
         synchronized(lock) {
             return postQueue.take();
+        }
+    }
+
+    public void clearQueue() {
+        synchronized(lock) {
+            postQueue.clear();
+        }
+    }
+
+    public void synchronize(Runnable runn) {
+        synchronized(lock) {
+            runn.run();
         }
     }
 
@@ -114,7 +128,6 @@ public class MatPoster {
     }
 
     public void stop() {
-
         Log.info("MatPoster-" + name, "Destroying...");
 
         posterThread.interrupt();
@@ -128,7 +141,6 @@ public class MatPoster {
         }
 
         matRecycler.releaseAll();
-
     }
 
     public void setPaused(boolean paused) {
