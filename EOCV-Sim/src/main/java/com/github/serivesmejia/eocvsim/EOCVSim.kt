@@ -23,6 +23,7 @@
 
 package com.github.serivesmejia.eocvsim
 
+import com.github.serivesmejia.eocvsim.config.Config
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
@@ -69,6 +70,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
     @JvmField val configManager = ConfigManager()
     @JvmField val inputSourceManager = InputSourceManager(this)
     @JvmField val pipelineManager = PipelineManager(this)
+
+    val config: Config
+        get() = configManager.config
 
     @JvmField var tunerManager = TunerManager(this)
 
@@ -158,15 +162,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
 
-            try {
-                fpsLimiter.sync();
-            } catch(ex: InterruptedException) {
-                break
-            }
+            Log.info("update lol")
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
-
     }
 
     fun destroy(reason: DestroyReason) {

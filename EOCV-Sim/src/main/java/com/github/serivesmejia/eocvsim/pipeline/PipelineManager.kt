@@ -100,7 +100,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Initializing...")
 
-        pipelineInputPoster = MatPoster("PipelineInput", eocvSim.configManager.config.maxFps)
+        pipelineInputPoster = MatPoster.createWithoutRecycler("PipelineInput", eocvSim.config.maxFps)
 
         //add default pipeline
         addPipelineClass(DefaultPipeline::class.java)
@@ -134,7 +134,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                         currentTelemetry?.errItem?.caption = ""
                         currentTelemetry?.errItem?.setValue("")
                     } catch (ex: Exception) {
-                        Log.error("Error while processing pipeline", ex)
+                        Log.error("PipelineManager-Postable", "Error while processing pipeline", ex)
 
                         currentTelemetry?.errItem?.caption = "[/!\\]"
                         currentTelemetry?.errItem?.setValue("Error while processing pipeline\nCheck console for details.")
@@ -159,7 +159,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             val currLastPipelineUpdateMillis = lastPipelineUpdateMillis;
 
             if(currLastPipelineUpdateMillis > PIPELINE_STUCK_DETECT_MS) {
-                val timeSecs = (System.currentTimeMillis() - currLastPipelineUpdateMillis) / 1000
+                val timeSecs = ((System.currentTimeMillis() - currLastPipelineUpdateMillis) / 1000L).toDouble()
 
                 currentTelemetry?.errItem?.caption = "[/!\\]"
                 currentTelemetry?.errItem?.setValue("Pipeline is taking too\nlong to processFrame!\n($timeSecs seconds so far)")
@@ -170,7 +170,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 currentTelemetry?.update()
             }
 
-            pipelineInputPoster.post(inputMat)
+            pipelineInputPoster.post(inputMat.clone())
+        } else {
+            pipelineInputPoster.clearQueue()
         }
 
         pipelineInputPoster.paused = paused

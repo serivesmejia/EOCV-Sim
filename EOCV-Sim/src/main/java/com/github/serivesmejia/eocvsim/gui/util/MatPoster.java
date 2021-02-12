@@ -51,7 +51,7 @@ public class MatPoster {
 
     private volatile boolean hasPosterThreadStarted = false;
 
-    public static MatPoster createWithoutRecyler(String name, int maxQueueItems) {
+    public static MatPoster createWithoutRecycler(String name, int maxQueueItems) {
         return new MatPoster(name, maxQueueItems, null);
     }
 
@@ -71,12 +71,10 @@ public class MatPoster {
         this.name = name;
 
         postQueue.setEvictAction((m) -> {
-            synchronized(lock) {
-                if (m instanceof MatRecycler.RecyclableMat) {
-                    ((MatRecycler.RecyclableMat) m).returnMat();
-                }
-                m.release();
+            if (m instanceof MatRecycler.RecyclableMat) {
+                ((MatRecycler.RecyclableMat) m).returnMat();
             }
+            m.release();
         }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
     }
 
@@ -107,6 +105,8 @@ public class MatPoster {
     }
 
     public void clearQueue() {
+        if(postQueue.size() == 0) return;
+
         synchronized(lock) {
             postQueue.clear();
         }
@@ -144,9 +144,7 @@ public class MatPoster {
     }
 
     public void setPaused(boolean paused) {
-        synchronized(lock) {
-            this.paused = paused;
-        }
+        this.paused = paused;
     }
 
     public boolean getPaused() {
