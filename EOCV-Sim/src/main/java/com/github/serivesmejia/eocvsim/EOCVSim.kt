@@ -252,7 +252,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-        val pipelineFpsMsg = " (0 Pipeline FPS)"
+        val pipelineFpsMsg = " (${pipelineManager.pipelineFpsCounter.fps} Pipeline FPS)"
         val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""

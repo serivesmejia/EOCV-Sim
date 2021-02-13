@@ -666,11 +666,15 @@ public class Visualizer {
 
     public void updateTelemetry(Telemetry telemetry) {
 
+        String telemetryText = null;
+
         if (telemetry != null && telemetry.hasChanged()) {
+
+            telemetryText = telemetry.toString();
 
             DefaultListModel<String> listModel = new DefaultListModel<>();
 
-            for (String line : telemetry.toString().split("\n")) {
+            for (String line : telemetryText.split("\n")) {
                 listModel.addElement(line);
             }
 
@@ -680,6 +684,13 @@ public class Visualizer {
             telemetryList.revalidate();
             telemetryScroll.revalidate();
 
+        }
+
+        if(telemetryList.getModel().getSize() <= 0 || (telemetryText != null && telemetryText.trim().equals(""))) {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            listModel.addElement("<html></html>");
+
+            telemetryList.setModel(listModel);
         }
 
     }

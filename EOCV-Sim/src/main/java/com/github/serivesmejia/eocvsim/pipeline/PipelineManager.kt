@@ -52,6 +52,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     @Volatile var pipelineOutputPoster: MatPoster? = null
 
+    val pipelineFpsCounter = FpsCounter()
+
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
     @Volatile var currentPipeline: OpenCvPipeline? = null
@@ -60,8 +62,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         private set
     var currentPipelineIndex = -1
         private set
-
-    @Volatile private var lastPipeline: OpenCvPipeline? = null
 
     @Volatile var currentTelemetry: Telemetry? = null
         private set
@@ -110,44 +110,39 @@ class PipelineManager(var eocvSim: EOCVSim) {
         requestChangePipeline(0) //change to the default pipeline
     }
 
-
-    fun update(inputMat: Mat) {
+    fun update(inputMat: Mat) = runBlocking {
         onUpdate.run()
 
-        runBlocking {
-            var timeouted = false
+        var timeouted = false
 
-            val job = async { //run our pipeline in the background
-                try {
-                    currentPipeline?.processFrame(inputMat)?.let {
-                        if(!timeouted) {
-                            pipelineOutputPoster?.post(it)
-                        }
-                    }
-
-                    currentTelemetry?.errItem?.caption = ""
-                    currentTelemetry?.errItem?.setValue("")
-                } catch (ex: Exception) {
-                    currentTelemetry?.errItem?.caption = "[/!\\]"
-                    currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
-                    Log.error("PipelineManager", "Uncaught exception thrown in pipeline $currentPipelineName", ex);
-                }
-            }
-
+        val job = async { //run our pipeline in the background
             try {
-                withTimeout(PIPELINE_TIMEOUT_MS) { //wait with timeout for our pipeline coroutine to finish its job
-                    job.await()
+                currentPipeline?.processFrame(inputMat)?.let { outputMat ->
+                    if(!timeouted) {
+                        pipelineFpsCounter.update()
+                        pipelineOutputPoster?.post(outputMat)
+                    }
                 }
-            } catch(ex: TimeoutCancellationException) {
+
+                currentTelemetry?.errItem?.caption = ""
+                currentTelemetry?.errItem?.setValue("")
+            } catch (ex: Exception) {
                 currentTelemetry?.errItem?.caption = "[/!\\]"
-                currentTelemetry?.errItem?.setValue("Current pipeline is taking or took\ntoo long to processFrame")
-                currentTelemetry?.update()
-            } finally {
-                timeouted = true
+                currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
+                Log.error("PipelineManager", "Uncaught exception thrown while processing pipeline $currentPipelineName", ex);
             }
         }
 
-        lastPipeline = currentPipeline
+        try {
+            withTimeout(PIPELINE_TIMEOUT_MS) { //wait with timeout for our pipeline coroutine to finish its job
+                job.await()
+            }
+        } catch(ex: TimeoutCancellationException) {
+            changePipeline(0)
+        } finally {
+            timeouted = true
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -220,6 +215,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentTelemetry = nextTelemetry
         currentPipelineIndex = index
         currentPipelineName = currentPipeline!!.javaClass.simpleName
+
+        eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
         //if pause on images option is turned on by user
         if (eocvSim.configManager.config.pauseOnImages) eocvSim.inputSourceManager.pauseIfImageTwoFrames() //pause next frame if current selected inputsource is an image
