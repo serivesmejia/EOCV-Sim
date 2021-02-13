@@ -29,6 +29,7 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
+import com.qualcomm.robotcore.util.ElapsedTime
 import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
@@ -109,49 +110,44 @@ class PipelineManager(var eocvSim: EOCVSim) {
         requestChangePipeline(0) //change to the default pipeline
     }
 
-    private val exceptHandler = CoroutineExceptionHandler { _, except ->
-        handlePipelineException(except)
-    }
 
     fun update(inputMat: Mat) {
         onUpdate.run()
 
-        var pipelineOutputMat: Mat? = null
-
         runBlocking {
-            supervisorScope {
-                launch(exceptHandler) { //launch to have our coroutine exception handler
-                    try {
-                        withTimeout(PIPELINE_TIMEOUT_MS) { //actually making the timeout coroutine here
-                            pipelineOutputMat = currentPipeline?.processFrame(inputMat)
-                        }
+            var timeouted = false
 
-                        currentTelemetry?.errItem?.caption = ""
-                        currentTelemetry?.errItem?.setValue("")
-                    } catch(except: TimeoutCancellationException) {
-                        handlePipelineException(except)
+            val job = async { //run our pipeline in the background
+                try {
+                    currentPipeline?.processFrame(inputMat)?.let {
+                        if(!timeouted) {
+                            pipelineOutputPoster?.post(it)
+                        }
                     }
+
+                    currentTelemetry?.errItem?.caption = ""
+                    currentTelemetry?.errItem?.setValue("")
+                } catch (ex: Exception) {
+                    currentTelemetry?.errItem?.caption = "[/!\\]"
+                    currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
+                    Log.error("PipelineManager", "Uncaught exception thrown in pipeline $currentPipelineName", ex);
                 }
+            }
+
+            try {
+                withTimeout(PIPELINE_TIMEOUT_MS) { //wait with timeout for our pipeline coroutine to finish its job
+                    job.await()
+                }
+            } catch(ex: TimeoutCancellationException) {
+                currentTelemetry?.errItem?.caption = "[/!\\]"
+                currentTelemetry?.errItem?.setValue("Current pipeline is taking or took\ntoo long to processFrame")
+                currentTelemetry?.update()
+            } finally {
+                timeouted = true
             }
         }
 
-        pipelineOutputMat?.let {
-            pipelineOutputPoster?.post(it)
-        }
-
         lastPipeline = currentPipeline
-    }
-
-    //handles all pipelines exceptions, including CancellationExceptions
-    private fun handlePipelineException(ex: Throwable) {
-        if(ex is TimeoutCancellationException) {
-            println("fallback, cancelled")
-            changePipeline(0) //fall back to default pipeline in case of a timeout
-        } else {
-            currentTelemetry?.errItem?.caption = "[/!\\]"
-            currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
-            Log.error("PipelineManager", "Uncaught exception thrown in pipeline $currentPipelineName", ex);
-        }
     }
 
     @SuppressWarnings("unchecked")

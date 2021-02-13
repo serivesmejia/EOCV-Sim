@@ -153,6 +153,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
+
             try {
                 fpsLimiter.sync()
             } catch(ex: InterruptedException) {
