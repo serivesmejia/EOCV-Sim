@@ -119,9 +119,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         var pipelineOutputMat: Mat? = null
 
         runBlocking {
-            launch(exceptHandler) { //launch to have our coroutine exception handler
-
-                supervisorScope {
+            supervisorScope {
+                launch(exceptHandler) { //launch to have our coroutine exception handler
                     try {
                         withTimeout(PIPELINE_TIMEOUT_MS) { //actually making the timeout coroutine here
                             pipelineOutputMat = currentPipeline?.processFrame(inputMat)
@@ -133,7 +132,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
                         handlePipelineException(except)
                     }
                 }
-
             }
         }
 
@@ -147,6 +145,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
     //handles all pipelines exceptions, including CancellationExceptions
     private fun handlePipelineException(ex: Throwable) {
         if(ex is TimeoutCancellationException) {
+            println("fallback, cancelled")
             changePipeline(0) //fall back to default pipeline in case of a timeout
         } else {
             currentTelemetry?.errItem?.caption = "[/!\\]"
