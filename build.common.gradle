@@ -8,7 +8,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 compileKotlin {
@@ -18,7 +17,7 @@ compileKotlin {
 }
 
 ext {
-    kotlin_version = "1.4.21"
+    kotlin_version = "1.4.10"
     kotlinx_coroutines_version = "1.3.9"
 }
 

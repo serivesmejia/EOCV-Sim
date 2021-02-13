@@ -40,6 +40,7 @@ import com.github.serivesmejia.eocvsim.util.exception.EOCVSimUncaughtExceptionHa
 import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import nu.pattern.OpenCV
+import org.opencv.core.Mat
 import org.opencv.core.Size
 import java.io.File
 import javax.swing.SwingUtilities
@@ -148,11 +149,12 @@ class EOCVSim(val params: Parameters = Parameters()) {
             inputSourceManager.update(pipelineManager.paused)
             tunerManager.update()
 
-            pipelineManager.update(inputSourceManager.matPoster.pull())
+            pipelineManager.update(inputSourceManager.lastMatFromSource)
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
 
+            fpsLimiter.sync()
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
@@ -245,7 +247,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-        val pipelineFpsMsg = " (${pipelineManager.pipelineFpsCounter.fps} Pipeline FPS)"
+        val pipelineFpsMsg = " (0 Pipeline FPS)"
         val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""

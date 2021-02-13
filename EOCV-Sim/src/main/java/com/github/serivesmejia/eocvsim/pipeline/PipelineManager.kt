@@ -29,6 +29,7 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
+import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
 import org.openftc.easyopencv.OpenCvPipeline
@@ -40,7 +41,7 @@ import java.util.*
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_TIMEOUT_MS = 3000L
+        const val PIPELINE_TIMEOUT_MS = 2000L
     }
 
     @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
@@ -49,9 +50,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmField val onResume = EventHandler("OnPipelineResume")
 
     @Volatile var pipelineOutputPoster: MatPoster? = null
-    private lateinit var pipelineInputPoster: MatPoster
-
-    private val pipelineFpsSync = FpsLimiter(30.0)
 
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
@@ -81,9 +79,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
             return field
         }
 
-    val pipelineFpsCounter: FpsCounter
-        get() = pipelineInputPoster.fpsCounter
-
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
 
@@ -94,8 +89,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun init() {
 
         Log.info("PipelineManager", "Initializing...")
-
-        pipelineInputPoster = MatPoster.createWithoutRecycler("PipelineInput", eocvSim.config.maxFps)
 
         //add default pipeline
         addPipelineClass(DefaultPipeline::class.java)
@@ -119,14 +112,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun update(inputMat: Mat) {
         onUpdate.run()
 
-        val pipelineJob = GlobalScope.launch {
+        runBlocking {
             withTimeout(PIPELINE_TIMEOUT_MS) {
-
+                pipelineOutputPoster?.post(currentPipeline?.processFrame(inputMat))
             }
         }
-
-        pipelineInputPoster.paused = paused
-        pipelineFpsSync.maxFPS = eocvSim.configManager.config.maxFps.toDouble()
 
         lastPipeline = currentPipeline
     }
