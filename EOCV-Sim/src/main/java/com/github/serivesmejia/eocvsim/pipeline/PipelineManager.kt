@@ -81,7 +81,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
-
+    
     enum class PauseReason {
         USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED
     }
@@ -109,16 +109,50 @@ class PipelineManager(var eocvSim: EOCVSim) {
         requestChangePipeline(0) //change to the default pipeline
     }
 
+    private val exceptHandler = CoroutineExceptionHandler { _, except ->
+        handlePipelineException(except)
+    }
+
     fun update(inputMat: Mat) {
         onUpdate.run()
 
+        var pipelineOutputMat: Mat? = null
+
         runBlocking {
-            withTimeout(PIPELINE_TIMEOUT_MS) {
-                pipelineOutputPoster?.post(currentPipeline?.processFrame(inputMat))
+            launch(exceptHandler) { //launch to have our coroutine exception handler
+
+                supervisorScope {
+                    try {
+                        withTimeout(PIPELINE_TIMEOUT_MS) { //actually making the timeout coroutine here
+                            pipelineOutputMat = currentPipeline?.processFrame(inputMat)
+                        }
+
+                        currentTelemetry?.errItem?.caption = ""
+                        currentTelemetry?.errItem?.setValue("")
+                    } catch(except: TimeoutCancellationException) {
+                        handlePipelineException(except)
+                    }
+                }
+
             }
         }
 
+        pipelineOutputMat?.let {
+            pipelineOutputPoster?.post(it)
+        }
+
         lastPipeline = currentPipeline
+    }
+
+    //handles all pipelines exceptions, including CancellationExceptions
+    private fun handlePipelineException(ex: Throwable) {
+        if(ex is TimeoutCancellationException) {
+            changePipeline(0) //fall back to default pipeline in case of a timeout
+        } else {
+            currentTelemetry?.errItem?.caption = "[/!\\]"
+            currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
+            Log.error("PipelineManager", "Uncaught exception thrown in pipeline $currentPipelineName", ex);
+        }
     }
 
     @SuppressWarnings("unchecked")

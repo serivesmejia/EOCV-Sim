@@ -153,8 +153,12 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
-
-            fpsLimiter.sync()
+            try {
+                fpsLimiter.sync()
+            } catch(ex: InterruptedException) {
+                Thread.currentThread().interrupt()
+                break
+            }
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
