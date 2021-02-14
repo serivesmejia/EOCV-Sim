@@ -28,8 +28,6 @@ import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
-import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
-import com.qualcomm.robotcore.util.ElapsedTime
 import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
@@ -42,11 +40,12 @@ import java.util.*
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_TIMEOUT_MS = 2000L
+        const val PIPELINE_TIMEOUT_MS = 1100L
     }
 
     @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
     @JvmField val onPipelineChange = EventHandler("OnPipelineChange")
+    @JvmField val onPipelineTimeout = EventHandler("OnPipelineTimeout")
     @JvmField val onPause = EventHandler("OnPipelinePause")
     @JvmField val onResume = EventHandler("OnPipelineResume")
 
@@ -110,39 +109,56 @@ class PipelineManager(var eocvSim: EOCVSim) {
         requestChangePipeline(0) //change to the default pipeline
     }
 
-    fun update(inputMat: Mat) = runBlocking {
+    fun update(inputMat: Mat) {
         onUpdate.run()
 
-        var timeouted = false
-
-        val job = async { //run our pipeline in the background
+        //run our pipeline in the background until it finishes or gets cancelled
+        val pipelineJob = GlobalScope.launch {
             try {
+                //if we have a pipeline, we run it right here with the input mat
+                //given to us. we'll post the frame the pipeline returns as long
+                //as we haven't ran out of time (the main loop will not wait it
+                //forever to finish its job). if we run out of time, when the
+                //pipeline return we will not post the frame, since we don't know
+                //when it was actually requested, we might even be in a different
+                //pipeline at this point.
                 currentPipeline?.processFrame(inputMat)?.let { outputMat ->
-                    if(!timeouted) {
+                    if(isActive) {
                         pipelineFpsCounter.update()
                         pipelineOutputPoster?.post(outputMat)
                     }
                 }
 
+                //clear error messages in telemetry
                 currentTelemetry?.errItem?.caption = ""
                 currentTelemetry?.errItem?.setValue("")
-            } catch (ex: Exception) {
+            } catch (ex: Exception) { //handling exceptions from pipelines
                 currentTelemetry?.errItem?.caption = "[/!\\]"
                 currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
                 Log.error("PipelineManager", "Uncaught exception thrown while processing pipeline $currentPipelineName", ex);
             }
         }
 
-        try {
-            withTimeout(PIPELINE_TIMEOUT_MS) { //wait with timeout for our pipeline coroutine to finish its job
-                job.await()
+        runBlocking {
+            try {
+                //ok! this is the part in which we'll wait for the pipeline with a timeout
+                withTimeout(PIPELINE_TIMEOUT_MS) {
+                    pipelineJob.join()
+                }
+            } catch (ex: TimeoutCancellationException) {
+                //oops, pipeline ran out of time! we'll fall back
+                //to default pipeline to avoid further issues.
+                requestChangePipeline(0)
+                //also call the event listeners in case
+                //someone wants to do something here
+                onPipelineTimeout.run()
+            } finally {
+                //we cancel our pipeline job so that it
+                //doesn't post the output mat from the
+                //pipeline if it ever returns.
+                pipelineJob.cancel()
             }
-        } catch(ex: TimeoutCancellationException) {
-            changePipeline(0)
-        } finally {
-            timeouted = true
         }
-
     }
 
     @SuppressWarnings("unchecked")

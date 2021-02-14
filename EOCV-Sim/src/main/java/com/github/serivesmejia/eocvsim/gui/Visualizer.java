@@ -580,7 +580,6 @@ public class Visualizer {
     }
 
     public void close() {
-
         frame.setVisible(false);
         viewport.stop();
 
@@ -609,11 +608,8 @@ public class Visualizer {
         }
 
         childDialogs.clear();
-
         frame.dispose();
-
         viewport.flush();
-
     }
 
     private void setFrameTitle(String title, String titleMsg) {
