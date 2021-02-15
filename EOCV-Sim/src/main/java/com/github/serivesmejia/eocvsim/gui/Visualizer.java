@@ -144,7 +144,7 @@ public class Visualizer {
 
         //instantiate all swing elements after theme installation
         frame = new JFrame();
-        viewport = new Viewport(eocvSim, 15);
+        viewport = new Viewport(eocvSim, eocvSim.getConfig().maxFps);
 
         menuBar = new JMenuBar();
 

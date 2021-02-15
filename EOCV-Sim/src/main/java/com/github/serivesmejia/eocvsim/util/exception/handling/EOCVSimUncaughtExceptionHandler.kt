@@ -1,4 +1,4 @@
-package com.github.serivesmejia.eocvsim.util.exception
+package com.github.serivesmejia.eocvsim.util.exception.handling
 
 import com.github.serivesmejia.eocvsim.util.Log
 import kotlin.system.exitProcess
@@ -11,9 +11,9 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
         @JvmStatic fun register() {
             Thread.setDefaultUncaughtExceptionHandler(EOCVSimUncaughtExceptionHandler())
         }
-
-        private var uncaughtExceptionsCount = 0
     }
+
+    private var uncaughtExceptionsCount = 0
 
     override fun uncaughtException(t: Thread, e: Throwable) {
         uncaughtExceptionsCount++

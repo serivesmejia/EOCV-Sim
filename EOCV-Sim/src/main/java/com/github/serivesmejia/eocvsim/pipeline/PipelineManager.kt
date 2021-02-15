@@ -27,6 +27,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -36,31 +37,43 @@ import org.openftc.easyopencv.TimestampedPipelineHandler
 import java.awt.Dimension
 import java.lang.reflect.Constructor
 import java.util.*
+import kotlin.coroutines.EmptyCoroutineContext
 
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_TIMEOUT_MS = 1100L
+        const val PIPELINE_TIMEOUT_MS = 1800L
+        const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
     }
 
-    @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
-    @JvmField val onPipelineChange = EventHandler("OnPipelineChange")
-    @JvmField val onPipelineTimeout = EventHandler("OnPipelineTimeout")
-    @JvmField val onPause = EventHandler("OnPipelinePause")
-    @JvmField val onResume = EventHandler("OnPipelineResume")
+    @JvmField
+    val onUpdate = EventHandler("OnPipelineUpdate")
+    @JvmField
+    val onPipelineChange = EventHandler("OnPipelineChange")
+    @JvmField
+    val onPipelineTimeout = EventHandler("OnPipelineTimeout")
+    @JvmField
+    val onPause = EventHandler("OnPipelinePause")
+    @JvmField
+    val onResume = EventHandler("OnPipelineResume")
 
-    @Volatile var pipelineOutputPoster: MatPoster? = null
+    var pipelineOutputPoster: MatPoster? = null
 
     val pipelineFpsCounter = FpsCounter()
 
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
-    @Volatile var currentPipeline: OpenCvPipeline? = null
+    @Volatile
+    var currentPipeline: OpenCvPipeline? = null
         private set
     var currentPipelineName = ""
         private set
     var currentPipelineIndex = -1
         private set
+
+    val activePipelineContexts = ArrayList<ExecutorCoroutineDispatcher>()
+
+    private var currentPipelineContext: ExecutorCoroutineDispatcher? = null
 
     @Volatile var currentTelemetry: Telemetry? = null
         private set
@@ -87,7 +100,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun init() {
-
         Log.info("PipelineManager", "Initializing...")
 
         //add default pipeline
@@ -112,16 +124,26 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun update(inputMat: Mat) {
         onUpdate.run()
 
+        for(context in activePipelineContexts.toTypedArray()) {
+            if(!context.isActive) {
+                activePipelineContexts.remove(context)
+            }
+        }
+
+        if(activePipelineContexts.size > MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS) {
+            throw MaxActiveContextsException("Current amount of active pipeline contexts ${activePipelineContexts.size} is more than the maximum allowed. This generally means that there are multiple pipelines stuck in processFrame() running in the background, check for any lengthy operations.")
+        }
+
         //run our pipeline in the background until it finishes or gets cancelled
-        val pipelineJob = GlobalScope.launch {
+        val pipelineJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {
             try {
-                //if we have a pipeline, we run it right here with the input mat
+                //if we have a pipeline, we run it right here, passing the input mat
                 //given to us. we'll post the frame the pipeline returns as long
                 //as we haven't ran out of time (the main loop will not wait it
-                //forever to finish its job). if we run out of time, when the
-                //pipeline return we will not post the frame, since we don't know
-                //when it was actually requested, we might even be in a different
-                //pipeline at this point.
+                //forever to finish its job). if we run out of time, and if the
+                //pipeline ever returns, we will not post the frame, since we
+                //don't know when it was actually requested, we might even be in
+                //a different pipeline at this point.
                 currentPipeline?.processFrame(inputMat)?.let { outputMat ->
                     if(isActive) {
                         pipelineFpsCounter.update()
@@ -139,25 +161,29 @@ class PipelineManager(var eocvSim: EOCVSim) {
             }
         }
 
-        runBlocking {
-            try {
-                //ok! this is the part in which we'll wait for the pipeline with a timeout
-                withTimeout(PIPELINE_TIMEOUT_MS) {
-                    pipelineJob.join()
+        try {
+            runBlocking {
+                try {
+                    //ok! this is the part in which we'll wait for the pipeline with a timeout
+                    withTimeout(PIPELINE_TIMEOUT_MS) {
+                        pipelineJob.join()
+                    }
+                } catch (ex: TimeoutCancellationException) {
+                    //oops, pipeline ran out of time! we'll fall back
+                    //to default pipeline to avoid further issues.
+                    requestChangePipeline(0)
+                    //also call the event listeners in case
+                    //someone wants to do something here
+                    onPipelineTimeout.run()
+                } finally {
+                    //we cancel our pipeline job so that it
+                    //doesn't post the output mat from the
+                    //pipeline if it ever returns.
+                    pipelineJob.cancel()
                 }
-            } catch (ex: TimeoutCancellationException) {
-                //oops, pipeline ran out of time! we'll fall back
-                //to default pipeline to avoid further issues.
-                requestChangePipeline(0)
-                //also call the event listeners in case
-                //someone wants to do something here
-                onPipelineTimeout.run()
-            } finally {
-                //we cancel our pipeline job so that it
-                //doesn't post the output mat from the
-                //pipeline if it ever returns.
-                pipelineJob.cancel()
             }
+        } catch(ex: InterruptedException) {
+            Thread.currentThread().interrupt()
         }
     }
 
@@ -232,10 +258,18 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentPipelineIndex = index
         currentPipelineName = currentPipeline!!.javaClass.simpleName
 
+        currentPipelineContext?.close()
+        currentPipelineContext = newSingleThreadContext("Pipeline-$currentPipelineName")
+
+        activePipelineContexts.add(currentPipelineContext!!);
+
         eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
         //if pause on images option is turned on by user
-        if (eocvSim.configManager.config.pauseOnImages) eocvSim.inputSourceManager.pauseIfImageTwoFrames() //pause next frame if current selected inputsource is an image
+        if (eocvSim.configManager.config.pauseOnImages) {
+            //pause next frame if current selected inputsource is an image
+            eocvSim.inputSourceManager.pauseIfImageTwoFrames()
+        }
 
         onPipelineChange.run()
     }
