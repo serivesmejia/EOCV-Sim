@@ -98,7 +98,7 @@ public class InputSourceManager {
 
         try {
             Mat m = currentInputSource.update();
-            if(m != null) m.copyTo(lastMatFromSource);
+            if(m != null && !m.empty() ) m.copyTo(lastMatFromSource);
         } catch (Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }

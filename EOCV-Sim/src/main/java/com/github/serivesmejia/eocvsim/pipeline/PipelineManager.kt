@@ -57,7 +57,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmField
     val onResume = EventHandler("OnPipelineResume")
 
-    var pipelineOutputPoster: MatPoster? = null
+    var pipelineOutputPosters: ArrayList<MatPoster> = ArrayList()
 
     val pipelineFpsCounter = FpsCounter()
 
@@ -147,7 +147,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 currentPipeline?.processFrame(inputMat)?.let { outputMat ->
                     if(isActive) {
                         pipelineFpsCounter.update()
-                        pipelineOutputPoster?.post(outputMat)
+
+                        for(poster in pipelineOutputPosters.toTypedArray()) {
+                            try {
+                                poster.post(outputMat)
+                            } catch(ex: Exception) {
+                                Log.error("PipelineManager", "Uncaught exception thrown while posting pipeline output Mat to ${poster.name} poster", ex)
+                            }
+                        }
                     }
                 }
 
@@ -157,33 +164,35 @@ class PipelineManager(var eocvSim: EOCVSim) {
             } catch (ex: Exception) { //handling exceptions from pipelines
                 currentTelemetry?.errItem?.caption = "[/!\\]"
                 currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
-                Log.error("PipelineManager", "Uncaught exception thrown while processing pipeline $currentPipelineName", ex);
+
+                Log.error("PipelineManager", "Uncaught exception thrown while processing pipeline $currentPipelineName", ex)
             }
         }
 
-        try {
-            runBlocking {
-                try {
-                    //ok! this is the part in which we'll wait for the pipeline with a timeout
-                    withTimeout(PIPELINE_TIMEOUT_MS) {
-                        pipelineJob.join()
-                    }
-                } catch (ex: TimeoutCancellationException) {
-                    //oops, pipeline ran out of time! we'll fall back
-                    //to default pipeline to avoid further issues.
-                    requestChangePipeline(0)
-                    //also call the event listeners in case
-                    //someone wants to do something here
-                    onPipelineTimeout.run()
-                } finally {
-                    //we cancel our pipeline job so that it
-                    //doesn't post the output mat from the
-                    //pipeline if it ever returns.
-                    pipelineJob.cancel()
+
+        runBlocking {
+            try {
+                //ok! this is the part in which we'll wait for the pipeline with a timeout
+                withTimeout(PIPELINE_TIMEOUT_MS) {
+                    pipelineJob.join()
                 }
+            } catch (ex: TimeoutCancellationException) {
+                //oops, pipeline ran out of time! we'll fall back
+                //to default pipeline to avoid further issues.
+                requestChangePipeline(0)
+                //also call the event listeners in case
+                //someone wants to do something here
+                onPipelineTimeout.run()
+
+                Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to processFrame (more than $PIPELINE_TIMEOUT_MS ms), falling back to DefaultPipeline.")
+                Log.white()
+
+            } finally {
+                //we cancel our pipeline job so that it
+                //doesn't post the output mat from the
+                //pipeline if it ever returns.
+                pipelineJob.cancel()
             }
-        } catch(ex: InterruptedException) {
-            Thread.currentThread().interrupt()
         }
     }
 
@@ -210,7 +219,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         var constructor: Constructor<*>
 
         try {
-
             nextTelemetry = Telemetry()
 
             try { //instantiate pipeline if it has a constructor with a telemetry parameter
@@ -223,9 +231,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
             Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.name)
             nextPipeline!!.init(eocvSim.inputSourceManager.lastMatFromSource)
-
         } catch (ex: NoSuchMethodException) {
-
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Check console for details",
                     "Close", Dimension(300, 150), true, true)
 
@@ -235,9 +241,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
             Log.white()
-
         } catch (ex: Exception) {
-
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
                     "Close", Dimension(300, 150), true, true)
 
@@ -247,7 +251,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
             eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
             return
-
         }
 
         Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.name)
@@ -261,7 +264,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentPipelineContext?.close()
         currentPipelineContext = newSingleThreadContext("Pipeline-$currentPipelineName")
 
-        activePipelineContexts.add(currentPipelineContext!!);
+        activePipelineContexts.add(currentPipelineContext!!)
 
         eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 

@@ -42,6 +42,7 @@ import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import nu.pattern.OpenCV
 import org.opencv.core.Size
+import java.awt.Dimension
 import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
@@ -109,6 +110,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
         pipelineManager.init() //init pipeline manager (scan for pipelines)
         tunerManager.init() //init tunable variables manager
 
+        pipelineManager.onPipelineTimeout.doPersistent {
+            visualizer.asyncPleaseWaitDialog("Current pipeline took too long to processFrame", "Falling back to DefaultPipeline",
+                "Close", Dimension(300, 150), true, true)
+        }
+
         visualizer.waitForFinishingInit()
 
         visualizer.updateSourcesList() //update sources and pick first one
@@ -120,25 +126,12 @@ class EOCVSim(val params: Parameters = Parameters()) {
     }
 
     private fun beginLoop() {
-
         Log.info("EOCVSim", "Begin EOCVSim loop")
         Log.white()
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
 
-        pipelineManager.pipelineOutputPoster = visualizer.viewport.matPoster
-
-        visualizer.viewport.matPoster.addPostable {
-            try {
-                //if there's an ongoing recording session, post the mat to the recording
-                currentRecordingSession?.postMatAsync(it)
-            } catch (ex: Exception) {
-                Log.error("EOCVSim", "Error while posting Mat to ecording", ex)
-            }
-
-            //updating displayed telemetry
-            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
-        }
+        pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
         while (!Thread.interrupted()) {
             //run all pending requested runnables
@@ -152,19 +145,17 @@ class EOCVSim(val params: Parameters = Parameters()) {
             try {
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
             } catch(ex: MaxActiveContextsException) {
-                println("Please note that the following exception is likely to be from one of the user pipelines")
+                println("Please note that the following exception is likely to be caused by one or more of the user pipelines")
                 throw ex
             }
+
+            //updating displayed telemetry
+            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
 
-            try {
-                fpsLimiter.sync()
-            } catch(ex: InterruptedException) {
-                Thread.currentThread().interrupt()
-                break
-            }
+            fpsLimiter.sync()
         }
 
         Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
@@ -204,6 +195,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
         if(currentRecordingSession == null) {
             currentRecordingSession = VideoRecordingSession(fpsLimiter.maxFPS, configManager.config.videoRecordingSize)
             currentRecordingSession!!.startRecordingSession()
+
+            Log.info("EOCVSim", "Recording session started")
+
+            pipelineManager.pipelineOutputPosters.add(currentRecordingSession!!.matPoster)
         }
     }
 
@@ -214,6 +209,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
             visualizer.pipelineRecordBtt.isEnabled = false
 
             itVideo.stopRecordingSession()
+            pipelineManager.pipelineOutputPosters.remove(itVideo)
+
+            Log.info("EOCVSim", "Recording session stopped")
 
             DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, FileFilters.recordedVideoFilter)
                     .addCloseListener { _: Int, file: File?, selectedFileFilter: FileFilter? ->

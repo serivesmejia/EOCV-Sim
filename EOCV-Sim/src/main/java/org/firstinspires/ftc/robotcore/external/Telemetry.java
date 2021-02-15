@@ -5,9 +5,12 @@ import java.util.ArrayList;
 public class Telemetry {
 
     private final ArrayList<ItemOrLine> telem = new ArrayList<>();
-    public Item errItem = new Item("", "");
     private ArrayList<ItemOrLine> lastTelem = new ArrayList<>();
+
+    public Item errItem = new Item("", "");
+
     private String captionValueSeparator = " : ";
+
     private volatile String lastTelemUpdate = "";
     private volatile String beforeTelemUpdate = "mai";
 

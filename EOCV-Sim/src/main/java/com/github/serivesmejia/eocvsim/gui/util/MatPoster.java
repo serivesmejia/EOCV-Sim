@@ -153,6 +153,10 @@ public class MatPoster {
         }
     }
 
+    public String getName() {
+        return name;
+    }
+
     public interface Postable {
         void post(Mat m);
     }

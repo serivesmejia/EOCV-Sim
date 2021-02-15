@@ -6,7 +6,7 @@ import kotlin.system.exitProcess
 class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
 
     companion object {
-        val MAX_UNCAUGHT_EXCEPTIONS_BEFORE_CRASH = 3
+        const val MAX_UNCAUGHT_EXCEPTIONS_BEFORE_CRASH = 3
 
         @JvmStatic fun register() {
             Thread.setDefaultUncaughtExceptionHandler(EOCVSimUncaughtExceptionHandler())
@@ -16,6 +16,13 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
     private var uncaughtExceptionsCount = 0
 
     override fun uncaughtException(t: Thread, e: Throwable) {
+        //we don't want the whole app to crash on a simple interrupted exception right?
+        if(e is InterruptedException) {
+            Log.warn("EOCVSimUncaughtExceptionHandler", "Uncaught InterruptedException thrown in thread ${t.name}, it will be interrupted.", e)
+            t.interrupt()
+            return
+        }
+
         uncaughtExceptionsCount++
 
         Log.error("Uncaught exception thrown in \"${t.name}\" thread", e)
