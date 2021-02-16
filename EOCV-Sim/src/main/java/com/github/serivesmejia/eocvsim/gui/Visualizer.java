@@ -47,6 +47,7 @@ import java.awt.Taskbar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class Visualizer {
 
@@ -354,15 +355,14 @@ public class Visualizer {
 
         //tooltips for the telemetry list items (thnx stackoverflow)
         telemetryList.addMouseMotionListener(new MouseMotionListener() {
-
             @Override
-            public void mouseDragged(MouseEvent e) {
-            }
+            public void mouseDragged(MouseEvent e) { }
 
             @Override
             public void mouseMoved(MouseEvent e) {
                 JList l = (JList) e.getSource();
                 ListModel m = l.getModel();
+
                 int index = l.locationToIndex(e.getPoint());
                 if (index > -1) {
                     l.setToolTipText(m.getElementAt(index).toString());
@@ -410,7 +410,6 @@ public class Visualizer {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         frame.setIconImage(ICO_EOCVSIM.getImage());
-
 
         frame.setLocationRelativeTo(null);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -570,7 +569,32 @@ public class Visualizer {
         frame.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent evt) {
+                double ratio = frame.getSize().getHeight() / 820;
+                int columns = (int) Math.round(8 * ratio);
 
+                pipelineSelector.setVisibleRowCount(columns);
+
+                pipelineSelector.revalidate();
+                pipelineSelector.repaint();
+                pipelineSelectorScroll.revalidate();
+                pipelineSelectorScroll.repaint();
+
+                sourceSelector.setVisibleRowCount(columns);
+
+                sourceSelector.revalidate();
+                sourceSelector.repaint();
+                sourceSelectorScroll.revalidate();
+                sourceSelectorScroll.repaint();
+
+                telemetryList.setVisibleRowCount(columns);
+
+                telemetryList.revalidate();
+                telemetryList.repaint();
+                telemetryScroll.revalidate();
+                telemetryScroll.repaint();
+
+                rightContainer.revalidate();
+                rightContainer.repaint();
             }
         });
 
