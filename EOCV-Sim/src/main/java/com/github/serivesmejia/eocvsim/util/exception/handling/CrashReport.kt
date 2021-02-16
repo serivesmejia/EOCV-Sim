@@ -53,7 +53,7 @@ class CrashReport(val causedByException: Throwable) {
         sb.appendLine("  EOCV-Sim v${EOCVSim.VERSION} crash report").appendLine()
         sb.appendLine("\\--------------------------------/").appendLine()
 
-        sb.appendLine(": Crash stacktrace").append("\n")
+        sb.appendLine(": Crash stacktrace").appendLine()
         sb.appendLine(StrUtil.fromException(causedByException)).appendLine()
 
         sb.appendLine("==========================================").appendLine()

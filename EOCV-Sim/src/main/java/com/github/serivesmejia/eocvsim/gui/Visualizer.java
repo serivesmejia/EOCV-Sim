@@ -540,7 +540,7 @@ public class Visualizer {
             });
         });
 
-        //RESIZE HANDLING
+        //VIEWPORT RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(e -> {
             if (isCtrlPressed) { //check if control key is pressed
                 double scale = viewport.getViewportScale() - (0.3 * e.getPreciseWheelRotation());
@@ -565,6 +565,13 @@ public class Visualizer {
                     break;
             }
             return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
+        });
+
+        frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent evt) {
+
+            }
         });
 
     }
@@ -791,23 +798,17 @@ public class Visualizer {
     }
 
     public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError) {
-
         AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, isError, eocvSim);
-
-        new Thread(rPWD).start();
+        SwingUtilities.invokeLater(rPWD);
 
         return rPWD;
-
     }
 
     public AsyncPleaseWaitDialog asyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {
-
         AsyncPleaseWaitDialog rPWD = new AsyncPleaseWaitDialog(message, subMessage, cancelBttText, size, cancellable, false, eocvSim);
-
-        new Thread(rPWD).start();
+        SwingUtilities.invokeLater(rPWD);
 
         return rPWD;
-
     }
 
     public class AsyncPleaseWaitDialog implements Runnable {
@@ -838,7 +839,6 @@ public class Visualizer {
         private final ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
 
         public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {
-
             this.message = message;
             this.subMessage = subMessage;
             this.initialMessage = message;
@@ -851,7 +851,6 @@ public class Visualizer {
             this.isError = isError;
 
             eocvSim.visualizer.pleaseWaitDialogs.add(this);
-
         }
 
         public void onCancel(Runnable runn) {
@@ -860,7 +859,6 @@ public class Visualizer {
 
         @Override
         public void run() {
-
             wasCancelled = pleaseWaitDialog(dialog, message, subMessage, cancelBttText, size, cancellable, this, isError);
 
             if (wasCancelled) {
@@ -868,7 +866,6 @@ public class Visualizer {
                     runn.run();
                 }
             }
-
         }
 
         public void destroyDialog() {

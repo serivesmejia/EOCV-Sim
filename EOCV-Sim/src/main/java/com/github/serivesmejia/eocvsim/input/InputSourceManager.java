@@ -98,14 +98,13 @@ public class InputSourceManager {
 
         try {
             Mat m = currentInputSource.update();
-            if(m != null && !m.empty() ) m.copyTo(lastMatFromSource);
-        } catch (Exception ex) {
+            if(m != null && !m.empty()) m.copyTo(lastMatFromSource);
+        } catch(Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }
     }
 
     public void addInputSource(String name, InputSource inputSource) {
-
         if (inputSource == null) {
             currentInputSource = null;
             return;
@@ -126,11 +125,9 @@ public class InputSourceManager {
         }
 
         Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
-
     }
 
     public void deleteInputSource(String sourceName) {
-
         InputSource src = sources.get(sourceName);
 
         if (src == null) return;
@@ -140,11 +137,9 @@ public class InputSourceManager {
 
         inputSourceLoader.deleteInputSource(sourceName);
         inputSourceLoader.saveInputSourcesToFile();
-
     }
 
     public boolean setInputSource(String sourceName) {
-
         InputSource src = sources.get(sourceName);
 
         if (src != null) {
@@ -193,7 +188,6 @@ public class InputSourceManager {
         eocvSim.visualizer.sourceSelectorDeleteBtt.setEnabled(!currentInputSource.isDefault);
 
         return true;
-
     }
 
     public boolean isNameOnUse(String name) {
@@ -221,17 +215,16 @@ public class InputSourceManager {
     }
 
     public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
-
         Visualizer.AsyncPleaseWaitDialog apwdCam = null;
 
         if (getSourceType(sourceName) == SourceType.CAMERA) {
             apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
                     new Dimension(300, 150), true);
+
             apwdCam.onCancel(() -> System.exit(0));
         }
 
         return apwdCam;
-
     }
 
     public SourceType getSourceType(String sourceName) {
