@@ -28,8 +28,6 @@ import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
-import com.github.serivesmejia.eocvsim.util.extension.CoroutineExt.hasFinished
-import com.github.serivesmejia.eocvsim.util.extension.CoroutineExt.requestClose
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -44,7 +42,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_TIMEOUT_MS = 1800L
+        const val PIPELINE_TIMEOUT_MS = 1200L
         const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
     }
 
@@ -260,7 +258,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentPipelineIndex = index
         currentPipelineName = currentPipeline!!.javaClass.simpleName
 
-        currentPipelineContext?.requestClose()
+        currentPipelineContext?.close()
         currentPipelineContext = newSingleThreadContext("Pipeline-$currentPipelineName")
 
         activePipelineContexts.add(currentPipelineContext!!)
