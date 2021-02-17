@@ -566,6 +566,7 @@ public class Visualizer {
             return false; //idk let's just return false 'cause keyboard input doesn't work otherwise
         });
 
+        //resizes all three JLists in right panel to make buttons visible in smaller resolutions
         frame.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent evt) {
@@ -574,6 +575,9 @@ public class Visualizer {
 
                 pipelineSelector.setVisibleRowCount(columns);
 
+                //gotta revalidate and repaint
+                //for every single involved element...
+                //thanks swing, very cool
                 pipelineSelector.revalidate();
                 pipelineSelector.repaint();
                 pipelineSelectorScroll.revalidate();
@@ -810,7 +814,6 @@ public class Visualizer {
         dialog.setVisible(true);
 
         return cancelled[0];
-
     }
 
     public void pleaseWaitDialog(JDialog dialog, String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable) {

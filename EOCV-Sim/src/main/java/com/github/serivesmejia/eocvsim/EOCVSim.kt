@@ -76,12 +76,13 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     val fpsLimiter = FpsLimiter(30.0)
 
+    val eocvSimThread = Thread.currentThread()
+
     enum class DestroyReason {
-        USER_REQUESTED, THEME_CHANGING, RESTART
+        USER_REQUESTED, THEME_CHANGING, RESTART, CRASH
     }
 
     fun init() {
-
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v$VERSION")
         Log.white()
 
@@ -133,7 +134,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
-        while (!Thread.interrupted()) {
+        while (!eocvSimThread.isInterrupted) {
             //run all pending requested runnables
             onMainUpdate.run()
 
@@ -145,8 +146,16 @@ class EOCVSim(val params: Parameters = Parameters()) {
             try {
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
             } catch(ex: MaxActiveContextsException) {
-                println("Please note that the following exception is likely to be caused by one or more of the user pipelines")
-                throw ex
+                visualizer.asyncPleaseWaitDialog("There are many pipelines stuck in processFrame running in the background", "To avoid further issues, EOCV-Sim will exit now.",
+                    "Ok", Dimension(430, 150), true, true
+                ).onCancel {
+                    destroy(DestroyReason.CRASH)
+                }
+
+                Log.info("EOCVSim","Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
+
+                while(eocvSimThread.isInterrupted);
+                break
             }
 
             //updating displayed telemetry
@@ -154,7 +163,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()
-
             fpsLimiter.sync()
         }
 
@@ -174,7 +182,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         configManager.saveToFile()
         visualizer.close()
 
-        Thread.currentThread().interrupt()
+        eocvSimThread.interrupt()
     }
 
     fun destroy() {

@@ -28,6 +28,8 @@ import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
+import com.github.serivesmejia.eocvsim.util.extension.CoroutineExt.hasFinished
+import com.github.serivesmejia.eocvsim.util.extension.CoroutineExt.requestClose
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import kotlinx.coroutines.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -72,7 +74,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         private set
 
     val activePipelineContexts = ArrayList<ExecutorCoroutineDispatcher>()
-
     private var currentPipelineContext: ExecutorCoroutineDispatcher? = null
 
     @Volatile var currentTelemetry: Telemetry? = null
@@ -124,15 +125,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun update(inputMat: Mat) {
         onUpdate.run()
 
-        for(context in activePipelineContexts.toTypedArray()) {
-            if(!context.isActive) {
-                activePipelineContexts.remove(context)
-            }
+        if(activePipelineContexts.size > MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS) {
+            throw MaxActiveContextsException("Current amount of active pipeline coroutine contexts (${activePipelineContexts.size}) is more than the maximum allowed. This generally means that there are multiple pipelines stuck in processFrame() running in the background, check for any lengthy operations in your pipelines.")
         }
 
-        if(activePipelineContexts.size > MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS) {
-            throw MaxActiveContextsException("Current amount of active pipeline contexts ${activePipelineContexts.size} is more than the maximum allowed. This generally means that there are multiple pipelines stuck in processFrame() running in the background, check for any lengthy operations.")
-        }
+        if(paused) return
 
         //run our pipeline in the background until it finishes or gets cancelled
         val pipelineJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {
@@ -155,6 +152,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
                                 Log.error("PipelineManager", "Uncaught exception thrown while posting pipeline output Mat to ${poster.name} poster", ex)
                             }
                         }
+                    } else {
+                        activePipelineContexts.remove(this.coroutineContext)
                     }
                 }
 
@@ -169,13 +168,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
             }
         }
 
-
         runBlocking {
             try {
                 //ok! this is the part in which we'll wait for the pipeline with a timeout
                 withTimeout(PIPELINE_TIMEOUT_MS) {
                     pipelineJob.join()
                 }
+
+                activePipelineContexts.remove(currentPipelineContext)
             } catch (ex: TimeoutCancellationException) {
                 //oops, pipeline ran out of time! we'll fall back
                 //to default pipeline to avoid further issues.
@@ -186,7 +186,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
                 Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to processFrame (more than $PIPELINE_TIMEOUT_MS ms), falling back to DefaultPipeline.")
                 Log.white()
-
             } finally {
                 //we cancel our pipeline job so that it
                 //doesn't post the output mat from the
@@ -261,7 +260,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentPipelineIndex = index
         currentPipelineName = currentPipeline!!.javaClass.simpleName
 
-        currentPipelineContext?.close()
+        currentPipelineContext?.requestClose()
         currentPipelineContext = newSingleThreadContext("Pipeline-$currentPipelineName")
 
         activePipelineContexts.add(currentPipelineContext!!)
