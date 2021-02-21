@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.tuner.TunableField
 import com.qualcomm.robotcore.util.Range
 import javax.swing.JSlider
+import kotlin.math.roundToInt
 
 class TunableSlider(val index: Int,
                     val tunableField: TunableField<*>,
@@ -23,10 +24,11 @@ class TunableSlider(val index: Int,
 
         addChangeListener {
             eocvSim.onMainUpdate.doOnce {
-                tunableField.setGuiFieldValue(index, value.toString())
+                if(inControl) {
+                    tunableField.setGuiFieldValue(index, value.toString())
 
-                if (eocvSim.pipelineManager.paused) {
-                    eocvSim.pipelineManager.setPaused(false)
+                    if (eocvSim.pipelineManager.paused)
+                        eocvSim.pipelineManager.setPaused(false)
                 }
             }
         }
@@ -39,18 +41,21 @@ class TunableSlider(val index: Int,
     }
 
     fun setValue(value: Any) {
-        val newValue = try {
-            value as Int
-        } catch(ignored: ClassCastException) {
+        val newValue = if(value is String) {
             try {
-                Integer.valueOf(value as String)
-            } catch(ignored: ClassCastException) {
-                0
+                value.toDouble()
+            } catch(ignored: NumberFormatException) {
+                0.0
+            }
+        } else {
+            try {
+                value.toString().toDouble()
+            } catch(ignored: NumberFormatException) {
+                0.0
             }
         }
 
-        this.value = Range.clip(newValue, minimum, maximum)
-        revalidate(); repaint()
+        this.value = Range.clip(newValue.roundToInt(), minimum, maximum)
     }
 
 }

@@ -141,8 +141,6 @@ public class TunableFieldPanel extends JPanel {
                 for(int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
                     fields[i].setInControl(false);
                     sliders[i].setInControl(true);
-
-                    sliders[i].setValue(tunableField.getGuiFieldValue(i));
                 }
 
                 add(slidersPanel);

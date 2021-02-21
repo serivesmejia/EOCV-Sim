@@ -68,8 +68,8 @@ public abstract class TunableField<T> {
     public void setPipelineFieldValue(T newValue) throws IllegalAccessException {
         if (hasChanged()) { //execute if value is not the same to save resources
             reflectionField.set(pipeline, newValue);
-            onValueChange.run();
         }
+        onValueChange.run();
     }
 
     public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;
@@ -111,15 +111,6 @@ public abstract class TunableField<T> {
 
     public final AllowMode getAllowMode() {
         return allowMode;
-    }
-
-    public final Type getType() {
-        try {
-            Type sooper = getClass().getGenericSuperclass();
-            return ((ParameterizedType)sooper).getActualTypeArguments()[0];
-        } catch(Exception ex) {
-            return null;
-        }
     }
 
     public final boolean isOnlyNumbers() {

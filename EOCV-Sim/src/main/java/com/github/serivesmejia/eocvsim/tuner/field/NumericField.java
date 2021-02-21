@@ -41,7 +41,6 @@ public class NumericField<T extends Number> extends TunableField<T> {
 
     @Override
     public void update() {
-
         if (value == null) return;
 
         try {
@@ -55,7 +54,6 @@ public class NumericField<T extends Number> extends TunableField<T> {
         if (hasChanged) {
             updateGuiFieldValues();
         }
-
     }
 
     @Override
