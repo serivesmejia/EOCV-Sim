@@ -24,7 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.scanner.AnnotatedTunableFieldScanner;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.ReflectUtil;

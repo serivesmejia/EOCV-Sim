@@ -18,7 +18,7 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread, e: Throwable) {
         //we don't want the whole app to crash on a simple interrupted exception right?
         if(e is InterruptedException) {
-            Log.warn("EOCVSimUncaughtExceptionHandler", "Uncaught InterruptedException thrown in thread ${t.name}, it will be interrupted.", e)
+            Log.warn("EOCVSimUncaughtExceptionHandler", "Uncaught InterruptedException thrown in Thread ${t.name}, it will be interrupted", e)
             t.interrupt()
             return
         }

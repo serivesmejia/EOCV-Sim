@@ -71,8 +71,6 @@ public class InputSourceManager {
         }
 
         Log.white();
-
-
     }
 
     private void createDefaultImgInputSource(String resourcePath, String fileName, String sourceName, Size imgSize) {

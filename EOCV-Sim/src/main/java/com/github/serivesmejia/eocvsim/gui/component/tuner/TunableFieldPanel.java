@@ -21,9 +21,12 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.tuner;
+package com.github.serivesmejia.eocvsim.gui.component.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableComboBox;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableSlider;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableTextField;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;
@@ -34,6 +37,8 @@ public class TunableFieldPanel extends JPanel {
     public final TunableField tunableField;
 
     public JTextField[] fields;
+    public JSlider[] sliders;
+
     public JComboBox[] comboBoxes;
 
     private boolean isOnlyNumbers = false;
@@ -41,7 +46,6 @@ public class TunableFieldPanel extends JPanel {
     private final EOCVSim eocvSim;
 
     public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
-
         super();
 
         this.tunableField = tunableField;
@@ -50,11 +54,9 @@ public class TunableFieldPanel extends JPanel {
         tunableField.setTunableFieldPanel(this);
 
         init();
-
     }
 
     private void init() {
-
         setOnlyNumbers(tunableField.isOnlyNumbers());
 
         //nice look
@@ -66,14 +68,20 @@ public class TunableFieldPanel extends JPanel {
         add(fieldNameLabel);
 
         fields = new JTextField[tunableField.getGuiFieldAmount()];
+        sliders = new JSlider[tunableField.getGuiFieldAmount()];
 
-        for (int i = 0; i < fields.length; i++) {
+        for (int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
+            //add the tunable field as a field
             TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
 
             field.setEditable(true);
             add(field);
 
             fields[i] = field;
+
+            //add the tunable field as a slider
+            TunableSlider slider = new TunableSlider(i, tunableField, eocvSim);
+            sliders[i] = slider;
         }
 
         comboBoxes = new JComboBox[tunableField.getGuiComboBoxAmount()];
@@ -84,7 +92,6 @@ public class TunableFieldPanel extends JPanel {
 
             comboBoxes[i] = comboBox;
         }
-
     }
 
     public void setFieldValue(int index, Object value) {

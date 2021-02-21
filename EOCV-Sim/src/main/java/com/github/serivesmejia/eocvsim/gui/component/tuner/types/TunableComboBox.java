@@ -21,7 +21,7 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.tuner;
+package com.github.serivesmejia.eocvsim.gui.component.tuner.types;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;

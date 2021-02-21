@@ -46,16 +46,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
         const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
     }
 
-    @JvmField
-    val onUpdate = EventHandler("OnPipelineUpdate")
-    @JvmField
-    val onPipelineChange = EventHandler("OnPipelineChange")
-    @JvmField
-    val onPipelineTimeout = EventHandler("OnPipelineTimeout")
-    @JvmField
-    val onPause = EventHandler("OnPipelinePause")
-    @JvmField
-    val onResume = EventHandler("OnPipelineResume")
+    @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
+    @JvmField val onPipelineChange = EventHandler("OnPipelineChange")
+    @JvmField val onPipelineTimeout = EventHandler("OnPipelineTimeout")
+    @JvmField val onPause = EventHandler("OnPipelinePause")
+    @JvmField val onResume = EventHandler("OnPipelineResume")
 
     var pipelineOutputPosters: ArrayList<MatPoster> = ArrayList()
 
@@ -193,7 +188,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @Suppress("UNCHECKED_CAST")
     fun addPipelineClass(C: Class<*>) {
         try {
             pipelines.add(C as Class<out OpenCvPipeline>)
@@ -204,6 +199,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    @OptIn(ObsoleteCoroutinesApi::class)
     fun changePipeline(index: Int) {
         if (index == currentPipelineIndex) return
 

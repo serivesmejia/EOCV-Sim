@@ -21,7 +21,7 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.tuner;
+package com.github.serivesmejia.eocvsim.gui.component.tuner.types;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
@@ -52,7 +52,6 @@ public class TunableTextField extends JTextField {
     private volatile boolean hasValidText = true;
 
     public TunableTextField(int index, TunableField tunableField, EOCVSim eocvSim) {
-
         super();
 
         this.initialBorder = this.getBorder();
@@ -169,7 +168,6 @@ public class TunableTextField extends JTextField {
             }
 
         });
-
     }
 
     public void setNormalBorder() {

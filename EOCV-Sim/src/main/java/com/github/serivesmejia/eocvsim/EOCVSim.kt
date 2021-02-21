@@ -123,10 +123,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
         visualizer.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
         visualizer.pipelineSelector.selectedIndex = 0
 
-        beginLoop()
+        start()
     }
 
-    private fun beginLoop() {
+    private fun start() {
         Log.info("EOCVSim", "Begin EOCVSim loop")
         Log.white()
 
