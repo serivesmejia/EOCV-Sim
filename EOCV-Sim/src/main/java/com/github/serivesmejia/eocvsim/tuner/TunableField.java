@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
@@ -45,15 +46,15 @@ public abstract class TunableField<T> {
     private int guiFieldAmount = 1;
     private int guiComboBoxAmount = 0;
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
+    public final EventHandler onValueChange = new EventHandler("TunableField-ValueChange");
 
+    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
         this.reflectionField = reflectionField;
         this.pipeline = instance;
         this.allowMode = allowMode;
         this.eocvSim = eocvSim;
 
         initialFieldValue = reflectionField.get(instance);
-
     }
 
     public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
@@ -65,11 +66,10 @@ public abstract class TunableField<T> {
     public abstract void updateGuiFieldValues();
 
     public void setPipelineFieldValue(T newValue) throws IllegalAccessException {
-
         if (hasChanged()) { //execute if value is not the same to save resources
             reflectionField.set(pipeline, newValue);
+            onValueChange.run();
         }
-
     }
 
     public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;

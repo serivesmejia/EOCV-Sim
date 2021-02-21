@@ -28,6 +28,7 @@ import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableComboBox
 import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableSlider;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableTextField;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
+import com.qualcomm.robotcore.util.Range;
 
 import javax.swing.*;
 import javax.swing.border.SoftBevelBorder;
@@ -37,10 +38,10 @@ public class TunableFieldPanel extends JPanel {
 
     public final TunableField tunableField;
 
-    public JTextField[] fields;
+    public TunableTextField[] fields;
     public JPanel fieldsPanel;
 
-    public JSlider[] sliders;
+    public TunableSlider[] sliders;
     public JPanel slidersPanel;
 
     public JComboBox[] comboBoxes;
@@ -76,8 +77,8 @@ public class TunableFieldPanel extends JPanel {
 
         add(fieldNameLabel);
 
-        fields = new JTextField[tunableField.getGuiFieldAmount()];
-        sliders = new JSlider[tunableField.getGuiFieldAmount()];
+        fields = new TunableTextField[tunableField.getGuiFieldAmount()];
+        sliders = new TunableSlider[tunableField.getGuiFieldAmount()];
 
         fieldsPanel = new JPanel();
         slidersPanel = new JPanel();
@@ -111,6 +112,7 @@ public class TunableFieldPanel extends JPanel {
 
     public void setFieldValue(int index, Object value) {
         fields[index].setText(value.toString());
+        sliders[index].setValue(value);
     }
 
     public void setComboBoxSelection(int index, Object selection) {
@@ -123,13 +125,26 @@ public class TunableFieldPanel extends JPanel {
                 if(this.mode == Mode.SLIDERS) {
                     remove(slidersPanel);
                 }
+
+                for(int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
+                    fields[i].setInControl(true);
+                    sliders[i].setInControl(false);
+                }
+
                 add(fieldsPanel);
                 break;
-
             case SLIDERS:
                 if(this.mode == Mode.TEXTBOXES) {
                     remove(fieldsPanel);
                 }
+
+                for(int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
+                    fields[i].setInControl(false);
+                    sliders[i].setInControl(true);
+
+                    sliders[i].setValue(tunableField.getGuiFieldValue(i));
+                }
+
                 add(slidersPanel);
                 break;
         }

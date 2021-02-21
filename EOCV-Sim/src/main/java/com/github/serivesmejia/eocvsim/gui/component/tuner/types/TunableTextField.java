@@ -52,6 +52,8 @@ public class TunableTextField extends JTextField {
     private final EOCVSim eocvSim;
     private volatile boolean hasValidText = true;
 
+    private boolean inControl = false;
+
     public TunableTextField(int index, TunableField tunableField, EOCVSim eocvSim) {
         super();
 
@@ -65,6 +67,12 @@ public class TunableTextField extends JTextField {
 
         int plusW = Math.round(getText().length() / 5f) * 10;
         this.setPreferredSize(new Dimension(40 + plusW, getPreferredSize().height));
+
+        tunableField.onValueChange.doPersistent(() -> {
+            if(!inControl) {
+                setText(tunableField.getGuiFieldValue(index).toString());
+            }
+        });
 
         if (tunableField.isOnlyNumbers()) {
 
@@ -179,11 +187,17 @@ public class TunableTextField extends JTextField {
         setBorder(new LineBorder(new Color(255, 79, 79), 2));
     }
 
+    public void setInControl(boolean inControl) {
+        this.inControl = inControl;
+    }
+
     private boolean isNumberCharacter(char c) {
         for (char validC : validCharsIfNumber) {
             if (c == validC) return true;
         }
         return false;
     }
+
+    public boolean isInControl() { return inControl; }
 
 }

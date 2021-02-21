@@ -53,7 +53,6 @@ public class TunerManager {
     }
 
     public void init() {
-
         if(tunableFieldsTypes == null) {
             tunableFieldsTypes = new AnnotatedTunableFieldScanner(eocvSim.getParams().getScanForTunableFieldsIn())
                                 .lookForTunableFields();
@@ -66,9 +65,8 @@ public class TunerManager {
 
         if (eocvSim.pipelineManager.getCurrentPipeline() != null) {
             addFieldsFrom(eocvSim.pipelineManager.getCurrentPipeline());
-            eocvSim.visualizer.updateTunerFields(getTunableFieldPanels());
+            eocvSim.visualizer.updateTunerFields(createTunableFieldPanels());
         }
-
     }
 
     public void update() {
@@ -111,12 +109,10 @@ public class TunerManager {
             //now, lets do some more reflection to instantiate this TunableField
             //and add it to the list...
             try {
-
                 Class<? extends TunableField> tunableFieldClass = tunableFieldsTypes.get(type);
                 Constructor<? extends TunableField> constructor = tunableFieldClass.getConstructor(OpenCvPipeline.class, Field.class, EOCVSim.class);
 
                 this.fields.add(constructor.newInstance(pipeline, field, eocvSim));
-
             } catch (Exception ex) {
                 //oops rip
                 Log.error("TunerManager", "Reflection error while processing field: " + field.getName(), ex);
@@ -126,8 +122,7 @@ public class TunerManager {
 
     }
 
-    public List<TunableFieldPanel> getTunableFieldPanels() {
-
+    private List<TunableFieldPanel> createTunableFieldPanels() {
         List<TunableFieldPanel> panels = new ArrayList<>();
 
         for (TunableField field : fields) {
@@ -135,7 +130,6 @@ public class TunerManager {
         }
 
         return panels;
-
     }
 
 }
