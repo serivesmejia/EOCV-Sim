@@ -31,21 +31,26 @@ import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;
 import javax.swing.border.SoftBevelBorder;
+import java.util.Arrays;
 
 public class TunableFieldPanel extends JPanel {
 
     public final TunableField tunableField;
 
     public JTextField[] fields;
+    public JPanel fieldsPanel;
+
     public JSlider[] sliders;
+    public JPanel slidersPanel;
 
     public JComboBox[] comboBoxes;
 
-    private boolean isOnlyNumbers = false;
-
+    private final TunableFieldPanelOptions panelConfig = new TunableFieldPanelOptions(this);
     private final EOCVSim eocvSim;
 
-    private final TunableFieldPanelConfig panelConfig = new TunableFieldPanelConfig(this);
+    private Mode mode;
+
+    enum Mode { TEXTBOXES, SLIDERS }
 
     public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
         super();
@@ -59,8 +64,6 @@ public class TunableFieldPanel extends JPanel {
     }
 
     private void init() {
-        setOnlyNumbers(tunableField.isOnlyNumbers());
-
         //nice look
         setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
 
@@ -76,19 +79,25 @@ public class TunableFieldPanel extends JPanel {
         fields = new JTextField[tunableField.getGuiFieldAmount()];
         sliders = new JSlider[tunableField.getGuiFieldAmount()];
 
+        fieldsPanel = new JPanel();
+        slidersPanel = new JPanel();
+
         for (int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
             //add the tunable field as a field
             TunableTextField field = new TunableTextField(i, tunableField, eocvSim);
+            fields[i] = field;
 
             field.setEditable(true);
-            add(field);
-
-            fields[i] = field;
+            fieldsPanel.add(field);
 
             //add the tunable field as a slider
             TunableSlider slider = new TunableSlider(i, tunableField, eocvSim);
             sliders[i] = slider;
+
+            slidersPanel.add(slider);
         }
+
+        setMode(Mode.TEXTBOXES);
 
         comboBoxes = new JComboBox[tunableField.getGuiComboBoxAmount()];
 
@@ -108,8 +117,26 @@ public class TunableFieldPanel extends JPanel {
         comboBoxes[index].setSelectedItem(selection.toString());
     }
 
-    public void setOnlyNumbers(boolean isOnlyNumbers) {
-        this.isOnlyNumbers = isOnlyNumbers;
+    public void setMode(Mode mode) {
+        switch(mode) {
+            case TEXTBOXES:
+                if(this.mode == Mode.SLIDERS) {
+                    remove(slidersPanel);
+                }
+                add(fieldsPanel);
+                break;
+
+            case SLIDERS:
+                if(this.mode == Mode.TEXTBOXES) {
+                    remove(fieldsPanel);
+                }
+                add(slidersPanel);
+                break;
+        }
+
+        revalidate(); repaint();
+
+        this.mode = mode;
     }
 
 }

@@ -20,6 +20,7 @@ object Icons {
         addImage("ico_config", "/images/icon/ico_config.png")
         addImage("ico_slider", "/images/icon/ico_slider.png")
         addImage("ico_textbox", "/images/icon/ico_textbox.png")
+        addImage("ico_colorpick", "/images/icon/ico_colorpick.png")
     }
 
     fun getImage(name: String): ImageIcon {
