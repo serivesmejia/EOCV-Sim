@@ -30,6 +30,7 @@ class EventHandler(val name: String) : Runnable {
     val listeners
         get() = internalListeners.values.toTypedArray()
 
+    @get:Synchronized
     private val internalListeners: HashMap<Int, EventListener> = HashMap()
 
     companion object {

@@ -32,6 +32,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import javax.swing.*;
 import javax.swing.border.SoftBevelBorder;
+import java.awt.*;
 import java.util.Arrays;
 
 public class TunableFieldPanel extends JPanel {
@@ -77,11 +78,13 @@ public class TunableFieldPanel extends JPanel {
 
         add(fieldNameLabel);
 
-        fields = new TunableTextField[tunableField.getGuiFieldAmount()];
-        sliders = new TunableSlider[tunableField.getGuiFieldAmount()];
+        int fieldAmount = tunableField.getGuiFieldAmount();
+
+        fields = new TunableTextField[fieldAmount];
+        sliders = new TunableSlider[fieldAmount];
 
         fieldsPanel = new JPanel();
-        slidersPanel = new JPanel();
+        slidersPanel = new JPanel(new GridLayout(fieldAmount, 1));
 
         for (int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
             //add the tunable field as a field

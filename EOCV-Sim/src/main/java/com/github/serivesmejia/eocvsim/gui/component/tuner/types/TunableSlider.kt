@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner.types
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.tuner.TunableField
+import com.github.serivesmejia.eocvsim.util.event.KEventListener
 import com.qualcomm.robotcore.util.Range
 import javax.swing.JSlider
 import kotlin.math.roundToInt
@@ -16,6 +17,15 @@ class TunableSlider(val index: Int,
 
     constructor(i: Int, tunableField: TunableField<Any>, eocvSim: EOCVSim) : this(i, tunableField, eocvSim, 0, 255)
 
+    private val changeFieldValue = KEventListener {
+        if(inControl) {
+            tunableField.setGuiFieldValue(index, value.toString())
+
+            if (eocvSim.pipelineManager.paused)
+                eocvSim.pipelineManager.setPaused(false)
+        }
+    }
+
     init {
         minimum = minBound
         maximum = maxBound
@@ -23,21 +33,14 @@ class TunableSlider(val index: Int,
         setValue(tunableField.getGuiFieldValue(index))
 
         addChangeListener {
-            eocvSim.onMainUpdate.doOnce {
-                if(inControl) {
-                    tunableField.setGuiFieldValue(index, value.toString())
-
-                    if (eocvSim.pipelineManager.paused)
-                        eocvSim.pipelineManager.setPaused(false)
-                }
-            }
+            eocvSim.onMainUpdate.doOnce(changeFieldValue)
         }
 
-        tunableField.onValueChange.doPersistent(Runnable {
+        tunableField.onValueChange.doPersistent {
             if (!inControl) {
                 setValue(tunableField.getGuiFieldValue(index))
             }
-        })
+        }
     }
 
     fun setValue(value: Any) {

@@ -121,35 +121,32 @@ public class TunableTextField extends JTextField {
 
         getDocument().addDocumentListener(new DocumentListener() {
 
+            Runnable changeFieldValue = () -> {
+                if ((!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals("")) && inControl) {
+                    try {
+                        tunableField.setGuiFieldValue(index, getText());
+                    } catch (Exception e) {
+                        setRedBorder();
+                    }
+                } else {
+                    setRedBorder();
+                }
+            };
+
             @Override
             public void insertUpdate(DocumentEvent e) {
                 change();
             }
-
             @Override
             public void removeUpdate(DocumentEvent e) {
                 change();
             }
-
             @Override
-            public void changedUpdate(DocumentEvent e) {
-                change();
-            }
+            public void changedUpdate(DocumentEvent e) { change(); }
 
             public void change() {
-                eocvSim.onMainUpdate.doOnce(() -> {
-                    if ((!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals("")) && inControl) {
-                        try {
-                            tunableField.setGuiFieldValue(index, getText());
-                        } catch (Exception e) {
-                            setRedBorder();
-                        }
-                    } else {
-                        setRedBorder();
-                    }
-                });
+                eocvSim.onMainUpdate.doOnce(changeFieldValue);
             }
-
         });
 
         //unpausing when typing on any tunable text box
