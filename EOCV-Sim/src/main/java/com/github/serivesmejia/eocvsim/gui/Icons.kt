@@ -16,6 +16,10 @@ object Icons {
         addImage("ico_img", "/images/icon/ico_img.png")
         addImage("ico_cam", "/images/icon/ico_cam.png")
         addImage("ico_vid", "/images/icon/ico_vid.png")
+
+        addImage("ico_config", "/images/icon/ico_config.png")
+        addImage("ico_slider", "/images/icon/ico_slider.png")
+        addImage("ico_textbox", "/images/icon/ico_textbox.png")
     }
 
     fun getImage(name: String): ImageIcon {

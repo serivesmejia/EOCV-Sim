@@ -45,6 +45,8 @@ public class TunableFieldPanel extends JPanel {
 
     private final EOCVSim eocvSim;
 
+    private final TunableFieldPanelConfig panelConfig = new TunableFieldPanelConfig(this);
+
     public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
         super();
 
@@ -61,6 +63,10 @@ public class TunableFieldPanel extends JPanel {
 
         //nice look
         setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
+
+        if(tunableField.getGuiFieldAmount() > 0) {
+            add(panelConfig);
+        }
 
         JLabel fieldNameLabel = new JLabel();
         fieldNameLabel.setText(tunableField.getFieldName());
