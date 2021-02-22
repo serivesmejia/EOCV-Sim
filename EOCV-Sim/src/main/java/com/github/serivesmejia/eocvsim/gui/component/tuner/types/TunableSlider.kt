@@ -13,16 +13,18 @@ class TunableSlider(val index: Int,
                     val tunableField: TunableField<*>,
                     val eocvSim: EOCVSim,
                     val valueLabel: JLabel,
-                    var minBound: Double = 0.0,
-                    var maxBound: Double = 255.0) : JSlider() {
+                    minBound: Double = 0.0,
+                    maxBound: Double = 255.0) : JSlider() {
 
     var inControl = false
+
+    var scale = 10
 
     constructor(i: Int, tunableField: TunableField<Any>, eocvSim: EOCVSim, valueLabel: JLabel) : this(i, tunableField, eocvSim, valueLabel,0.0, 255.0)
 
     private val changeFieldValue = KEventListener {
         if(inControl) {
-            tunableField.setGuiFieldValue(index, value.toString())
+            tunableField.setGuiFieldValue(index, calculateValue().toString())
 
             if (eocvSim.pipelineManager.paused)
                 eocvSim.pipelineManager.setPaused(false)
@@ -30,10 +32,10 @@ class TunableSlider(val index: Int,
     }
 
     init {
-        minimum = 0
-        maximum = 1000
+        setMajorTickSpacing(scale)
+        setMinorTickSpacing(scale / 4)
 
-        setValue(tunableField.getGuiFieldValue(index))
+        setBounds(minBound, maxBound)
 
         addChangeListener {
             eocvSim.onMainUpdate.doOnce(changeFieldValue)
@@ -47,59 +49,20 @@ class TunableSlider(val index: Int,
     }
 
     fun setValue(value: Any) {
-        var newValue = if(value is String) {
-            try {
-                value.toDouble()
-            } catch(ignored: NumberFormatException) {
-                0.0
-            }
-        } else {
-            try {
-                value.toString().toDouble()
-            } catch(ignored: NumberFormatException) {
-                0.0
-            }
+        val newValue = try {
+            value.toString().toDouble()
+        } catch(ignored: NumberFormatException) {
+            0.0
         }
 
-        newValue = Range.clip(newValue, minBound, maxBound)
-
-        if(minBound < 0 && maxBound >= 0) {
-            val scale = abs(newValue) / maxBound
-
-            this.value = when {
-                newValue < 0.0 ->
-                    Range.clip((maximum.toDouble() / 2.0) * scale, minimum.toDouble(), maximum.toDouble()).roundToInt()
-                newValue > 0.0 ->
-                    Range.clip(maximum.toDouble() * scale, minimum.toDouble(), maximum.toDouble()).roundToInt()
-                else -> 500
-            }
-        } else {
-            val scale = newValue / maxBound
-            this.value = Range.clip(maximum.toDouble() * scale, minimum.toDouble(), maximum.toDouble()).roundToInt()
-        }
-
+        this.value = Range.clip(newValue * scale, minimum.toDouble(), maximum.toDouble()).roundToInt()
     }
 
-    fun calculateValue(): Double {
-        val halfMax = (maximum / 2)
+    fun calculateValue() = value.toDouble() / scale.toDouble()
 
-        if(minBound < 0 && maxBound >= 0) {
-            val newValue = when {
-                value < halfMax -> {
-                    val scale = value / halfMax
-                    
-                }
-                value > halfMax -> {
-                    val scale = (value - halfMax) / halfMax
-
-                }
-                else -> 0.0
-            }
-
-            return Range.clip(maxBound * scale.toDouble(), minBound, maxBound)
-        } else {
-
-        }
+    fun setBounds(minBound: Double, maxBound: Double) {
+        minimum = (minBound * scale).roundToInt()
+        maximum = (maxBound * scale).roundToInt()
     }
 
 }

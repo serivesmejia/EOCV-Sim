@@ -37,6 +37,7 @@ class EventHandler(val name: String) : Runnable {
         private var idCount = 0;
     }
 
+    @Synchronized
     override fun run() {
         for(listener in listeners) {
 
@@ -53,6 +54,7 @@ class EventHandler(val name: String) : Runnable {
         }
     }
 
+    @Synchronized
     fun doOnce(listener: EventListener): Int {
         idCount++
 
@@ -62,15 +64,22 @@ class EventHandler(val name: String) : Runnable {
         return listener.id
     }
 
+    @Synchronized
     fun doOnce(runnable: Runnable) = doOnce(KEventListener { runnable.run() })
+
+    @Synchronized
     fun doOnce(listener: (Int) -> Unit) = doOnce(KEventListener(listener))
 
+    @Synchronized
     fun doPersistent(listener: EventListener) {
         doOnce(listener)
         listener.persistent = true
     }
 
+    @Synchronized
     fun doPersistent(runnable: Runnable) = doPersistent(KEventListener { runnable.run() })
+
+    @Synchronized
     fun doPersistent(listener: (Int) -> Unit) = doPersistent(KEventListener(listener))
 
     fun getListener(id: Int): EventListener? = internalListeners[id]
