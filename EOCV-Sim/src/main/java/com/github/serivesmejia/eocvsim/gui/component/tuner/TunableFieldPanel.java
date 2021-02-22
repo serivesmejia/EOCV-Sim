@@ -28,12 +28,10 @@ import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableComboBox
 import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableSlider;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.types.TunableTextField;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
-import com.qualcomm.robotcore.util.Range;
 
 import javax.swing.*;
 import javax.swing.border.SoftBevelBorder;
 import java.awt.*;
-import java.util.Arrays;
 
 public class TunableFieldPanel extends JPanel {
 
@@ -117,7 +115,7 @@ public class TunableFieldPanel extends JPanel {
 
     public void setFieldValue(int index, Object value) {
         fields[index].setText(value.toString());
-        sliders[index].setValue(value);
+        sliders[index].setValueScaled(value);
     }
 
     public void setComboBoxSelection(int index, Object selection) {

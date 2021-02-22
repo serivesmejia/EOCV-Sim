@@ -42,9 +42,8 @@ public class LongField extends NumericField<Long> {
 
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
-
         try {
-            value = Long.valueOf(newValue);
+            value = Math.round(Double.parseDouble(newValue));
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
@@ -52,7 +51,6 @@ public class LongField extends NumericField<Long> {
         setPipelineFieldValue(value);
 
         beforeValue = value;
-
     }
 
     @Override

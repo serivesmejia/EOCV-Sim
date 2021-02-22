@@ -60,10 +60,8 @@ class EventHandler(val name: String) : Runnable {
     }
 
     fun doOnce(listener: EventListener): Int = synchronized(lock) {
-        idCount++
-
-        internalListeners[idCount] = listener
-        listener.id = idCount
+        internalListeners[idCount + 1] = listener
+        listener.id = idCount + 1
 
         return listener.id
     }

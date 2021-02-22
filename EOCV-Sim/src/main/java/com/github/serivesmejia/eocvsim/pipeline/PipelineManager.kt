@@ -141,7 +141,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                         for(poster in pipelineOutputPosters.toTypedArray()) {
                             try {
                                 poster.post(outputMat)
-                            }git comm catch(ex: Exception) {
+                            } catch(ex: Exception) {
                                 Log.error("PipelineManager", "Uncaught exception thrown while posting pipeline output Mat to ${poster.name} poster", ex)
                             }
                         }
