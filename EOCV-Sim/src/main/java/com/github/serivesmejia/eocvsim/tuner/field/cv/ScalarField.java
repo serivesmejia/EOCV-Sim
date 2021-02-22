@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner.field.cv;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.opencv.core.Scalar;
@@ -42,8 +43,6 @@ public class ScalarField extends TunableField<Scalar> {
 
     volatile boolean hasChanged = false;
 
-    boolean firstUpdate = true;
-
     public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
 
@@ -54,10 +53,12 @@ public class ScalarField extends TunableField<Scalar> {
     }
 
     @Override
+    public void init() {
+        setRecommendedPanelMode(TunableFieldPanel.Mode.SLIDERS);
+    }
+
+    @Override
     public void update() {
-        if(firstUpdate) {
-            firstUpdate = false;
-        }
 
         try {
             scalar = (Scalar) reflectionField.get(pipeline);

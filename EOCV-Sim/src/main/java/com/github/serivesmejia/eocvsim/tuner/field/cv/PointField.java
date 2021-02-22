@@ -53,6 +53,9 @@ public class PointField extends TunableField<Point> {
     }
 
     @Override
+    public void init() { }
+
+    @Override
     public void update() {
 
         hasChanged = point.x != lastXY[0] || point.y != lastXY[1];

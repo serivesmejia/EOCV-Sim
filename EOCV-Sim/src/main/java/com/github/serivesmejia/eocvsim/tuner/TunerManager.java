@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@SuppressWarnings("rawtypes")
 public class TunerManager {
 
     private final EOCVSim eocvSim;
@@ -66,6 +67,10 @@ public class TunerManager {
         if (eocvSim.pipelineManager.getCurrentPipeline() != null) {
             addFieldsFrom(eocvSim.pipelineManager.getCurrentPipeline());
             eocvSim.visualizer.updateTunerFields(createTunableFieldPanels());
+
+            for(TunableField field : fields) {
+                field.init();
+            }
         }
     }
 

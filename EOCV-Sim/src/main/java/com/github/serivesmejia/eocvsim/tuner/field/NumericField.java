@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -37,6 +38,11 @@ public class NumericField<T extends Number> extends TunableField<T> {
 
     public NumericField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, allowMode);
+    }
+
+    @Override
+    public void init() {
+        setRecommendedPanelMode(TunableFieldPanel.Mode.TEXTBOXES);
     }
 
     @Override

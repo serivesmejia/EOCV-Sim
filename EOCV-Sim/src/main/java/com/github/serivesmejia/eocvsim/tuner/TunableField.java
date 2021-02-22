@@ -61,6 +61,8 @@ public abstract class TunableField<T> {
         this(instance, reflectionField, eocvSim, AllowMode.TEXT);
     }
 
+    public abstract void init();
+
     public abstract void update();
 
     public abstract void updateGuiFieldValues();
@@ -79,6 +81,13 @@ public abstract class TunableField<T> {
 
     public final void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
+    }
+
+    public final void setRecommendedPanelMode(TunableFieldPanel.Mode mode) {
+        //TODO: Handling user "apply to all" overrides. We want to give more priority to what the user wants.
+        if(fieldPanel != null) {
+            fieldPanel.setMode(mode);
+        }
     }
 
     public abstract T getValue();

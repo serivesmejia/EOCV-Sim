@@ -50,7 +50,7 @@ public class TunableFieldPanel extends JPanel {
 
     private Mode mode;
 
-    enum Mode { TEXTBOXES, SLIDERS }
+    public enum Mode { TEXTBOXES, SLIDERS }
 
     public TunableFieldPanel(TunableField tunableField, EOCVSim eocvSim) {
         super();
@@ -146,6 +146,7 @@ public class TunableFieldPanel extends JPanel {
                     setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
+                panelConfig.getTextBoxSliderToggle().setSelected(false);
                 add(fieldsPanel);
                 break;
             case SLIDERS:
@@ -159,6 +160,7 @@ public class TunableFieldPanel extends JPanel {
                     setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
+                panelConfig.getTextBoxSliderToggle().setSelected(true);
                 add(slidersPanel);
                 break;
         }
