@@ -82,7 +82,7 @@ public class TunableFieldPanel extends JPanel {
         sliders = new TunableSlider[fieldAmount];
 
         fieldsPanel = new JPanel();
-        slidersPanel = new JPanel(new GridLayout(fieldAmount, 2));
+        slidersPanel = new JPanel(new GridBagLayout());
 
         for (int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
             //add the tunable field as a field
@@ -97,8 +97,16 @@ public class TunableFieldPanel extends JPanel {
             TunableSlider slider = new TunableSlider(i, tunableField, eocvSim, sliderLabel);
             sliders[i] = slider;
 
-            slidersPanel.add(slider);
-            slidersPanel.add(sliderLabel);
+            GridBagConstraints cSlider = new GridBagConstraints();
+            cSlider.gridx = 0;
+            cSlider.gridy = i;
+
+            GridBagConstraints cLabel = new GridBagConstraints();
+            cLabel.gridy = 1;
+            cLabel.gridy = i;
+
+            slidersPanel.add(slider, cSlider);
+            slidersPanel.add(sliderLabel, cLabel);
         }
 
         setMode(Mode.TEXTBOXES);

@@ -138,9 +138,7 @@ public class TunableTextField extends JTextField {
                 change();
             }
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                change();
-            }
+            public void removeUpdate(DocumentEvent e) { change(); }
             @Override
             public void changedUpdate(DocumentEvent e) { change(); }
 

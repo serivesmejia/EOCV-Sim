@@ -42,6 +42,8 @@ public class ScalarField extends TunableField<Scalar> {
 
     volatile boolean hasChanged = false;
 
+    boolean firstUpdate = true;
+
     public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
 
@@ -53,6 +55,10 @@ public class ScalarField extends TunableField<Scalar> {
 
     @Override
     public void update() {
+        if(firstUpdate) {
+            firstUpdate = false;
+        }
+
         try {
             scalar = (Scalar) reflectionField.get(pipeline);
         } catch (IllegalAccessException e) {
