@@ -48,8 +48,10 @@ public class TunableTextField extends JTextField {
 
     private final TunableField tunableField;
     private final int index;
-    private final Border initialBorder;
     private final EOCVSim eocvSim;
+
+    private final Border initialBorder;
+
     private volatile boolean hasValidText = true;
 
     private boolean inControl = false;
@@ -88,7 +90,6 @@ public class TunableTextField extends JTextField {
 
                 @Override
                 public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-
                     text = text.replace(" ", "");
 
                     for (char c : text.toCharArray()) {
@@ -112,7 +113,6 @@ public class TunableTextField extends JTextField {
                     }
 
                     super.replace(fb, offset, length, text, attrs);
-
                 }
 
             });
@@ -122,7 +122,7 @@ public class TunableTextField extends JTextField {
         getDocument().addDocumentListener(new DocumentListener() {
 
             Runnable changeFieldValue = () -> {
-                if ((!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals("")) && inControl) {
+                if ((!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals(""))) {
                     try {
                         tunableField.setGuiFieldValue(index, getText());
                     } catch (Exception e) {
@@ -151,28 +151,22 @@ public class TunableTextField extends JTextField {
 
         //unpausing when typing on any tunable text box
         addKeyListener(new KeyListener() {
-
             @Override
             public void keyTyped(KeyEvent e) {
                 execute();
             }
-
             @Override
             public void keyPressed(KeyEvent e) {
                 execute();
             }
-
             @Override
-            public void keyReleased(KeyEvent e) {
-                execute();
-            }
+            public void keyReleased(KeyEvent e) { execute(); }
 
             public void execute() {
                 if (eocvSim.pipelineManager.getPaused()) {
                     eocvSim.pipelineManager.requestSetPaused(false);
                 }
             }
-
         });
     }
 

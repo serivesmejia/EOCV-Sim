@@ -115,7 +115,10 @@ public class TunableFieldPanel extends JPanel {
 
     public void setFieldValue(int index, Object value) {
         fields[index].setText(value.toString());
-        sliders[index].setValueScaled(value);
+
+        try {
+            sliders[index].setScaledValue(Double.parseDouble(value.toString()));
+        } catch(NumberFormatException ignored) {}
     }
 
     public void setComboBoxSelection(int index, Object selection) {
@@ -132,6 +135,7 @@ public class TunableFieldPanel extends JPanel {
                 for(int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
                     fields[i].setInControl(true);
                     sliders[i].setInControl(false);
+                    setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
                 add(fieldsPanel);
@@ -144,6 +148,7 @@ public class TunableFieldPanel extends JPanel {
                 for(int i = 0 ; i < tunableField.getGuiFieldAmount() ; i++) {
                     fields[i].setInControl(false);
                     sliders[i].setInControl(true);
+                    setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
                 add(slidersPanel);
