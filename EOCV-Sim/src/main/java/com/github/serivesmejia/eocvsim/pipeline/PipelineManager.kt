@@ -42,7 +42,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
-        const val PIPELINE_TIMEOUT_MS = 2100L
+        const val PIPELINE_TIMEOUT_MS = 4100L
         const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
     }
 

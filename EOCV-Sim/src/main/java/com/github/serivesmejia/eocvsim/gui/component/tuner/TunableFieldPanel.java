@@ -146,7 +146,6 @@ public class TunableFieldPanel extends JPanel {
                     setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
-                panelConfig.getTextBoxSliderToggle().setSelected(false);
                 add(fieldsPanel);
                 break;
             case SLIDERS:
@@ -160,14 +159,19 @@ public class TunableFieldPanel extends JPanel {
                     setFieldValue(i, tunableField.getGuiFieldValue(i));
                 }
 
-                panelConfig.getTextBoxSliderToggle().setSelected(true);
                 add(slidersPanel);
                 break;
         }
 
-        revalidate(); repaint();
-
         this.mode = mode;
+
+        if(panelConfig.getMode() != mode) {
+            panelConfig.setMode(mode);
+        }
+
+        revalidate(); repaint();
     }
+
+    public Mode getMode() { return this.mode; }
 
 }

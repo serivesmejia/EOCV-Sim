@@ -2,7 +2,13 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner
 
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
+import java.awt.FlowLayout
+import java.awt.GridLayout
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import javax.swing.*
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 
 class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPanel() {
 
@@ -14,13 +20,40 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
         private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
     }
 
-
-
     val textBoxSliderToggle = JToggleButton()
     val configButton        = JButton()
     val colorPickButton     = JButton()
 
     val configPanel = TunableFieldPanelConfig(this)
+
+    //toggle between textbox and slider ico,
+    //and adding and removing config button
+    var mode = TunableFieldPanel.Mode.TEXTBOXES
+        set(value) {
+            when(value) {
+                TunableFieldPanel.Mode.SLIDERS -> {
+                    textBoxSliderToggle.icon = sliderIco
+                    textBoxSliderToggle.isSelected = true
+
+                    //removes & adds the color picker button when adding th config button
+                    //so that it stays in the same position after adding config button
+                    remove(colorPickButton)
+                    add(configButton)
+                    add(colorPickButton)
+                }
+                TunableFieldPanel.Mode.TEXTBOXES -> {
+                    textBoxSliderToggle.icon = textBoxIco
+                    textBoxSliderToggle.isSelected = false
+
+                    remove(configButton)
+                }
+            }
+
+            handleResize()
+
+            if(fieldPanel.mode != value) fieldPanel.mode = value
+            field = value
+        }
 
     init {
         //set initial icon for buttons
@@ -32,26 +65,11 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
         add(colorPickButton)
 
         textBoxSliderToggle.addActionListener {
-            //toggle between textbox and slider ico,
-            //and adding and removing config button
             if(textBoxSliderToggle.isSelected) {
-                fieldPanel.setMode(TunableFieldPanel.Mode.SLIDERS)
-
-                textBoxSliderToggle.icon = sliderIco
-
-                //removes & adds the color picker button when adding th config button
-                //so that it stays in the same position after adding config button
-                remove(colorPickButton)
-                add(configButton)
-                add(colorPickButton)
+                mode = TunableFieldPanel.Mode.SLIDERS
             } else {
-                fieldPanel.setMode(TunableFieldPanel.Mode.TEXTBOXES)
-
-                textBoxSliderToggle.icon = textBoxIco
-                remove(configButton)
+                mode = TunableFieldPanel.Mode.TEXTBOXES
             }
-
-            revalAndRepaint()
         }
 
         configButton.addActionListener {
@@ -63,6 +81,29 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
 
             popup.show()
         }
+
+        fieldPanel.addComponentListener(object: ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) = handleResize()
+        })
+
+        addAncestorListener(object: AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {}
+            override fun ancestorMoved(event: AncestorEvent?) {}
+
+            override fun ancestorAdded(event: AncestorEvent?) = handleResize()
+        })
+    }
+
+    private fun handleResize() {
+        val buttonsHeight = textBoxSliderToggle.height + colorPickButton.height + configButton.height
+
+        layout = if(fieldPanel.height > buttonsHeight && components.contains(configButton)) {
+            GridLayout(3, 1)
+        } else {
+            FlowLayout()
+        }
+
+        revalAndRepaint()
     }
 
     private fun revalAndRepaint() {
