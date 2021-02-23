@@ -4,6 +4,10 @@ import com.qualcomm.robotcore.util.Range
 import javax.swing.JSlider
 import kotlin.math.roundToInt
 
+/**
+ * Allows for a slider to take a range of type double
+ * and return a value of type double, instead of int.
+ */
 open class SliderX(private var minBound: Double,
                    private var maxBound: Double,
                    private val scale: Int) : JSlider() {

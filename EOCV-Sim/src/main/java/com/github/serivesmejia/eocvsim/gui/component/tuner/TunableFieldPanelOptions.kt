@@ -2,6 +2,7 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner
 
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
+import org.opencv.core.Size
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -10,7 +11,7 @@ import javax.swing.*
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
 
-class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPanel() {
+class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
 
     companion object {
         //getting resized icons from statically loaded ones
@@ -20,11 +21,13 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
         private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
     }
 
+    val sliderRange = Size(0.0, 255.0)
+
     val textBoxSliderToggle = JToggleButton()
     val configButton        = JButton()
     val colorPickButton     = JButton()
 
-    val configPanel = TunableFieldPanelConfig(this)
+    val configPanel = TunableFieldPanelConfig(this, sliderRange)
 
     //toggle between textbox and slider ico,
     //and adding and removing config button
@@ -74,7 +77,7 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
 
         configButton.addActionListener {
             val configLocation = configButton.locationOnScreen
-            val configHeight   = configButton.height
+            val configHeight   = configButton.height + configPanel.height / 2
 
             val window = SwingUtilities.getWindowAncestor(this)
             val popup  = PopupX(window, configPanel, configLocation.x, configLocation.y - configHeight)
@@ -97,7 +100,7 @@ class TunableFieldPanelOptions(private val fieldPanel: TunableFieldPanel) : JPan
     private fun handleResize() {
         val buttonsHeight = textBoxSliderToggle.height + colorPickButton.height + configButton.height
 
-        layout = if(fieldPanel.height > buttonsHeight && components.contains(configButton)) {
+        layout = if(fieldPanel.height > buttonsHeight && mode == TunableFieldPanel.Mode.SLIDERS) {
             GridLayout(3, 1)
         } else {
             FlowLayout()

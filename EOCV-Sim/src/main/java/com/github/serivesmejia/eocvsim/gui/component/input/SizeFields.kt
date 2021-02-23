@@ -39,11 +39,13 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import kotlin.math.roundToInt
 
-class SizeFields(
-        initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
-        allowDecimalValues: Boolean = false,
-        descriptiveText: String = "Size: ")
-    : JPanel(FlowLayout()) {
+class SizeFields(initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
+                 allowDecimalValues: Boolean = false,
+                 descriptiveText: String = "Size: ",
+                 middleText: String = " x ") : JPanel(FlowLayout()) {
+
+    constructor(initialSize: Size, allowDecimalValues: Boolean, descriptiveText: String)
+            : this(initialSize, allowDecimalValues, descriptiveText, "Size: ")
 
     val widthTextField = JTextField(4)
     val heightTextField = JTextField(4)
@@ -106,7 +108,7 @@ class SizeFields(
 
         add(widthTextField)
 
-        val xLabel = JLabel(" x ")
+        val xLabel = JLabel(middleText)
         xLabel.horizontalAlignment = JLabel.CENTER
         add(xLabel)
 
