@@ -116,7 +116,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private fun startPicking(colorPicker: ColorPicker) {
         //when user picks a color
         colorPicker.onPick.doOnce {
-            val colorScalar = colorPicker.colorRgb//.cvtColor(Imgproc.COLOR_RGB2YCrCb)
+            val colorScalar = colorPicker.colorRgb.cvtColor(Imgproc.COLOR_RGB2HSV)
 
             for(i in 0..fieldPanel.fields.size) {
                 try {

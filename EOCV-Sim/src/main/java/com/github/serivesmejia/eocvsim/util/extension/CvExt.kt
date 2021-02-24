@@ -32,14 +32,14 @@ import org.opencv.imgproc.Imgproc
 
 object CvExt {
 
-    @JvmStatic fun Scalar.cvtColor(code: Int): Scalar {
-        val mat = Mat(5, 5, CvType.CV_32FC(4));
-        mat.setTo(this)
 
+    @JvmStatic fun Scalar.cvtColor(code: Int): Scalar {
+        val mat = Mat(5, 5, CvType.CV_8UC3);
+        mat.setTo(this)
         Imgproc.cvtColor(mat, mat, code);
 
         val newScalar = Scalar(mat.get(1, 1))
-        mat.release();
+        mat.release()
 
         return newScalar
     }
