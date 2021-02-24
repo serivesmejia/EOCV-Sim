@@ -27,6 +27,7 @@ import com.github.serivesmejia.eocvsim.config.Config
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
+import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker
 import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
 import com.github.serivesmejia.eocvsim.output.VideoRecordingSession

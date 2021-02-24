@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.tuner.field.EnumField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.AnnotatedTunableFieldScanner;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.ReflectUtil;
@@ -37,6 +38,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("rawtypes")
 public class TunerManager {
@@ -102,21 +104,39 @@ public class TunerManager {
             if (Modifier.isFinal(field.getModifiers())) continue;
 
             Class<?> type = field.getType();
-            if(field.getType().isPrimitive()) { //wrap to java object equivalent if field type is primitive
+            if (field.getType().isPrimitive()) { //wrap to java object equivalent if field type is primitive
                 type = ReflectUtil.wrap(type);
             }
 
-            //check if we have a registered TunableField which handles this type of field
-            //if not, continue to next iteration
-            if(!tunableFieldsTypes.containsKey(type)) continue;
+            Class<? extends TunableField> tunableFieldClass = null;
+
+            if(tunableFieldsTypes.containsKey(type)) {
+                tunableFieldClass = tunableFieldsTypes.get(type);
+            } else {
+                for (Map.Entry<Type, Class<? extends TunableField>> entry : tunableFieldsTypes.entrySet()) {
+                    try {
+                        if (ReflectUtil.hasSuperclass(type, (Class<?>) entry.getKey())) {
+                            tunableFieldClass = entry.getValue();
+                            break;
+                        }
+                    } catch(ClassCastException ignored) {}
+                }
+            }
+
+            if(tunableFieldClass == null) {
+                //for now we'll hard-code enum type, sadly...
+                if(type.isEnum()) {
+                    tunableFieldClass = EnumField.class;
+                } else {
+                    return;
+                }
+            }
 
             //yay we have a registered TunableField which handles this
             //now, lets do some more reflection to instantiate this TunableField
             //and add it to the list...
             try {
-                Class<? extends TunableField> tunableFieldClass = tunableFieldsTypes.get(type);
                 Constructor<? extends TunableField> constructor = tunableFieldClass.getConstructor(OpenCvPipeline.class, Field.class, EOCVSim.class);
-
                 this.fields.add(constructor.newInstance(pipeline, field, eocvSim));
             } catch (Exception ex) {
                 //oops rip

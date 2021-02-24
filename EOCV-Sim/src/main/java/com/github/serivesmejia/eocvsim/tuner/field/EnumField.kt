@@ -20,9 +20,12 @@ class EnumField(private val instance: OpenCvPipeline,
 
     init {
         guiComboBoxAmount = 1
+        guiFieldAmount = 0
     }
 
-    override fun init() {}
+    override fun init() {
+        fieldPanel.setComboBoxSelection(0, currentValue)
+    }
 
     override fun update() {
         if(hasChanged()) {
@@ -33,8 +36,10 @@ class EnumField(private val instance: OpenCvPipeline,
     }
 
     override fun updateGuiFieldValues() {
-        fieldPanel.setFieldValue(0, currentValue.name)
+        fieldPanel.setComboBoxSelection(0, currentValue)
     }
+
+    override fun setGuiComboBoxValue(index: Int, newValue: String) = setGuiFieldValue(index, newValue)
 
     override fun setGuiFieldValue(index: Int, newValue: String) {
         currentValue = java.lang.Enum.valueOf(initialValue::class.java, newValue)
@@ -46,10 +51,10 @@ class EnumField(private val instance: OpenCvPipeline,
     override fun getGuiFieldValue(index: Int) = currentValue.name
 
     override fun getGuiComboBoxValues(index: Int): Array<out Any> {
-        fieldPanel.setComboBoxSelection(index, currentValue)
         return values
     }
 
     override fun hasChanged() = reflectionField.get(instance) == beforeValue
+
 
 }

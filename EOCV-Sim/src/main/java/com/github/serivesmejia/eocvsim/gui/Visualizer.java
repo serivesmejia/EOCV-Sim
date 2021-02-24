@@ -26,6 +26,7 @@ package com.github.serivesmejia.eocvsim.gui;
 import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
@@ -114,6 +115,8 @@ public class Visualizer {
 
     private int beforeSelectedSourceIndex = 0;
     private int beforeSelectedPipeline = -1;
+
+    public ColorPicker colorPicker = null;
 
     //stuff for zooming handling
     private volatile boolean isCtrlPressed = false;
@@ -421,6 +424,8 @@ public class Visualizer {
         frame.setVisible(true);
 
         registerListeners();
+
+        colorPicker = new ColorPicker(viewport);
 
         for(Runnable runn : onInitFinishedRunns) {
             runn.run();

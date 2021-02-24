@@ -129,6 +129,10 @@ public abstract class TunableField<T> {
 
     public abstract boolean hasChanged();
 
+    public final EOCVSim getEOCVSim() {
+        return eocvSim;
+    }
+
     public enum AllowMode {ONLY_NUMBERS, ONLY_NUMBERS_DECIMAL, TEXT}
 
 }

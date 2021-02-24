@@ -85,6 +85,28 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
             popup.show()
         }
 
+        colorPickButton.addActionListener {
+            val colorPicker = fieldPanel.tunableField.eocvSim.visualizer.colorPicker
+
+            if(!colorPicker.isPicking) {
+                colorPicker.onPick.doOnce {
+                    println("onPick ${colorPicker.colorRgb}")
+                    for(i in 0..fieldPanel.fields.size) {
+                        try {
+                            val colorVal = colorPicker.colorRgb.`val`[i]
+                            fieldPanel.setFieldValue(i, colorVal)
+                        } catch(ignored: ArrayIndexOutOfBoundsException) { break }
+                    }
+                }
+
+                println("start pick")
+                colorPicker.startPicking()
+            } else {
+                println("stop pick")
+                colorPicker.stopPicking()
+            }
+        }
+
         fieldPanel.addComponentListener(object: ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) = handleResize()
         })
