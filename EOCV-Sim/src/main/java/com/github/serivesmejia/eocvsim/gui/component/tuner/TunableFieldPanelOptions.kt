@@ -39,18 +39,10 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
                 TunableFieldPanel.Mode.SLIDERS -> {
                     textBoxSliderToggle.icon = sliderIco
                     textBoxSliderToggle.isSelected = true
-
-                    //removes & adds the color picker button when adding th config button
-                    //so that it stays in the same position after adding config button
-                    remove(colorPickButton)
-                    add(configButton)
-                    add(colorPickButton)
                 }
                 TunableFieldPanel.Mode.TEXTBOXES -> {
                     textBoxSliderToggle.icon = textBoxIco
                     textBoxSliderToggle.isSelected = false
-
-                    remove(configButton)
                 }
             }
 
@@ -67,6 +59,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
         colorPickButton.icon     = colorPickIco
 
         add(textBoxSliderToggle)
+        add(configButton)
         add(colorPickButton)
 
         textBoxSliderToggle.addActionListener {
@@ -116,7 +109,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private fun startPicking(colorPicker: ColorPicker) {
         //when user picks a color
         colorPicker.onPick.doOnce {
-            val colorScalar = colorPicker.colorRgb.cvtColor(Imgproc.COLOR_RGB2HSV)
+            val colorScalar = colorPicker.colorRgb.cvtColor(Imgproc.COLOR_RGB2YCrCb)
 
             for(i in 0..fieldPanel.fields.size) {
                 try {

@@ -1,14 +1,23 @@
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
+import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.ImageX
 import com.github.serivesmejia.eocvsim.gui.component.Viewport
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import org.opencv.core.Scalar
 import java.awt.Color
+import java.awt.Cursor
+import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.Toolkit
 
 class ColorPicker(private val imageX: ImageX) {
+
+    companion object {
+        val colorPickIco = Icons.getImageResized("ico_colorpick_pointer", 200, 200).image
+        val colorPickCursor = Toolkit.getDefaultToolkit().createCustomCursor(colorPickIco, Point(0, 0), "Color Pick Pointer")
+    }
 
     var isPicking = false
         private set
@@ -18,6 +27,8 @@ class ColorPicker(private val imageX: ImageX) {
 
     val onPick = EventHandler("ColorPicker-OnPick")
     val onCancel = EventHandler("ColorPicker-OnCancel")
+
+    private var initialCursor: Cursor? = null
 
     var colorRgb = Scalar(0.0, 0.0, 0.0)
         private set
@@ -50,6 +61,9 @@ class ColorPicker(private val imageX: ImageX) {
         hasPicked = false
 
         imageX.addMouseListener(clickListener)
+
+        initialCursor = imageX.cursor
+        imageX.cursor = colorPickCursor
     }
 
     fun stopPicking() {
@@ -62,6 +76,7 @@ class ColorPicker(private val imageX: ImageX) {
         }
 
         imageX.removeMouseListener(clickListener)
+        imageX.cursor = initialCursor
     }
 
 }

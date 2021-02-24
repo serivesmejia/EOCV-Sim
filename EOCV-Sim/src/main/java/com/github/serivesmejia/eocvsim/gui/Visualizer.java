@@ -500,13 +500,10 @@ public class Visualizer {
 
                     if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
                         if (!eocvSim.pipelineManager.getPaused()) {
-
                             eocvSim.inputSourceManager.requestSetInputSource(source);
                             beforeSelectedSource = source;
                             beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-
                         } else {
-
                             //check if the user requested the pause or if it was due to one shoot analysis when selecting images
                             if (eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
                                 sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
@@ -523,8 +520,7 @@ public class Visualizer {
                 } else {
                     sourceSelector.setSelectedIndex(1);
                 }
-            } catch (ArrayIndexOutOfBoundsException ignored) {
-            }
+            } catch (ArrayIndexOutOfBoundsException ignored) { }
 
         });
 
@@ -532,11 +528,11 @@ public class Visualizer {
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 OpenCvPipeline pipeline = eocvSim.pipelineManager.getCurrentPipeline();
-                if(pipeline != null) pipeline.onViewportTapped();
+                if(pipeline != null && !colorPicker.isPicking()) pipeline.onViewportTapped();
             }
         });
 
-        // delete input source
+        // delete selected input source
         sourceSelectorDeleteBtt.addActionListener(e -> {
             String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
             eocvSim.onMainUpdate.doOnce(() -> {
@@ -553,7 +549,7 @@ public class Visualizer {
             }
         });
 
-        //listening for keyboard presses and releases, to check if ctrl key was pressed or released
+        //listening for keyboard presses and releases, to check if ctrl key was pressed or released (handling zoom)
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
@@ -607,6 +603,9 @@ public class Visualizer {
                 rightContainer.repaint();
             }
         });
+
+        //stop color-picking mode when changing pipeline
+        //eocvSim.pipelineManager.onPipelineChange.doPersistent(() -> colorPicker.stopPicking());
 
     }
 
