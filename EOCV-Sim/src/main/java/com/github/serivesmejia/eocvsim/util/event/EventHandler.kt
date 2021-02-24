@@ -88,4 +88,8 @@ class EventHandler(val name: String) : Runnable {
 
     fun removeListener(id: Int) = synchronized(lock) { internalListeners.remove(id) }
 
+    fun removeAllListeners() = synchronized(lock) {
+        internalListeners.clear()
+    }
+
 }

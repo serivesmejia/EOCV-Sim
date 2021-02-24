@@ -425,7 +425,7 @@ public class Visualizer {
 
         registerListeners();
 
-        colorPicker = new ColorPicker(viewport);
+        colorPicker = new ColorPicker(viewport.image);
 
         for(Runnable runn : onInitFinishedRunns) {
             runn.run();

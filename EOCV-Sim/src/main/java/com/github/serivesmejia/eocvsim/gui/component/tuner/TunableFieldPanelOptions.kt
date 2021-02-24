@@ -2,7 +2,9 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner
 
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
+import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
 import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -25,7 +27,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
 
     val textBoxSliderToggle = JToggleButton()
     val configButton        = JButton()
-    val colorPickButton     = JButton()
+    val colorPickButton     = JToggleButton()
 
     val configPanel = TunableFieldPanelConfig(this, sliderRange)
 
@@ -88,22 +90,14 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
         colorPickButton.addActionListener {
             val colorPicker = fieldPanel.tunableField.eocvSim.visualizer.colorPicker
 
-            if(!colorPicker.isPicking) {
-                colorPicker.onPick.doOnce {
-                    println("onPick ${colorPicker.colorRgb}")
-                    for(i in 0..fieldPanel.fields.size) {
-                        try {
-                            val colorVal = colorPicker.colorRgb.`val`[i]
-                            fieldPanel.setFieldValue(i, colorVal)
-                        } catch(ignored: ArrayIndexOutOfBoundsException) { break }
-                    }
-                }
-
-                println("start pick")
-                colorPicker.startPicking()
-            } else {
-                println("stop pick")
+            //start picking if global color picker is not being used by other panel
+            if(!colorPicker.isPicking && colorPickButton.isSelected) {
+                startPicking(colorPicker)
+            } else { //handles cases when cancelling picking
                 colorPicker.stopPicking()
+                //if we weren't the ones controlling the last picking,
+                //start picking again to gain control for this panel
+                if(colorPickButton.isSelected) startPicking(colorPicker)
             }
         }
 
@@ -117,6 +111,29 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
 
             override fun ancestorAdded(event: AncestorEvent?) = handleResize()
         })
+    }
+
+    private fun startPicking(colorPicker: ColorPicker) {
+        //when user picks a color
+        colorPicker.onPick.doOnce {
+            val colorScalar = colorPicker.colorRgb//.cvtColor(Imgproc.COLOR_RGB2YCrCb)
+
+            for(i in 0..fieldPanel.fields.size) {
+                try {
+                    val colorVal = colorScalar.`val`[i]
+
+                    fieldPanel.setFieldValue(i, colorVal)
+                    fieldPanel.tunableField.setGuiFieldValue(i, colorVal.toString())
+                } catch(ignored: ArrayIndexOutOfBoundsException) { break }
+            }
+            colorPickButton.isSelected = false
+        }
+
+        //handles cancel cases, mostly when passing control to another panel
+        colorPicker.onCancel.doOnce { colorPickButton.isSelected = false }
+
+        //might want to start picking to this panel here...
+        colorPicker.startPicking()
     }
 
     private fun handleResize() {
