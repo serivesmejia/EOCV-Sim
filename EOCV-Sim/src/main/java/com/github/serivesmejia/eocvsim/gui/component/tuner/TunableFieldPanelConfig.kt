@@ -1,17 +1,22 @@
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
+import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.gui.component.input.EnumComboBox
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.awt.GridLayout
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
+import java.awt.event.FocusAdapter
+import java.awt.event.FocusEvent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
-                              private val initialSliderRange: Size,
-                              private val initialPickerColorSpace: PickerColorSpace) : JPanel() {
+                              initialSliderRange: Size,
+                              initialPickerColorSpace: PickerColorSpace) : JPanel() {
 
     val sliderRangeFields = SizeFields(initialSliderRange, allowsDecimals, "Slider range:", " to ")
     val colorSpaceComboBox = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
@@ -35,8 +40,27 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         layout = GridLayout(2, 1)
         add(sliderRangeFields)
 
+        sliderRangeFields.onChange.doPersistent {
+            if(sliderRangeFields.valid) {
+                sliderRange = sliderRangeFields.currentSize
+            }
+        }
+
         colorSpaceComboBox.selectedEnum = initialPickerColorSpace
         add(colorSpaceComboBox)
+    }
+
+    fun attachOnceToPopup(popup: PopupX) {
+        //set the slider bounds when the popup gets closed
+        popup.onHide.doOnce {
+            //if user entered a valid number
+            if(sliderRangeFields.valid) {
+                //if our max value is bigger than the minimum...
+                if(sliderRange.height > sliderRange.width) {
+                    fieldOptions.fieldPanel.setSlidersRange(sliderRange.width, sliderRange.height)
+                }
+            }
+        }
     }
 
 }

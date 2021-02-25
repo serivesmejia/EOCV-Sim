@@ -124,8 +124,9 @@ public class TunableFieldPanel extends JPanel {
     }
 
     public void setFieldValue(int index, Object value) {
-        fields[index].setText(value.toString());
+        if(index >= fields.length) return;
 
+        fields[index].setText(value.toString());
         try {
             sliders[index].setScaledValue(Double.parseDouble(value.toString()));
         } catch(NumberFormatException ignored) {}
@@ -172,6 +173,12 @@ public class TunableFieldPanel extends JPanel {
         }
 
         revalidate(); repaint();
+    }
+
+    public void setSlidersRange(double min, double max) {
+        for(TunableSlider slider : sliders) {
+            slider.setScaledBounds(min, max);
+        }
     }
 
     public Mode getMode() { return this.mode; }

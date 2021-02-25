@@ -3,6 +3,8 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
+import com.github.serivesmejia.eocvsim.util.extension.NumberExt.clipUpperZero
+import com.qualcomm.robotcore.util.Range
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.awt.FlowLayout
@@ -76,6 +78,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
             val popup  = PopupX(window, configPanel, configLocation.x, configLocation.y - configHeight)
 
             popup.show()
+            configPanel.attachOnceToPopup(popup)
         }
 
         colorPickButton.addActionListener {
@@ -110,7 +113,8 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
             val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.pickerColorSpace!!.cvtCode)
 
             //setting the scalar value in order from first to fourth field
-            for(i in 0..fieldPanel.fields.size) {
+            for(i in 0 .. (fieldPanel.fields.size - 1).clipUpperZero()) {
+                //if we're still in range of the scalar values amount
                 if(i < colorScalar.`val`.size) {
                     val colorVal = colorScalar.`val`[i]
 
