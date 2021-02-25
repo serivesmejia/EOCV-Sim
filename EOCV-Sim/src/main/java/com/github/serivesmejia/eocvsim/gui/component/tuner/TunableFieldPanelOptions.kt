@@ -23,13 +23,11 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
         private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
     }
 
-    val sliderRange = Size(0.0, 255.0)
-
     val textBoxSliderToggle = JToggleButton()
     val configButton        = JButton()
     val colorPickButton     = JToggleButton()
 
-    val configPanel = TunableFieldPanelConfig(this, sliderRange)
+    val configPanel = TunableFieldPanelConfig(this, Size(0.0, 255.0), TunableFieldPanelConfig.PickerColorSpace.HSV)
 
     //toggle between textbox and slider ico,
     //and adding and removing config button
@@ -109,15 +107,16 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private fun startPicking(colorPicker: ColorPicker) {
         //when user picks a color
         colorPicker.onPick.doOnce {
-            val colorScalar = colorPicker.colorRgb.cvtColor(Imgproc.COLOR_RGB2YCrCb)
+            val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.pickerColorSpace!!.cvtCode)
 
+            //setting the scalar value in order from first to fourth field
             for(i in 0..fieldPanel.fields.size) {
-                try {
+                if(i < colorScalar.`val`.size) {
                     val colorVal = colorScalar.`val`[i]
 
                     fieldPanel.setFieldValue(i, colorVal)
                     fieldPanel.tunableField.setGuiFieldValue(i, colorVal.toString())
-                } catch(ignored: ArrayIndexOutOfBoundsException) { break }
+                } else { break } //keep looping until we write the entire scalar value
             }
             colorPickButton.isSelected = false
         }
@@ -129,6 +128,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
         colorPicker.startPicking()
     }
 
+    //handling resizes for responsive buttons arrangement
     private fun handleResize() {
         val buttonsHeight = textBoxSliderToggle.height + colorPickButton.height + configButton.height
 

@@ -45,7 +45,7 @@ class SizeFields(initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
                  middleText: String = " x ") : JPanel(FlowLayout()) {
 
     constructor(initialSize: Size, allowDecimalValues: Boolean, descriptiveText: String)
-            : this(initialSize, allowDecimalValues, descriptiveText, "Size: ")
+            : this(initialSize, allowDecimalValues, descriptiveText, " x ")
 
     val widthTextField = JTextField(4)
     val heightTextField = JTextField(4)

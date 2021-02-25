@@ -1,25 +1,40 @@
 package com.github.serivesmejia.eocvsim.gui.component.input
 
+import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import javax.swing.JComboBox
+import javax.swing.JLabel
+import javax.swing.JPanel
 
-class EnumComboBox<T : Enum<T>>(private val clazz: Class<T>,
-                                private val values: Array<T>) : JComboBox<String>() {
+class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
+                                private val clazz: Class<T>,
+                                values: Array<T>) : JPanel() {
+
+    val descriptiveLabel = JLabel(descriptiveText)
+    val comboBox = JComboBox<String>()
 
     var selectedEnum: T?
         set(value) {
-            selectedItem = value?.name
+            comboBox.selectedItem = value?.name
         }
         get() {
-            selectedItem?.let {
-                return java.lang.Enum.valueOf(clazz, selectedItem.toString())
+            comboBox.selectedItem?.let {
+                return java.lang.Enum.valueOf(clazz, comboBox.selectedItem.toString())
             }
             return null
         }
 
+    val onSelect = EventHandler("EnumComboBox-OnSelect")
+
     init {
+        descriptiveLabel.horizontalAlignment = JLabel.LEFT
+        add(descriptiveLabel)
+
         for(value in values) {
-            addItem(value.name)
+            comboBox.addItem(value.name)
         }
+        add(comboBox)
+
+        comboBox.addActionListener { onSelect.run() }
     }
 
 }
