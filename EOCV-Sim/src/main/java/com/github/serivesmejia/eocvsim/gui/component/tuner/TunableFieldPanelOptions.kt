@@ -40,13 +40,10 @@ import javax.swing.event.AncestorListener
 
 class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
 
-    companion object {
-        //getting resized icons from statically loaded ones
-        private val sliderIco    = Icons.getImageResized("ico_slider", 15, 15)
-        private val textBoxIco   = Icons.getImageResized("ico_textbox", 15, 15)
-        private val configIco    = Icons.getImageResized("ico_config", 15, 15)
-        private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
-    }
+    private val sliderIco    = Icons.getImageResized("ico_slider", 15, 15)
+    private val textBoxIco   = Icons.getImageResized("ico_textbox", 15, 15)
+    private val configIco    = Icons.getImageResized("ico_config", 15, 15)
+    private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
 
     val textBoxSliderToggle = JToggleButton()
     val configButton        = JButton()

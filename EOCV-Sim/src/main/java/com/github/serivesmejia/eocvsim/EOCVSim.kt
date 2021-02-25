@@ -218,7 +218,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             visualizer.pipelineRecordBtt.isEnabled = false
 
             itVideo.stopRecordingSession()
-            pipelineManager.pipelineOutputPosters.remove(itVideo)
+            pipelineManager.pipelineOutputPosters.remove(itVideo.matPoster)
 
             Log.info("EOCVSim", "Recording session stopped")
 

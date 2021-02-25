@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2021 Sebastian Erives
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package com.github.serivesmejia.eocvsim.gui
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
@@ -8,7 +31,9 @@ import javax.swing.ImageIcon
 object Icons {
 
     private val bufferedImages = HashMap<String, BufferedImage>()
+
     private val icons = HashMap<String, ImageIcon>()
+    private val resizedIcons = HashMap<String, ImageIcon>()
 
     private var colorsInverted = false
 
@@ -32,7 +57,26 @@ object Icons {
         return icons[name]!!
     }
 
-    fun getImageResized(name: String, width: Int, height: Int) = GuiUtil.scaleImage(getImage(name), width, height)
+    fun getImageResized(name: String, width: Int, height: Int): ImageIcon {
+        //determines the icon name from the:
+        //name, widthxheight, is inverted or is original
+        val resIconName = "$name-${width}x${height}-${
+            if(colorsInverted) {
+                "inverted"
+            } else {
+                "original"
+            }
+        }"
+
+        val icon = if(resizedIcons.contains(resIconName)) {
+            resizedIcons[resIconName]
+        } else {
+            resizedIcons[resIconName] = GuiUtil.scaleImage(getImage(name), width, height)
+            resizedIcons[resIconName]
+        }
+
+        return icon!!
+    }
 
     fun addImage(name: String, path: String) {
         val buffImg = GuiUtil.loadBufferedImage(path)
@@ -59,10 +103,10 @@ object Icons {
     }
 
     fun invertAll() {
-        for((name, img) in bufferedImages) {
+        for((_, img) in bufferedImages) {
             GuiUtil.invertBufferedImageColors(img)
         }
-        redefineIcons()
+        //redefineIcons()
     }
 
     private fun redefineIcons() {
