@@ -41,11 +41,12 @@ import kotlin.math.roundToInt
 
 class SizeFields(initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
                  allowDecimalValues: Boolean = false,
+                 allowNegativeValues: Boolean = false,
                  descriptiveText: String = "Size: ",
                  middleText: String = " x ") : JPanel(FlowLayout()) {
 
     constructor(initialSize: Size, allowDecimalValues: Boolean, descriptiveText: String)
-            : this(initialSize, allowDecimalValues, descriptiveText, " x ")
+            : this(initialSize, allowDecimalValues, false, descriptiveText, " x ")
 
     val widthTextField = JTextField(4)
     val heightTextField = JTextField(4)
@@ -89,6 +90,9 @@ class SizeFields(initialSize: Size = EOCVSim.DEFAULT_EOCV_SIZE,
         Collections.addAll(validChars, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
         if(allowDecimalValues) {
             validChars.add('.')
+        }
+        if(allowNegativeValues) {
+            validChars.add('-')
         }
 
         widthValidator = ValidCharactersDocumentFilter(validChars.toTypedArray())

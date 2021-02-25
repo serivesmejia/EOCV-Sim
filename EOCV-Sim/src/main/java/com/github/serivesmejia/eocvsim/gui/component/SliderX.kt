@@ -7,6 +7,10 @@ import kotlin.math.roundToInt
 /**
  * Allows for a slider to take a range of type double
  * and return a value of type double, instead of int.
+ *
+ * Achieved by upscaling the input bounds and the input
+ * value by a certain amount (multiplier of 10), and
+ * downscaling the value when getting it
  */
 open class SliderX(private var minBound: Double,
                    private var maxBound: Double,
@@ -28,7 +32,14 @@ open class SliderX(private var minBound: Double,
     }
 
     fun setScaledBounds(minBound: Double, maxBound: Double) {
-        this.minBound = minBound * scale
+        //for some reason we have to scale min bound when
+        //going negative... but not when going positive
+        this.minBound = if(minBound > 0) {
+            minBound
+        } else {
+            minBound * scale
+        }
+
         this.maxBound = maxBound * scale
 
         minimum = this.minBound.roundToInt()

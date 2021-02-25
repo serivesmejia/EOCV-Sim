@@ -7,18 +7,13 @@ import com.github.serivesmejia.eocvsim.tuner.TunableField
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.awt.GridLayout
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import java.awt.event.FocusAdapter
-import java.awt.event.FocusEvent
-import javax.swing.JLabel
 import javax.swing.JPanel
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               initialSliderRange: Size,
                               initialPickerColorSpace: PickerColorSpace) : JPanel() {
 
-    val sliderRangeFields = SizeFields(initialSliderRange, allowsDecimals, "Slider range:", " to ")
+    val sliderRangeFields = SizeFields(initialSliderRange, allowsDecimals, true,"Slider range:", " to ")
     val colorSpaceComboBox = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
     var sliderRange = initialSliderRange
@@ -42,7 +37,9 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         sliderRangeFields.onChange.doPersistent {
             if(sliderRangeFields.valid) {
-                sliderRange = sliderRangeFields.currentSize
+                try {
+                    sliderRange = sliderRangeFields.currentSize
+                } catch(ignored: NumberFormatException) {}
             }
         }
 
