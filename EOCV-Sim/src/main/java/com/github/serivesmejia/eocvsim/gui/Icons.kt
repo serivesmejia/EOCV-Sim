@@ -69,8 +69,10 @@ object Icons {
         }"
 
         val icon = if(resizedIcons.contains(resIconName)) {
+            println("alreadyexists $resIconName")
             resizedIcons[resIconName]
         } else {
+            println("create $resIconName")
             resizedIcons[resIconName] = GuiUtil.scaleImage(getImage(name), width, height)
             resizedIcons[resIconName]
         }
@@ -105,13 +107,6 @@ object Icons {
     fun invertAll() {
         for((_, img) in bufferedImages) {
             GuiUtil.invertBufferedImageColors(img)
-        }
-        //redefineIcons()
-    }
-
-    private fun redefineIcons() {
-        for((name, img) in bufferedImages) {
-            icons[name] = ImageIcon(img)
         }
     }
 

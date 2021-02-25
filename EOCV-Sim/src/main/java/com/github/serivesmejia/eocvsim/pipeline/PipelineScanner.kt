@@ -38,9 +38,8 @@ class PipelineScanner(val scanInPackage: String = "org.firstinspires") {
 
         //iterate over the results of the scan
         for (routeClassInfo in scanResult.allClasses) {
-            var foundClass: Class<*>
 
-            foundClass = try {
+            val foundClass: Class<*> = try {
                 Class.forName(routeClassInfo.name)
             } catch (e1: ClassNotFoundException) {
                 e1.printStackTrace()
