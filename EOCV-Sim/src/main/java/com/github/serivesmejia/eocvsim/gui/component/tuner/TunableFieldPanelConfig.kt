@@ -39,13 +39,16 @@ import javax.swing.JToggleButton
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               private val eocvSim: EOCVSim) : JPanel() {
 
-    var config = eocvSim.config.globalTunableFieldsConfig.clone()
+    var config = eocvSim.config.globalTunableFieldsConfig.copy()
         private set
 
     var appliedSpecificConfig = false
         private set
 
-    private val sliderRangeFields     = SizeFields(config.sliderRange, allowsDecimals, true,"Slider range:", " to ")
+    private val sliderRangeFieldsPanel = JPanel()
+
+    private var sliderRangeFields     = createRangeFields()
+        private set
     private val colorSpaceComboBox    = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
     private val applyToAllButtonPanel = JPanel(GridBagLayout())
@@ -68,15 +71,15 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     }
 
     data class Config(var sliderRange: Size,
-                      var pickerColorSpace: PickerColorSpace) {
-        fun clone() = Config(sliderRange, pickerColorSpace)
-    }
+                      var pickerColorSpace: PickerColorSpace)
 
     init {
         layout = GridLayout(3, 1)
 
-        //handle slider range changes
-        add(sliderRangeFields)
+        //adding into an individual panel so that we can add
+        //and remove later when recreating without much problem
+        sliderRangeFieldsPanel.add(sliderRangeFields)
+        add(sliderRangeFieldsPanel)
 
         //combo box to select color space
         colorSpaceComboBox.selectedEnum = config.pickerColorSpace
@@ -115,6 +118,8 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         constCenterBottom.gridy = 1
 
         applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
+
+        applyFromConfig()
     }
 
     //hides or displays apply to all mode buttons
@@ -145,7 +150,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
         applyFromConfig()
-        updateGuiFromCurrentConfig()
 
         applyToAllButton.isSelected = false
         toggleApplyModesPanel(false)
@@ -174,14 +178,13 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     }
 
     //applies the current values to config
-    private fun applyToConfig() {
+    fun applyToConfig() {
         //if user entered a valid number and our max value is bigger than the minimum...
         if(sliderRangeFields.valid) {
             config.sliderRange = sliderRangeFields.currentSize
             //update slider range in gui sliders...
-            if(config.sliderRange.height > config.sliderRange.width) {
-                fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
-            }
+            if(config.sliderRange.height > config.sliderRange.width)
+                updateSlidersRange()
         }
 
         colorSpaceComboBox.selectedEnum?.let {
@@ -189,11 +192,19 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         }
     }
 
-    private fun updateGuiFromCurrentConfig() {
-        sliderRangeFields.widthTextField.text  = config.sliderRange.width.toString()
-        sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
+    fun updateSlidersRange() = fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
 
-        colorSpaceComboBox.selectedEnum        = config.pickerColorSpace
+    //updates the values displayed in this config's ui to the current config values
+    private fun updateGuiFromCurrentConfig() {
+        sliderRangeFieldsPanel.remove(sliderRangeFields) //remove old fields
+        //need to recreate in order to set new values..
+        sliderRangeFields = createRangeFields()
+        sliderRangeFieldsPanel.add(sliderRangeFields)
+
+        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
     }
+
+    //simple short hand for a repetitive instantiation...
+    private fun createRangeFields() = SizeFields(config.sliderRange, allowsDecimals, true,"Slider range:", " to ")
 
 }

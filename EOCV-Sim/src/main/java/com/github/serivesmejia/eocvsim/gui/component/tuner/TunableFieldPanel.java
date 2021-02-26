@@ -122,7 +122,8 @@ public class TunableFieldPanel extends JPanel {
             comboBoxes[i] = comboBox;
         }
 
-        panelOptions.getConfigPanel().applyFromConfig();
+        //updates the slider ranges from config
+        panelOptions.getConfigPanel().updateSlidersRange();
     }
 
     public void setFieldValue(int index, Object value) {
