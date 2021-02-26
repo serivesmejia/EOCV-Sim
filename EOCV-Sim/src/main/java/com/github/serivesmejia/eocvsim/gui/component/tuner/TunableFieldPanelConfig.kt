@@ -23,7 +23,7 @@
 
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
-import com.github.serivesmejia.eocvsim.gui.component.PopupX
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.component.input.EnumComboBox
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
@@ -37,10 +37,15 @@ import javax.swing.JPanel
 import javax.swing.JToggleButton
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
-                              initialSliderRange: Size,
-                              initialPickerColorSpace: PickerColorSpace) : JPanel() {
+                              private val eocvSim: EOCVSim) : JPanel() {
 
-    private val sliderRangeFields     = SizeFields(initialSliderRange, allowsDecimals, true,"Slider range:", " to ")
+    var config = eocvSim.config.globalTunableFieldsConfig.copy()
+        private set
+
+    var appliedSpecificConfig = false
+        private set
+
+    private val sliderRangeFields     = SizeFields(config.sliderRange, allowsDecimals, true,"Slider range:", " to ")
     private val colorSpaceComboBox    = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
     private val applyToAllButtonPanel = JPanel(GridBagLayout())
@@ -51,8 +56,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val applyToAllOfSameTypeButton  = JButton("Of same type")
 
     private val constCenterBottom = GridBagConstraints()
-
-    val config = Config(initialSliderRange, initialPickerColorSpace)
 
     private val allowsDecimals
         get() = fieldOptions.fieldPanel.tunableField.allowMode == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL
@@ -81,7 +84,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         add(sliderRangeFields)
 
         //combo box to select color space
-        colorSpaceComboBox.selectedEnum = initialPickerColorSpace
+        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
         add(colorSpaceComboBox)
 
         //centering apply to all button...
@@ -117,6 +120,8 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         constCenterBottom.gridy = 1
 
         applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
+
+        applyFromConfig()
     }
 
     //hides or displays apply to all mode buttons
@@ -135,19 +140,18 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         repaint(); revalidate()
     }
 
-    fun applyGlobally() {
-
+    private fun applyGlobally() {
+        eocvSim.config.globalTunableFieldsConfig = config
     }
 
-    fun applyOfSameType() {
-
+    private fun applyOfSameType() {
+        val typeClass = fieldOptions.fieldPanel.tunableField::class.java
+        eocvSim.config.specificTunableFieldConfig[typeClass.name] = config;
     }
 
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
-        sliderRangeFields.widthTextField.text  = config.sliderRange.width.toString()
-        sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
-        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+        updateGuiFromCurrentConfig()
 
         applyToAllButton.isSelected = false
         toggleApplyModesPanel(false)
@@ -160,6 +164,28 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
             fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
         }
         toggleApplyModesPanel(true)
+    }
+
+    fun applyFromConfig() {
+        val typeClass = fieldOptions.fieldPanel.tunableField::class.java
+        val specificConfigs = eocvSim.config.specificTunableFieldConfig
+
+        //apply specific config if we have one, or else, apply global
+        config = if(specificConfigs.containsKey(typeClass.name)) {
+            appliedSpecificConfig = true
+            specificConfigs[typeClass.name]!!
+        } else {
+            eocvSim.config.globalTunableFieldsConfig
+        }
+
+        updateGuiFromCurrentConfig()
+    }
+
+    fun updateGuiFromCurrentConfig() {
+        sliderRangeFields.widthTextField.text  = config.sliderRange.width.toString()
+        sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
+
+        colorSpaceComboBox.selectedEnum        = config.pickerColorSpace
     }
 
 }

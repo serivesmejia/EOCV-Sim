@@ -23,14 +23,13 @@
 
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
 import com.github.serivesmejia.eocvsim.util.extension.NumberExt.clipUpperZero
 import org.opencv.core.Size
 import java.awt.FlowLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -38,7 +37,8 @@ import javax.swing.*
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
 
-class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
+class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
+                               eocvSim: EOCVSim) : JPanel() {
 
     private val sliderIco    = Icons.getImageResized("ico_slider", 15, 15)
     private val textBoxIco   = Icons.getImageResized("ico_textbox", 15, 15)
@@ -49,7 +49,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private val configButton          = JButton()
     private val colorPickButton       = JToggleButton()
 
-    val configPanel = TunableFieldPanelConfig(this, Size(0.0, 255.0), TunableFieldPanelConfig.PickerColorSpace.HSV)
+    val configPanel = TunableFieldPanelConfig(this, eocvSim)
 
     //toggle between textbox and slider ico,
     //and adding and removing config button
@@ -83,10 +83,10 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
         add(colorPickButton)
 
         textBoxSliderToggle.addActionListener {
-            if(textBoxSliderToggle.isSelected) {
-                mode = TunableFieldPanel.Mode.SLIDERS
+            mode = if(textBoxSliderToggle.isSelected) {
+                TunableFieldPanel.Mode.SLIDERS
             } else {
-                mode = TunableFieldPanel.Mode.TEXTBOXES
+                TunableFieldPanel.Mode.TEXTBOXES
             }
         }
 

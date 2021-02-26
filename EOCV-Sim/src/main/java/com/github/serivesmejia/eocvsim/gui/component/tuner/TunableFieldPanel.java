@@ -67,7 +67,7 @@ public class TunableFieldPanel extends JPanel {
         //nice look
         setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
 
-        panelConfig = new TunableFieldPanelOptions(this);
+        panelConfig = new TunableFieldPanelOptions(this, eocvSim);
 
         if(tunableField.getGuiFieldAmount() > 0) {
             add(panelConfig);
