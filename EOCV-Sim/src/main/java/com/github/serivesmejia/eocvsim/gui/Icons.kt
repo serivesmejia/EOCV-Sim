@@ -69,10 +69,8 @@ object Icons {
         }"
 
         val icon = if(resizedIcons.contains(resIconName)) {
-            println("alreadyexists $resIconName")
             resizedIcons[resIconName]
         } else {
-            println("create $resIconName")
             resizedIcons[resIconName] = GuiUtil.scaleImage(getImage(name), width, height)
             resizedIcons[resIconName]
         }

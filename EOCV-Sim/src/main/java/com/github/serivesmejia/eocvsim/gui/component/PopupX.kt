@@ -52,4 +52,7 @@ class PopupX(windowAncestor: Window, panel: JPanel, x: Int, y: Int) : Popup(), W
     override fun windowGainedFocus(e: WindowEvent?) {}
 
     override fun windowLostFocus(e: WindowEvent?) = hide()
+
+    fun setLocation(width: Int, height: Int) = dialog.setLocation(width, height)
+
 }

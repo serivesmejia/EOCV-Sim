@@ -27,10 +27,10 @@ import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
 import com.github.serivesmejia.eocvsim.util.extension.NumberExt.clipUpperZero
-import com.qualcomm.robotcore.util.Range
 import org.opencv.core.Size
-import org.opencv.imgproc.Imgproc
 import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -45,9 +45,9 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private val configIco    = Icons.getImageResized("ico_config", 15, 15)
     private val colorPickIco = Icons.getImageResized("ico_colorpick", 15, 15)
 
-    val textBoxSliderToggle = JToggleButton()
-    val configButton        = JButton()
-    val colorPickButton     = JToggleButton()
+    private val textBoxSliderToggle   = JToggleButton()
+    private val configButton          = JButton()
+    private val colorPickButton       = JToggleButton()
 
     val configPanel = TunableFieldPanelConfig(this, Size(0.0, 255.0), TunableFieldPanelConfig.PickerColorSpace.HSV)
 
@@ -92,13 +92,22 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
 
         configButton.addActionListener {
             val configLocation = configButton.locationOnScreen
-            val configHeight   = configButton.height + configPanel.height / 2
+            var configHeight   = configPanel.height + configButton.height / 2
 
             val window = SwingUtilities.getWindowAncestor(this)
             val popup  = PopupX(window, configPanel, configLocation.x, configLocation.y - configHeight)
 
-            popup.show()
             configPanel.attachOnceToPopup(popup)
+
+            //our configPanel's width & height size is zero until
+            //we display it, so we need to define the location twice
+            //to make sure we always get the correct location.
+            popup.onShow.doOnce {
+                configHeight = configPanel.height + configButton.height / 2
+                popup.setLocation(configLocation.x, configLocation.y - configHeight)
+            }
+
+            popup.show()
         }
 
         colorPickButton.addActionListener {
@@ -130,7 +139,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
     private fun startPicking(colorPicker: ColorPicker) {
         //when user picks a color
         colorPicker.onPick.doOnce {
-            val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.pickerColorSpace!!.cvtCode)
+            val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.config.pickerColorSpace.cvtCode)
 
             //setting the scalar value in order from first to fourth field
             for(i in 0 .. (fieldPanel.fields.size - 1).clipUpperZero()) {

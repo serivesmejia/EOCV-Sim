@@ -29,22 +29,25 @@ import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.GridLayout
+import javax.swing.JButton
 import javax.swing.JPanel
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               initialSliderRange: Size,
                               initialPickerColorSpace: PickerColorSpace) : JPanel() {
 
-    val sliderRangeFields = SizeFields(initialSliderRange, allowsDecimals, true,"Slider range:", " to ")
-    val colorSpaceComboBox = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
+    private val sliderRangeFields     = SizeFields(initialSliderRange, allowsDecimals, true,"Slider range:", " to ")
+    private val colorSpaceComboBox    = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
-    var sliderRange = initialSliderRange
-        private set
-    val pickerColorSpace: PickerColorSpace?
-        get() = colorSpaceComboBox.selectedEnum
+    private val applyToAllButtonPanel = JPanel(GridBagLayout())
+    private val applyToAllButton      = JButton("Apply to all")
 
-    val allowsDecimals
+    val config = Config(initialSliderRange, initialPickerColorSpace)
+
+    private val allowsDecimals
         get() = fieldOptions.fieldPanel.tunableField.allowMode == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL
 
     enum class PickerColorSpace(val cvtCode: Int) {
@@ -54,31 +57,47 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         Lab(Imgproc.COLOR_RGB2Lab)
     }
 
+    data class Config(var sliderRange: Size,
+                      var pickerColorSpace: PickerColorSpace)
+
     init {
-        layout = GridLayout(2, 1)
-        add(sliderRangeFields)
+        layout = GridLayout(3, 1)
 
         sliderRangeFields.onChange.doPersistent {
             if(sliderRangeFields.valid) {
                 try {
-                    sliderRange = sliderRangeFields.currentSize
+                    config.sliderRange = sliderRangeFields.currentSize
                 } catch(ignored: NumberFormatException) {}
             }
         }
+        add(sliderRangeFields)
 
         colorSpaceComboBox.selectedEnum = initialPickerColorSpace
         add(colorSpaceComboBox)
+
+        val constCenter    = GridBagConstraints()
+        constCenter.anchor = GridBagConstraints.CENTER
+        constCenter.fill   = GridBagConstraints.HORIZONTAL
+
+        applyToAllButtonPanel.add(applyToAllButton, constCenter)
+        add(applyToAllButtonPanel)
+
+        validate()
+        updateUI()
     }
 
     fun attachOnceToPopup(popup: PopupX) {
+        popup.onShow.doOnce {
+            sliderRangeFields.widthTextField.text = config.sliderRange.width.toString()
+            sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
+            colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+        }
+
         //set the slider bounds when the popup gets closed
         popup.onHide.doOnce {
-            //if user entered a valid number
-            if(sliderRangeFields.valid) {
-                //if our max value is bigger than the minimum...
-                if(sliderRange.height > sliderRange.width) {
-                    fieldOptions.fieldPanel.setSlidersRange(sliderRange.width, sliderRange.height)
-                }
+            //if user entered a valid number and our max value is bigger than the minimum...
+            if(sliderRangeFields.valid && config.sliderRange.height > config.sliderRange.width) {
+                fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
             }
         }
     }
