@@ -39,7 +39,7 @@ import javax.swing.JToggleButton
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               private val eocvSim: EOCVSim) : JPanel() {
 
-    var config = eocvSim.config.globalTunableFieldsConfig.copy()
+    var config = eocvSim.config.globalTunableFieldsConfig.clone()
         private set
 
     var appliedSpecificConfig = false
@@ -68,19 +68,14 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     }
 
     data class Config(var sliderRange: Size,
-                      var pickerColorSpace: PickerColorSpace)
+                      var pickerColorSpace: PickerColorSpace) {
+        fun clone() = Config(sliderRange, pickerColorSpace)
+    }
 
     init {
         layout = GridLayout(3, 1)
 
         //handle slider range changes
-        sliderRangeFields.onChange.doPersistent {
-            if(sliderRangeFields.valid) {
-                try {
-                    config.sliderRange = sliderRangeFields.currentSize
-                } catch(ignored: NumberFormatException) {}
-            }
-        }
         add(sliderRangeFields)
 
         //combo box to select color space
@@ -120,8 +115,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         constCenterBottom.gridy = 1
 
         applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
-
-        applyFromConfig()
     }
 
     //hides or displays apply to all mode buttons
@@ -146,11 +139,12 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     private fun applyOfSameType() {
         val typeClass = fieldOptions.fieldPanel.tunableField::class.java
-        eocvSim.config.specificTunableFieldConfig[typeClass.name] = config;
+        eocvSim.config.specificTunableFieldConfig[typeClass.name] = config
     }
 
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
+        applyFromConfig()
         updateGuiFromCurrentConfig()
 
         applyToAllButton.isSelected = false
@@ -159,13 +153,11 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     //set the slider bounds when the popup gets closed
     fun panelHide() {
-        //if user entered a valid number and our max value is bigger than the minimum...
-        if(sliderRangeFields.valid && config.sliderRange.height > config.sliderRange.width) {
-            fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
-        }
+        applyToConfig()
         toggleApplyModesPanel(true)
     }
 
+    //loads the config from global eocv sim config file
     fun applyFromConfig() {
         val typeClass = fieldOptions.fieldPanel.tunableField::class.java
         val specificConfigs = eocvSim.config.specificTunableFieldConfig
@@ -181,7 +173,23 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         updateGuiFromCurrentConfig()
     }
 
-    fun updateGuiFromCurrentConfig() {
+    //applies the current values to config
+    private fun applyToConfig() {
+        //if user entered a valid number and our max value is bigger than the minimum...
+        if(sliderRangeFields.valid) {
+            config.sliderRange = sliderRangeFields.currentSize
+            //update slider range in gui sliders...
+            if(config.sliderRange.height > config.sliderRange.width) {
+                fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
+            }
+        }
+
+        colorSpaceComboBox.selectedEnum?.let {
+            config.pickerColorSpace = it
+        }
+    }
+
+    private fun updateGuiFromCurrentConfig() {
         sliderRangeFields.widthTextField.text  = config.sliderRange.width.toString()
         sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
 

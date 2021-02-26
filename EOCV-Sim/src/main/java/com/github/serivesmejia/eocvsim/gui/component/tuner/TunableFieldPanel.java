@@ -45,7 +45,7 @@ public class TunableFieldPanel extends JPanel {
 
     public JComboBox[] comboBoxes;
 
-    private TunableFieldPanelOptions panelConfig = null;
+    private TunableFieldPanelOptions panelOptions = null;
     private final EOCVSim eocvSim;
 
     private Mode mode;
@@ -67,10 +67,10 @@ public class TunableFieldPanel extends JPanel {
         //nice look
         setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
 
-        panelConfig = new TunableFieldPanelOptions(this, eocvSim);
+        panelOptions = new TunableFieldPanelOptions(this, eocvSim);
 
         if(tunableField.getGuiFieldAmount() > 0) {
-            add(panelConfig);
+            add(panelOptions);
         }
 
         JLabel fieldNameLabel = new JLabel();
@@ -121,6 +121,8 @@ public class TunableFieldPanel extends JPanel {
 
             comboBoxes[i] = comboBox;
         }
+
+        panelOptions.getConfigPanel().applyFromConfig();
     }
 
     public void setFieldValue(int index, Object value) {
@@ -168,8 +170,8 @@ public class TunableFieldPanel extends JPanel {
 
         this.mode = mode;
 
-        if(panelConfig.getMode() != mode) {
-            panelConfig.setMode(mode);
+        if(panelOptions.getMode() != mode) {
+            panelOptions.setMode(mode);
         }
 
         revalidate(); repaint();
