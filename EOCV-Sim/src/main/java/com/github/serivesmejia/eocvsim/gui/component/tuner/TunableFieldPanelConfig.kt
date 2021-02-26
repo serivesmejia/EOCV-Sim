@@ -34,6 +34,7 @@ import java.awt.GridBagLayout
 import java.awt.GridLayout
 import javax.swing.JButton
 import javax.swing.JPanel
+import javax.swing.JToggleButton
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               initialSliderRange: Size,
@@ -43,7 +44,13 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val colorSpaceComboBox    = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
     private val applyToAllButtonPanel = JPanel(GridBagLayout())
-    private val applyToAllButton      = JButton("Apply to all")
+    private val applyToAllButton      = JToggleButton("Apply to all fields...")
+
+    private val applyModesPanel             = JPanel(GridLayout(1, 2))
+    private val applyToAllFieldsButton      = JButton("Globally")
+    private val applyToAllOfSameTypeButton  = JButton("Of same type")
+
+    private val constCenterBottom = GridBagConstraints()
 
     val config = Config(initialSliderRange, initialPickerColorSpace)
 
@@ -63,6 +70,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     init {
         layout = GridLayout(3, 1)
 
+        //handle slider range changes
         sliderRangeFields.onChange.doPersistent {
             if(sliderRangeFields.valid) {
                 try {
@@ -72,34 +80,86 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         }
         add(sliderRangeFields)
 
+        //combo box to select color space
         colorSpaceComboBox.selectedEnum = initialPickerColorSpace
         add(colorSpaceComboBox)
 
+        //centering apply to all button...
         val constCenter    = GridBagConstraints()
         constCenter.anchor = GridBagConstraints.CENTER
         constCenter.fill   = GridBagConstraints.HORIZONTAL
+        constCenter.gridy  = 0
 
+        //add apply to all button to a centered pane
         applyToAllButtonPanel.add(applyToAllButton, constCenter)
         add(applyToAllButtonPanel)
 
-        validate()
-        updateUI()
+        //display or hide apply to all mode buttons
+        applyToAllButton.addActionListener { toggleApplyModesPanel(applyToAllButton.isSelected) }
+
+        //apply globally button and disable toggle for apply to all button
+        applyToAllFieldsButton.addActionListener {
+            toggleApplyModesPanel(false)
+            applyGlobally()
+        }
+        applyModesPanel.add(applyToAllFieldsButton)
+
+        //apply of same type button and disable toggle for apply to all button
+        applyToAllOfSameTypeButton.addActionListener {
+            toggleApplyModesPanel(false)
+            applyOfSameType()
+        }
+        applyModesPanel.add(applyToAllOfSameTypeButton)
+
+        //add two apply to all modes buttons to the bottom center
+        constCenterBottom.anchor = GridBagConstraints.CENTER
+        constCenterBottom.fill = GridBagConstraints.HORIZONTAL
+        constCenterBottom.gridy = 1
+
+        applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
     }
 
-    fun attachOnceToPopup(popup: PopupX) {
-        popup.onShow.doOnce {
-            sliderRangeFields.widthTextField.text = config.sliderRange.width.toString()
-            sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
-            colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+    //hides or displays apply to all mode buttons
+    private fun toggleApplyModesPanel(show: Boolean) {
+        if(show) {
+            applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
+        } else {
+            applyToAllButtonPanel.remove(applyModesPanel)
         }
 
-        //set the slider bounds when the popup gets closed
-        popup.onHide.doOnce {
-            //if user entered a valid number and our max value is bigger than the minimum...
-            if(sliderRangeFields.valid && config.sliderRange.height > config.sliderRange.width) {
-                fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
-            }
+        //toggle or untoggle apply to all button
+        applyToAllButton.isSelected = show
+
+        //need to repaint...
+        applyToAllButtonPanel.repaint(); applyToAllButtonPanel.revalidate()
+        repaint(); revalidate()
+    }
+
+    fun applyGlobally() {
+
+    }
+
+    fun applyOfSameType() {
+
+    }
+
+    //set the current config values and hide apply modes panel when panel show
+    fun panelShow() {
+        sliderRangeFields.widthTextField.text  = config.sliderRange.width.toString()
+        sliderRangeFields.heightTextField.text = config.sliderRange.height.toString()
+        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+
+        applyToAllButton.isSelected = false
+        toggleApplyModesPanel(false)
+    }
+
+    //set the slider bounds when the popup gets closed
+    fun panelHide() {
+        //if user entered a valid number and our max value is bigger than the minimum...
+        if(sliderRangeFields.valid && config.sliderRange.height > config.sliderRange.width) {
+            fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
         }
+        toggleApplyModesPanel(true)
     }
 
 }

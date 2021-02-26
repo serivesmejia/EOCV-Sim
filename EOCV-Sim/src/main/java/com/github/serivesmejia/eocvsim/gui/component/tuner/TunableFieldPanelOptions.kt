@@ -97,15 +97,16 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel) : JPanel() {
             val window = SwingUtilities.getWindowAncestor(this)
             val popup  = PopupX(window, configPanel, configLocation.x, configLocation.y - configHeight)
 
-            configPanel.attachOnceToPopup(popup)
-
             //our configPanel's width & height size is zero until
             //we display it, so we need to define the location twice
             //to make sure we always get the correct location.
             popup.onShow.doOnce {
                 configHeight = configPanel.height + configButton.height / 2
                 popup.setLocation(configLocation.x, configLocation.y - configHeight)
+                configPanel.panelShow()
             }
+
+            popup.onHide.doOnce { configPanel.panelHide() }
 
             popup.show()
         }
