@@ -48,7 +48,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val sliderRangeFieldsPanel = JPanel()
 
     private var sliderRangeFields     = createRangeFields()
-        private set
     private val colorSpaceComboBox    = EnumComboBox("Color space: ", PickerColorSpace::class.java, PickerColorSpace.values())
 
     private val applyToAllButtonPanel = JPanel(GridBagLayout())
@@ -63,6 +62,11 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val allowsDecimals
         get() = fieldOptions.fieldPanel.tunableField.allowMode == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL
 
+    private val fieldTypeClass = fieldOptions.fieldPanel.tunableField::class.java
+
+    //represents a color space conversion when picking from the viewport. always
+    //convert from rgb to the desired color space since that's the color space of
+    //the scalar the ColorPicker returns from the viewport after picking.
     enum class PickerColorSpace(val cvtCode: Int) {
         YCrCb(Imgproc.COLOR_RGB2YCrCb),
         HSV(Imgproc.COLOR_RGB2HSV),
@@ -163,13 +167,12 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     //loads the config from global eocv sim config file
     fun applyFromConfig() {
-        val typeClass = fieldOptions.fieldPanel.tunableField::class.java
         val specificConfigs = eocvSim.config.specificTunableFieldConfig
 
         //apply specific config if we have one, or else, apply global
-        config = if(specificConfigs.containsKey(typeClass.name)) {
+        config = if(specificConfigs.containsKey(fieldTypeClass.name)) {
             appliedSpecificConfig = true
-            specificConfigs[typeClass.name]!!
+            specificConfigs[fieldTypeClass.name]!!
         } else {
             eocvSim.config.globalTunableFieldsConfig
         }
@@ -187,6 +190,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                 updateSlidersRange()
         }
 
+        //set the color space enum to the config if it's not null
         colorSpaceComboBox.selectedEnum?.let {
             config.pickerColorSpace = it
         }
@@ -197,9 +201,12 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     //updates the values displayed in this config's ui to the current config values
     private fun updateGuiFromCurrentConfig() {
         sliderRangeFieldsPanel.remove(sliderRangeFields) //remove old fields
-        //need to recreate in order to set new values..
+        //need to recreate in order to set new values
         sliderRangeFields = createRangeFields()
-        sliderRangeFieldsPanel.add(sliderRangeFields)
+        sliderRangeFieldsPanel.add(sliderRangeFields) //add new fields
+
+        //need to reval&repaint as always
+        sliderRangeFieldsPanel.revalidate(); sliderRangeFieldsPanel.repaint()
 
         colorSpaceComboBox.selectedEnum = config.pickerColorSpace
     }
