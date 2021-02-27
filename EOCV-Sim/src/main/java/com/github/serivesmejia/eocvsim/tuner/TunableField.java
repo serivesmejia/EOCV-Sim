@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanelConfig;
 import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -47,6 +48,8 @@ public abstract class TunableField<T> {
     private int guiComboBoxAmount = 0;
 
     public final EventHandler onValueChange = new EventHandler("TunableField-ValueChange");
+
+    private TunableFieldPanel.Mode recommendedMode = null;
 
     public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
         this.reflectionField = reflectionField;
@@ -76,17 +79,23 @@ public abstract class TunableField<T> {
 
     public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;
 
-    public void setGuiComboBoxValue(int index, String newValue) throws IllegalAccessException {
-    }
+    public void setGuiComboBoxValue(int index, String newValue) throws IllegalAccessException { }
 
     public final void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
     }
 
-    public final void setRecommendedPanelMode(TunableFieldPanel.Mode mode) {
-        //TODO: Handling user "apply to all" overrides. We want to give more priority to what the user wants.
-        if(fieldPanel != null) {
-            fieldPanel.setMode(mode);
+    protected final void setRecommendedPanelMode(TunableFieldPanel.Mode mode) {
+        recommendedMode = mode;
+    }
+
+    public final void evalRecommendedPanelMode() {
+        TunableFieldPanelConfig configPanel = fieldPanel.panelOptions.getConfigPanel();
+        TunableFieldPanelConfig.ConfigSource configSource = configPanel.getLocalConfig().getSource();
+        //only apply the recommendation if user hasn't
+        //configured a global or specific field config
+        if(recommendedMode != null && fieldPanel != null && configSource == TunableFieldPanelConfig.ConfigSource.GLOBAL_DEFAULT) {
+            fieldPanel.setMode(recommendedMode);
         }
     }
 

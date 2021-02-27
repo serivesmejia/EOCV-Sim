@@ -84,6 +84,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     enum class ConfigSource(val description: String) {
         LOCAL("From local config"),
         GLOBAL("From global config"),
+        GLOBAL_DEFAULT("From default global config"),
         TYPE_SPECIFIC("From specific config")
     }
 
@@ -144,7 +145,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         applyFromEOCVSimConfig()
     }
-
 
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
@@ -214,6 +214,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     }
 
     //applies the current values to the specified config, defaults to local
+    @Suppress("UNNECESSARY_SAFE_CALL")
     private fun applyToConfig(config: Config = localConfig) {
         //if user entered a valid number and our max value is bigger than the minimum...
         if(sliderRangeFields.valid) {
@@ -244,11 +245,12 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     }
 
     //updates the actual configuration displayed on the field panel gui
+    @Suppress("UNNECESSARY_SAFE_CALL")
     fun updateFieldGuiFromConfig() {
         //sets the slider range from config
         fieldOptions.fieldPanel.setSlidersRange(localConfig.sliderRange.width, localConfig.sliderRange.height)
         //sets the panel mode (sliders or textboxes) to config from the current mode
-        if(fieldOptions.fieldPanel != null && fieldOptions.fieldPanel.fields != null){
+        if(fieldOptions.fieldPanel?.fields != null){
             fieldOptions.fieldPanel.mode = localConfig.fieldPanelMode
         }
     }

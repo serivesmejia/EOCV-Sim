@@ -50,16 +50,14 @@ public class ScalarField extends TunableField<Scalar> {
         scalarSize = scalar.val.length;
 
         setGuiFieldAmount(scalarSize);
-    }
-
-    @Override
-    public void init() {
         setRecommendedPanelMode(TunableFieldPanel.Mode.SLIDERS);
     }
 
     @Override
-    public void update() {
+    public void init() { }
 
+    @Override
+    public void update() {
         try {
             scalar = (Scalar) reflectionField.get(pipeline);
         } catch (IllegalAccessException e) {

@@ -46,7 +46,7 @@ public class Config {
             new TunableFieldPanelConfig.Config(new Size(0, 255),
                                                 TunableFieldPanelConfig.PickerColorSpace.RGB,
                                                 TunableFieldPanel.Mode.TEXTBOXES,
-                                                TunableFieldPanelConfig.ConfigSource.GLOBAL);
+                                                TunableFieldPanelConfig.ConfigSource.GLOBAL_DEFAULT);
 
     public volatile HashMap<String, TunableFieldPanelConfig.Config> specificTunableFieldConfig = new HashMap<>();
 

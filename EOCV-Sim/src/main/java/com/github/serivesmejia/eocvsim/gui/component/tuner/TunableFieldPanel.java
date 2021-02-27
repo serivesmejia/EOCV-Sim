@@ -45,10 +45,12 @@ public class TunableFieldPanel extends JPanel {
 
     public JComboBox[] comboBoxes;
 
-    private TunableFieldPanelOptions panelOptions = null;
+    public TunableFieldPanelOptions panelOptions = null;
     private final EOCVSim eocvSim;
 
     private Mode mode;
+
+    private boolean hasBeenShown = false;
 
     public enum Mode { TEXTBOXES, SLIDERS }
 
@@ -121,9 +123,16 @@ public class TunableFieldPanel extends JPanel {
 
             comboBoxes[i] = comboBox;
         }
+    }
+
+    //method that should be called when this panel is added to the visualizer gui
+    public void showFieldPanel() {
+        if(hasBeenShown) return;
+        hasBeenShown = true;
 
         //updates the slider ranges from config
         panelOptions.getConfigPanel().updateFieldGuiFromConfig();
+        tunableField.evalRecommendedPanelMode();
     }
 
     public void setFieldValue(int index, Object value) {
@@ -170,6 +179,7 @@ public class TunableFieldPanel extends JPanel {
         }
 
         this.mode = mode;
+        System.out.println("setMode " + this.mode + " " + tunableField.getFieldName());
 
         if(panelOptions.getMode() != mode) {
             panelOptions.setMode(mode);

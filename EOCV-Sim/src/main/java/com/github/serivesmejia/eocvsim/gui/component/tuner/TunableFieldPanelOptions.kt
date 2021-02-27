@@ -68,6 +68,8 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
             handleResize()
 
             if(fieldPanel.mode != value) fieldPanel.mode = value
+            configPanel.localConfig.fieldPanelMode = value
+
             field = value
         }
 

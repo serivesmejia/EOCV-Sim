@@ -732,16 +732,15 @@ public class Visualizer {
     }
 
     public void updateTunerFields(List<TunableFieldPanel> fields) {
-
         tunerMenuPanel.removeAll();
 
         for (TunableFieldPanel fieldPanel : fields) {
             tunerMenuPanel.add(fieldPanel);
+            fieldPanel.showFieldPanel();
         }
 
         tunerMenuPanel.updateUI();
         imageTunerSplitPane.updateUI();
-
     }
 
     // PLEASE WAIT DIALOGS
