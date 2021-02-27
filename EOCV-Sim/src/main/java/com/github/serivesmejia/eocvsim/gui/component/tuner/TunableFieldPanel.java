@@ -179,7 +179,6 @@ public class TunableFieldPanel extends JPanel {
         }
 
         this.mode = mode;
-        System.out.println("setMode " + this.mode + " " + tunableField.getFieldName());
 
         if(panelOptions.getMode() != mode) {
             panelOptions.setMode(mode);

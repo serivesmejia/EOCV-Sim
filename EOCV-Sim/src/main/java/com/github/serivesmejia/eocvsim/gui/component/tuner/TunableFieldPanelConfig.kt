@@ -29,13 +29,13 @@ import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
+import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JToggleButton
+import javax.swing.*
+import javax.swing.border.CompoundBorder
+import javax.swing.border.EmptyBorder
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               private val eocvSim: EOCVSim) : JPanel() {
@@ -58,8 +58,8 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val applyToAllButtonPanel = JPanel(GridBagLayout())
     private val applyToAllButton      = JToggleButton("Apply to all fields...")
 
-    private val applyModesPanel             = JPanel(GridLayout(1, 2))
-    private val applyToAllFieldsButton      = JButton("Globally")
+    private val applyModesPanel             = JPanel()
+    private val applyToAllGloballyButton      = JButton("Globally")
     private val applyToAllOfSameTypeButton  = JButton("Of this type")
 
     private val constCenterBottom = GridBagConstraints()
@@ -119,12 +119,18 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         //display or hide apply to all mode buttons
         applyToAllButton.addActionListener { toggleApplyModesPanel(applyToAllButton.isSelected) }
 
+        applyModesPanel.layout = BoxLayout(applyModesPanel, BoxLayout.LINE_AXIS)
+
         //apply globally button and disable toggle for apply to all button
-        applyToAllFieldsButton.addActionListener {
+        applyToAllGloballyButton.addActionListener {
             toggleApplyModesPanel(false)
             applyGlobally()
         }
-        applyModesPanel.add(applyToAllFieldsButton)
+
+        applyModesPanel.add(applyToAllGloballyButton)
+
+        //creates a space between the apply mode buttons
+        applyModesPanel.add(Box.createRigidArea(Dimension(5, 0)))
 
         //apply of same type button and disable toggle for apply to all button
         applyToAllOfSameTypeButton.addActionListener {
@@ -133,14 +139,18 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         }
         applyModesPanel.add(applyToAllOfSameTypeButton)
 
+        //add a bit of space between the upper and lower apply to all buttons
+        applyModesPanel.border = EmptyBorder(5, 0, 0, 0);
+
         //add two apply to all modes buttons to the bottom center
         constCenterBottom.anchor = GridBagConstraints.CENTER
-        constCenterBottom.fill = GridBagConstraints.HORIZONTAL
-        constCenterBottom.gridy = 1
+        constCenterBottom.fill   = GridBagConstraints.HORIZONTAL
+        constCenterBottom.gridy  = 1
 
         applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
 
         configSourceLabel.horizontalAlignment = JLabel.CENTER
+        configSourceLabel.verticalAlignment = JLabel.CENTER
         add(configSourceLabel)
 
         applyFromEOCVSimConfig()
