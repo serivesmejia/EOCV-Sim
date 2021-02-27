@@ -49,6 +49,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
     private val colorPickButton       = JToggleButton()
 
     val configPanel = TunableFieldPanelConfig(this, eocvSim)
+    private var lastConfigPopup: PopupX? = null
 
     //toggle between textbox and slider ico,
     //and adding and removing config button
@@ -109,6 +110,13 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
             }
 
             popup.onHide.doOnce { configPanel.panelHide() }
+
+            //make sure we hide last config so
+            //that we don't get a "stuck" popup
+            //if the silly user is pressing the
+            //button wayy too fast
+            lastConfigPopup?.hide()
+            lastConfigPopup = popup
 
             popup.show()
         }
