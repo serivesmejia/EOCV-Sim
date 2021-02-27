@@ -23,6 +23,7 @@
 
 package com.github.serivesmejia.eocvsim.config;
 
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanelConfig;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
@@ -42,7 +43,10 @@ public class Config {
     public volatile Size videoRecordingSize = new Size(640, 480);
 
     public volatile TunableFieldPanelConfig.Config globalTunableFieldsConfig =
-            new TunableFieldPanelConfig.Config(new Size(0, 255), TunableFieldPanelConfig.PickerColorSpace.RGB);
+            new TunableFieldPanelConfig.Config(new Size(0, 255),
+                                                TunableFieldPanelConfig.PickerColorSpace.RGB,
+                                                TunableFieldPanel.Mode.TEXTBOXES,
+                                                TunableFieldPanelConfig.ConfigSource.GLOBAL);
 
     public volatile HashMap<String, TunableFieldPanelConfig.Config> specificTunableFieldConfig = new HashMap<>();
 

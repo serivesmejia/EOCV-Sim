@@ -28,7 +28,6 @@ import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
 import com.github.serivesmejia.eocvsim.util.extension.NumberExt.clipUpperZero
-import org.opencv.core.Size
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -140,7 +139,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
     private fun startPicking(colorPicker: ColorPicker) {
         //when user picks a color
         colorPicker.onPick.doOnce {
-            val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.config.pickerColorSpace.cvtCode)
+            val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.localConfig.pickerColorSpace.cvtCode)
 
             //setting the scalar value in order from first to fourth field
             for(i in 0 .. (fieldPanel.fields.size - 1).clipUpperZero()) {

@@ -123,7 +123,7 @@ public class TunableFieldPanel extends JPanel {
         }
 
         //updates the slider ranges from config
-        panelOptions.getConfigPanel().updateSlidersRange();
+        panelOptions.getConfigPanel().updateFieldGuiFromConfig();
     }
 
     public void setFieldValue(int index, Object value) {

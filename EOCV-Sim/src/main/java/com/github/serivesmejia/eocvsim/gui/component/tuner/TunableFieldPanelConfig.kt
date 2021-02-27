@@ -33,17 +33,17 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
 import javax.swing.JButton
+import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JToggleButton
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
                               private val eocvSim: EOCVSim) : JPanel() {
 
-    var config = eocvSim.config.globalTunableFieldsConfig.copy()
+    var localConfig = eocvSim.config.globalTunableFieldsConfig.copy()
         private set
 
-    var appliedSpecificConfig = false
-        private set
+    private var hasApplied = false
 
     private val sliderRangeFieldsPanel = JPanel()
 
@@ -55,9 +55,11 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     private val applyModesPanel             = JPanel(GridLayout(1, 2))
     private val applyToAllFieldsButton      = JButton("Globally")
-    private val applyToAllOfSameTypeButton  = JButton("Of same type")
+    private val applyToAllOfSameTypeButton  = JButton("Of this type")
 
     private val constCenterBottom = GridBagConstraints()
+
+    private val configSourceLabel = JLabel(localConfig.source.description)
 
     private val allowsDecimals
         get() = fieldOptions.fieldPanel.tunableField.allowMode == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL
@@ -74,19 +76,28 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         Lab(Imgproc.COLOR_RGB2Lab)
     }
 
+    enum class ConfigSource(val description: String) {
+        LOCAL("Applied from local config"),
+        GLOBAL("Applied from global config"),
+        TYPE_SPECIFIC("Applied from config specific to this type")
+    }
+
     data class Config(var sliderRange: Size,
-                      var pickerColorSpace: PickerColorSpace)
+                      var pickerColorSpace: PickerColorSpace,
+                      var fieldPanelMode: TunableFieldPanel.Mode,
+                      var source: ConfigSource)
 
     init {
-        layout = GridLayout(3, 1)
+        layout = GridLayout(4, 1)
 
         //adding into an individual panel so that we can add
         //and remove later when recreating without much problem
         sliderRangeFieldsPanel.add(sliderRangeFields)
         add(sliderRangeFieldsPanel)
 
+        colorSpaceComboBox.onSelect.doPersistent { updateConfigSourceLabel(true) }
         //combo box to select color space
-        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+        colorSpaceComboBox.selectedEnum = localConfig.pickerColorSpace
         add(colorSpaceComboBox)
 
         //centering apply to all button...
@@ -123,7 +134,10 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
 
-        applyFromConfig()
+        configSourceLabel.horizontalAlignment = JLabel.CENTER
+        add(configSourceLabel)
+
+        applyFromEOCVSimConfig()
     }
 
     //hides or displays apply to all mode buttons
@@ -142,18 +156,32 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         repaint(); revalidate()
     }
 
+    //applies the config of this tunable field panel globally
     private fun applyGlobally() {
-        eocvSim.config.globalTunableFieldsConfig = config
+        applyToLocalConfig() //saves the current values to the current local config
+
+        localConfig.source = ConfigSource.GLOBAL //changes the source of the local config to global
+        eocvSim.config.globalTunableFieldsConfig = localConfig.copy()
+
+        hasApplied = true
+        updateConfigSourceLabel(false)
     }
 
+    //applies the config of this tunable field to this type specifically
     private fun applyOfSameType() {
+        applyToLocalConfig() //saves the current values to the current local config
         val typeClass = fieldOptions.fieldPanel.tunableField::class.java
-        eocvSim.config.specificTunableFieldConfig[typeClass.name] = config
+
+        localConfig.source = ConfigSource.TYPE_SPECIFIC //changes the source of the local config to type specific
+        eocvSim.config.specificTunableFieldConfig[typeClass.name] = localConfig.copy()
+
+        hasApplied = true
+        updateConfigSourceLabel(false)
     }
 
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
-        applyFromConfig()
+        updateConfigGuiFromConfig()
 
         applyToAllButton.isSelected = false
         toggleApplyModesPanel(false)
@@ -161,57 +189,79 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     //set the slider bounds when the popup gets closed
     fun panelHide() {
-        applyToConfig()
+        applyToLocalConfig()
         toggleApplyModesPanel(true)
+        hasApplied = false
     }
 
     //loads the config from global eocv sim config file
-    fun applyFromConfig() {
+    private fun applyFromEOCVSimConfig() {
         val specificConfigs = eocvSim.config.specificTunableFieldConfig
 
         //apply specific config if we have one, or else, apply global
-        config = if(specificConfigs.containsKey(fieldTypeClass.name)) {
-            appliedSpecificConfig = true
-            specificConfigs[fieldTypeClass.name]!!
+        localConfig = if(specificConfigs.containsKey(fieldTypeClass.name)) {
+            specificConfigs[fieldTypeClass.name]!!.copy()
         } else {
-            eocvSim.config.globalTunableFieldsConfig
+            eocvSim.config.globalTunableFieldsConfig.copy()
         }
 
-        updateGuiFromCurrentConfig()
+        updateConfigGuiFromConfig()
     }
 
-    //applies the current values to config
-    fun applyToConfig() {
+    //applies the current values to the "local" config
+    private fun applyToLocalConfig() {
         //if user entered a valid number and our max value is bigger than the minimum...
         if(sliderRangeFields.valid) {
-            config.sliderRange = sliderRangeFields.currentSize
+            localConfig.sliderRange = sliderRangeFields.currentSize
             //update slider range in gui sliders...
-            if(config.sliderRange.height > config.sliderRange.width)
-                updateSlidersRange()
+            if(localConfig.sliderRange.height > localConfig.sliderRange.width)
+                updateFieldGuiFromConfig()
         }
 
         //set the color space enum to the config if it's not null
         colorSpaceComboBox.selectedEnum?.let {
-            config.pickerColorSpace = it
+            localConfig.pickerColorSpace = it
         }
+
+        //sets the panel mode (sliders or textboxes) to config from the current mode
+        localConfig.fieldPanelMode = fieldOptions.fieldPanel.mode
     }
 
-    fun updateSlidersRange() = fieldOptions.fieldPanel.setSlidersRange(config.sliderRange.width, config.sliderRange.height)
+    private fun updateConfigSourceLabel(changed: Boolean = false) {
+        //sets to local if user changed values and hasn't applied locally or globally
+        if(changed && !hasApplied) {
+            localConfig.source = ConfigSource.LOCAL
+        }
+        configSourceLabel.text = localConfig.source.description
+    }
+
+    //updates the actual configuration displayed on the field panel gui
+    fun updateFieldGuiFromConfig() {
+        //sets the slider range from config
+        fieldOptions.fieldPanel.setSlidersRange(localConfig.sliderRange.width, localConfig.sliderRange.height)
+        //sets the panel mode (sliders or textboxes) to config from the current mode
+        localConfig.fieldPanelMode = fieldOptions.fieldPanel.mode
+    }
 
     //updates the values displayed in this config's ui to the current config values
-    private fun updateGuiFromCurrentConfig() {
+    private fun updateConfigGuiFromConfig() {
         sliderRangeFieldsPanel.remove(sliderRangeFields) //remove old fields
-        //need to recreate in order to set new values
-        sliderRangeFields = createRangeFields()
+        sliderRangeFields = createRangeFields() //need to recreate in order to set new values
         sliderRangeFieldsPanel.add(sliderRangeFields) //add new fields
 
         //need to reval&repaint as always
         sliderRangeFieldsPanel.revalidate(); sliderRangeFieldsPanel.repaint()
 
-        colorSpaceComboBox.selectedEnum = config.pickerColorSpace
+        colorSpaceComboBox.selectedEnum = localConfig.pickerColorSpace
+        updateConfigSourceLabel()
     }
 
     //simple short hand for a repetitive instantiation...
-    private fun createRangeFields() = SizeFields(config.sliderRange, allowsDecimals, true,"Slider range:", " to ")
+    private fun createRangeFields(): SizeFields {
+        val fields = SizeFields(localConfig.sliderRange, allowsDecimals, true,"Slider range:", " to ")
+        fields.onChange.doPersistent { updateConfigSourceLabel(true) }
+
+        return fields
+    }
 
 }
