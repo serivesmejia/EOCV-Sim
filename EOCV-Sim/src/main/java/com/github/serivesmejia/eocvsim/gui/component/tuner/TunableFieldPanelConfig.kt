@@ -50,9 +50,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
             return config
         }
 
-    private var initialOnShowConfig: Config? = null
-    private var hasApplied = false
-
     private val sliderRangeFieldsPanel = JPanel()
 
     private var sliderRangeFields     = createRangeFields()
@@ -151,7 +148,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
-        initialOnShowConfig = localConfig.copy()
         updateConfigGuiFromConfig()
 
         applyToAllButton.isSelected = false
@@ -161,8 +157,8 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     //set the slider bounds when the popup gets closed
     fun panelHide() {
         applyToConfig()
+        updateFieldGuiFromConfig()
         toggleApplyModesPanel(true)
-        hasApplied = false
     }
 
     //hides or displays apply to all mode buttons
@@ -188,7 +184,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         localConfig.source = ConfigSource.GLOBAL //changes the source of the local config to global
         eocvSim.config.globalTunableFieldsConfig = localConfig.copy()
 
-        hasApplied = true
         updateConfigSourceLabel()
     }
 
@@ -200,7 +195,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         localConfig.source = ConfigSource.TYPE_SPECIFIC //changes the source of the local config to type specific
         eocvSim.config.specificTunableFieldConfig[typeClass.name] = localConfig.copy()
 
-        hasApplied = true
         updateConfigSourceLabel()
     }
 
@@ -214,9 +208,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         } else {
             eocvSim.config.globalTunableFieldsConfig.copy()
         }
-        //redefine initial onShow config to current one so that
-        //our source description JLabel doesn't change to "local"
-        initialOnShowConfig = localConfig.copy()
 
         updateConfigGuiFromConfig()
         updateConfigSourceLabel()
@@ -238,7 +229,9 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         }
 
         //sets the panel mode (sliders or textboxes) to config from the current mode
-        config.fieldPanelMode = fieldOptions.fieldPanel.mode
+        if(fieldOptions.fieldPanel?.mode != null) {
+            config.fieldPanelMode = fieldOptions.fieldPanel.mode
+        }
     }
 
     private fun updateConfigSourceLabel(currentConfig: Config = localConfig) {
@@ -255,7 +248,9 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         //sets the slider range from config
         fieldOptions.fieldPanel.setSlidersRange(localConfig.sliderRange.width, localConfig.sliderRange.height)
         //sets the panel mode (sliders or textboxes) to config from the current mode
-        localConfig.fieldPanelMode = fieldOptions.fieldPanel.mode
+        if(fieldOptions.fieldPanel != null && fieldOptions.fieldPanel.fields != null){
+            fieldOptions.fieldPanel.mode = localConfig.fieldPanelMode
+        }
     }
 
     //updates the values displayed in this config's ui to the current config values

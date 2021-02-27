@@ -87,6 +87,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
             } else {
                 TunableFieldPanel.Mode.TEXTBOXES
             }
+            configPanel.localConfig.fieldPanelMode = mode
         }
 
         configButton.addActionListener {

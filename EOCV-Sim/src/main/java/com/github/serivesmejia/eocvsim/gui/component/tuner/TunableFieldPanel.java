@@ -179,6 +179,7 @@ public class TunableFieldPanel extends JPanel {
     }
 
     public void setSlidersRange(double min, double max) {
+        if(sliders == null) return;
         for(TunableSlider slider : sliders) {
             slider.setScaledBounds(min, max);
         }
