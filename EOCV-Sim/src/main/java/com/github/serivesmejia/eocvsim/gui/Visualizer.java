@@ -25,26 +25,24 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.CreateSourcePanel;
+import com.github.serivesmejia.eocvsim.gui.component.PopupX;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
-import com.github.serivesmejia.eocvsim.gui.dialog.CreateSource;
-import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
 import com.github.serivesmejia.eocvsim.input.SourceType;
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.Taskbar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +120,8 @@ public class Visualizer {
     private volatile boolean isCtrlPressed = false;
 
     private volatile boolean hasFinishedInitializing = false;
+
+    private PopupX lastCreateSourcePopup = null;
 
     public Visualizer(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
@@ -325,8 +325,23 @@ public class Visualizer {
         sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager));
 
         sourceSelectorCreateBtt.addActionListener(e -> {
-            if (CreateSource.alreadyOpened) return;
-            DialogFactory.createSourceDialog(eocvSim);
+            if(lastCreateSourcePopup != null) {
+                lastCreateSourcePopup.hide();
+            }
+            CreateSourcePanel panel = new CreateSourcePanel(eocvSim);
+
+            int panelHeight = panel.getHeight() + sourceSelectorCreateBtt.getHeight() / 2;
+
+            Point location = sourceSelectorCreateBtt.getLocationOnScreen();
+            PopupX popup = new PopupX(frame, panel, location.x, location.y - panelHeight);
+
+            popup.onShow.doOnce(() -> {
+                int newPanelHeight = panel.getHeight() + sourceSelectorCreateBtt.getHeight() / 2;
+                popup.setLocation(location.x, location.y - newPanelHeight);
+            });
+
+            lastCreateSourcePopup = popup;
+            popup.show();
         });
 
         sourceSelectorContainer.add(sourceSelectorScrollContainer);

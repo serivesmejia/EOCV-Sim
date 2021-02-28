@@ -49,8 +49,10 @@ class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
     val onSelect = EventHandler("EnumComboBox-OnSelect")
 
     init {
-        descriptiveLabel.horizontalAlignment = JLabel.LEFT
-        add(descriptiveLabel)
+        if(descriptiveText.trim() != "") {
+            descriptiveLabel.horizontalAlignment = JLabel.LEFT
+            add(descriptiveLabel)
+        }
 
         for(value in values) {
             comboBox.addItem(value.name)
@@ -58,6 +60,11 @@ class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
         add(comboBox)
 
         comboBox.addActionListener { onSelect.run() }
+    }
+
+
+    fun removeEnumOption(enum: T) {
+        comboBox.removeItem(enum.name)
     }
 
 }

@@ -11,12 +11,15 @@ import javax.swing.JPopupMenu
 import javax.swing.JWindow
 import javax.swing.Popup
 
-class PopupX(windowAncestor: Window, panel: JPanel, x: Int, y: Int) : Popup(), WindowFocusListener {
+class PopupX(windowAncestor: Window,
+             private val panel: JPanel,
+             private val x: Int,
+             private val y: Int) : Popup(), WindowFocusListener {
 
     private val dialog = JWindow(windowAncestor)
 
-    val onShow = EventHandler("PopupX-OnShow")
-    val onHide = EventHandler("PopupX-OnHide")
+    @JvmField val onShow = EventHandler("PopupX-OnShow")
+    @JvmField val onHide = EventHandler("PopupX-OnHide")
 
     init {
         dialog.isFocusable = true
@@ -40,6 +43,7 @@ class PopupX(windowAncestor: Window, panel: JPanel, x: Int, y: Int) : Popup(), W
     override fun show() {
         dialog.addWindowFocusListener(this)
         dialog.isVisible = true
+
         onShow.run()
     }
 
