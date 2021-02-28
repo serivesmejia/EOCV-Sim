@@ -330,15 +330,10 @@ public class Visualizer {
             }
             CreateSourcePanel panel = new CreateSourcePanel(eocvSim);
 
-            int panelHeight = panel.getHeight() + sourceSelectorCreateBtt.getHeight() / 2;
+            int buttonHeight = sourceSelectorCreateBtt.getHeight() / 2;
+            Point location   = sourceSelectorCreateBtt.getLocationOnScreen();
 
-            Point location = sourceSelectorCreateBtt.getLocationOnScreen();
-            PopupX popup = new PopupX(frame, panel, location.x, location.y - panelHeight);
-
-            popup.onShow.doOnce(() -> {
-                int newPanelHeight = panel.getHeight() + sourceSelectorCreateBtt.getHeight() / 2;
-                popup.setLocation(location.x, location.y - newPanelHeight);
-            });
+            PopupX popup = new PopupX(frame, panel, location.x, location.y - buttonHeight);
 
             lastCreateSourcePopup = popup;
             popup.show();

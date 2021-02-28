@@ -44,6 +44,10 @@ class PopupX(windowAncestor: Window,
         dialog.addWindowFocusListener(this)
         dialog.isVisible = true
 
+        //fixes position since our panel dimensions
+        //aren't known until it's set visible (above)
+        setLocation(x, y - panel.height)
+
         onShow.run()
     }
 
