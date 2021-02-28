@@ -47,7 +47,7 @@ public class TunerManager {
 
     private final List<TunableField> fields = new ArrayList<>();
 
-    private static HashMap<Type, Class<? extends TunableField>> tunableFieldsTypes = null;
+    private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
 
     private boolean firstInit = true;
 
@@ -58,7 +58,7 @@ public class TunerManager {
     public void init() {
         if(tunableFieldsTypes == null) {
             tunableFieldsTypes = new AnnotatedTunableFieldScanner(eocvSim.getParams().getScanForTunableFieldsIn())
-                                .lookForTunableFields();
+                                .scan().getTunableFields();
         }
 
         if (firstInit) {
@@ -113,7 +113,7 @@ public class TunerManager {
             if(tunableFieldsTypes.containsKey(type)) {
                 tunableFieldClass = tunableFieldsTypes.get(type);
             } else {
-                for (Map.Entry<Type, Class<? extends TunableField>> entry : tunableFieldsTypes.entrySet()) {
+                for (Map.Entry<Type, Class<? extends TunableField<?>>> entry : tunableFieldsTypes.entrySet()) {
                     try {
                         if (ReflectUtil.hasSuperclass(type, (Class<?>) entry.getKey())) {
                             tunableFieldClass = entry.getValue();

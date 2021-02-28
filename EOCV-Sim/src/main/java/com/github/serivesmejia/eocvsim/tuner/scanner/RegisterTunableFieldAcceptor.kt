@@ -21,14 +21,11 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.tuner.scanner;
+package com.github.serivesmejia.eocvsim.tuner.scanner
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.github.serivesmejia.eocvsim.tuner.TunableField
+import kotlin.reflect.KClass
 
-import static java.lang.annotation.ElementType.TYPE;
-
-@Target({TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RegisterTunableField { }
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class RegisterTunableFieldAcceptor(val tunableFieldType: KClass<out TunableField<*>>)

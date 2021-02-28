@@ -2,7 +2,9 @@ package com.github.serivesmejia.eocvsim.tuner.field
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.tuner.TunableField
+import com.github.serivesmejia.eocvsim.tuner.TunableFieldAcceptor
 import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField
+import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableFieldAcceptor
 import org.openftc.easyopencv.OpenCvPipeline
 import java.lang.reflect.Field
 
@@ -56,5 +58,11 @@ class EnumField(private val instance: OpenCvPipeline,
 
     override fun hasChanged() = reflectionField.get(instance) == beforeValue
 
+    @RegisterTunableFieldAcceptor(EnumField::class)
+    class EnumFieldAcceptor: TunableFieldAcceptor {
+        override fun accept(clazz: Class<*>): Boolean {
+            return false
+        }
+    }
 
 }
