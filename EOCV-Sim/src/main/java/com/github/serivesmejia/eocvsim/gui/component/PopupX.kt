@@ -14,7 +14,8 @@ import javax.swing.Popup
 class PopupX(windowAncestor: Window,
              private val panel: JPanel,
              private val x: Int,
-             private val y: Int) : Popup(), WindowFocusListener {
+             private val y: Int,
+             var closeOnFocusLost: Boolean = true) : Popup(), WindowFocusListener {
 
     private val dialog = JWindow(windowAncestor)
 
@@ -59,7 +60,11 @@ class PopupX(windowAncestor: Window,
 
     override fun windowGainedFocus(e: WindowEvent?) {}
 
-    override fun windowLostFocus(e: WindowEvent?) = hide()
+    override fun windowLostFocus(e: WindowEvent?) {
+        if(closeOnFocusLost) {
+            hide()
+        }
+    }
 
     fun setLocation(width: Int, height: Int) = dialog.setLocation(width, height)
 

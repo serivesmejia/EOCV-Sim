@@ -333,7 +333,7 @@ public class Visualizer {
             int buttonHeight = sourceSelectorCreateBtt.getHeight() / 2;
             Point location   = sourceSelectorCreateBtt.getLocationOnScreen();
 
-            PopupX popup = new PopupX(frame, panel, location.x, location.y - buttonHeight);
+            PopupX popup = new PopupX(frame, panel, location.x, location.y - buttonHeight, true);
 
             lastCreateSourcePopup = popup;
             popup.show();

@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.gui.component.input.EnumComboBox
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
@@ -43,6 +44,8 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     var localConfig = eocvSim.config.globalTunableFieldsConfig.copy()
         private set
 
+    private var lastApplyPopup: PopupX? = null
+
     val currentConfig: Config
         get() {
             val config = localConfig.copy()
@@ -59,7 +62,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     private val applyToAllButton      = JToggleButton("Apply to all fields...")
 
     private val applyModesPanel             = JPanel()
-    private val applyToAllGloballyButton      = JButton("Globally")
+    private val applyToAllGloballyButton    = JButton("Globally")
     private val applyToAllOfSameTypeButton  = JButton("Of this type")
 
     private val constCenterBottom = GridBagConstraints()
@@ -117,13 +120,37 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         add(applyToAllButtonPanel)
 
         //display or hide apply to all mode buttons
-        applyToAllButton.addActionListener { toggleApplyModesPanel(applyToAllButton.isSelected) }
+        applyToAllButton.addActionListener {
+            //create a new popup for displaying the apply modes button
+            if(applyToAllButton.isSelected) {
+                val window   = SwingUtilities.getWindowAncestor(fieldOptions) //gets the parent frame
+                val location = applyToAllButton.locationOnScreen
+
+                val popup      = PopupX(window, applyModesPanel, location.x, location.y)
+                lastApplyPopup = popup //set to a "last" variable so that we can hide it later
+
+                //so that the main config popup doesn't get closed
+                //when it gets unfocused in favour of this new frame
+                fieldOptions.lastConfigPopup?.closeOnFocusLost = false
+                
+                //untoggle the apply to all button if the popup closes
+                popup.onHide.doPersistent {
+                    //allow the main config popup to close when losing focus now
+                    fieldOptions.lastConfigPopup?.closeOnFocusLost = true
+                    applyToAllButton.isSelected = false
+                }
+
+                popup.show()
+            } else {
+                lastApplyPopup?.hide() //close the popup if user un-toggled button
+            }
+        }
 
         applyModesPanel.layout = BoxLayout(applyModesPanel, BoxLayout.LINE_AXIS)
 
         //apply globally button and disable toggle for apply to all button
         applyToAllGloballyButton.addActionListener {
-            toggleApplyModesPanel(false)
+            lastApplyPopup?.hide()
             applyGlobally()
         }
 
@@ -134,7 +161,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         //apply of same type button and disable toggle for apply to all button
         applyToAllOfSameTypeButton.addActionListener {
-            toggleApplyModesPanel(false)
+            lastApplyPopup?.hide()
             applyOfSameType()
         }
         applyModesPanel.add(applyToAllOfSameTypeButton)
@@ -147,8 +174,6 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         constCenterBottom.fill   = GridBagConstraints.HORIZONTAL
         constCenterBottom.gridy  = 1
 
-        applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
-
         configSourceLabel.horizontalAlignment = JLabel.CENTER
         configSourceLabel.verticalAlignment = JLabel.CENTER
         add(configSourceLabel)
@@ -159,32 +184,14 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     //set the current config values and hide apply modes panel when panel show
     fun panelShow() {
         updateConfigGuiFromConfig()
-
         applyToAllButton.isSelected = false
-        toggleApplyModesPanel(false)
     }
 
     //set the slider bounds when the popup gets closed
     fun panelHide() {
         applyToConfig()
         updateFieldGuiFromConfig()
-        toggleApplyModesPanel(true)
-    }
-
-    //hides or displays apply to all mode buttons
-    private fun toggleApplyModesPanel(show: Boolean) {
-        if(show) {
-            applyToAllButtonPanel.add(applyModesPanel, constCenterBottom)
-        } else {
-            applyToAllButtonPanel.remove(applyModesPanel)
-        }
-
-        //toggle or untoggle apply to all button
-        applyToAllButton.isSelected = show
-
-        //need to repaint...
-        applyToAllButtonPanel.repaint(); applyToAllButtonPanel.revalidate()
-        repaint(); revalidate()
+        lastApplyPopup?.hide()
     }
 
     //applies the config of this tunable field panel globally
