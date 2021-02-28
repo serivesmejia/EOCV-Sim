@@ -53,6 +53,8 @@ class PopupX(windowAncestor: Window,
     }
 
     override fun hide() {
+        if(!window.isVisible) return
+
         window.removeWindowFocusListener(this)
         window.isVisible = false
         onHide.run()
