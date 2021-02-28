@@ -135,9 +135,16 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                 
                 //untoggle the apply to all button if the popup closes
                 popup.onHide.doPersistent {
-                    //allow the main config popup to close when losing focus now
-                    fieldOptions.lastConfigPopup?.closeOnFocusLost = true
                     applyToAllButton.isSelected = false
+
+                    fieldOptions.lastConfigPopup?.let {
+                        //allow the main config popup to close when losing focus now
+                        it.closeOnFocusLost = true
+                        //close config popup if it lost focus too
+                        if(!it.window.hasFocus()) {
+                            it.hide()
+                        }
+                    }
                 }
 
                 popup.show()
@@ -167,7 +174,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         applyModesPanel.add(applyToAllOfSameTypeButton)
 
         //add a bit of space between the upper and lower apply to all buttons
-        applyModesPanel.border = EmptyBorder(5, 0, 0, 0);
+        applyModesPanel.border = EmptyBorder(5, 0, 0, 0)
 
         //add two apply to all modes buttons to the bottom center
         constCenterBottom.anchor = GridBagConstraints.CENTER

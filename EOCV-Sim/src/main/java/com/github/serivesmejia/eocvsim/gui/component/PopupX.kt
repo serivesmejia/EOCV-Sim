@@ -17,19 +17,19 @@ class PopupX(windowAncestor: Window,
              private val y: Int,
              var closeOnFocusLost: Boolean = true) : Popup(), WindowFocusListener {
 
-    private val dialog = JWindow(windowAncestor)
+    val window = JWindow(windowAncestor)
 
     @JvmField val onShow = EventHandler("PopupX-OnShow")
     @JvmField val onHide = EventHandler("PopupX-OnHide")
 
     init {
-        dialog.isFocusable = true
-        dialog.setLocation(x, y)
-        dialog.contentPane = panel
+        window.isFocusable = true
+        window.setLocation(x, y)
+        window.contentPane = panel
 
         panel.border = JPopupMenu().border
 
-        dialog.size = panel.preferredSize
+        window.size = panel.preferredSize
 
         windowAncestor.addKeyListener(object: KeyAdapter() {
             override fun keyPressed(e: KeyEvent?) {
@@ -42,8 +42,8 @@ class PopupX(windowAncestor: Window,
     }
 
     override fun show() {
-        dialog.addWindowFocusListener(this)
-        dialog.isVisible = true
+        window.addWindowFocusListener(this)
+        window.isVisible = true
 
         //fixes position since our panel dimensions
         //aren't known until it's set visible (above)
@@ -53,8 +53,8 @@ class PopupX(windowAncestor: Window,
     }
 
     override fun hide() {
-        dialog.removeWindowFocusListener(this)
-        dialog.isVisible = false
+        window.removeWindowFocusListener(this)
+        window.isVisible = false
         onHide.run()
     }
 
@@ -66,6 +66,6 @@ class PopupX(windowAncestor: Window,
         }
     }
 
-    fun setLocation(width: Int, height: Int) = dialog.setLocation(width, height)
+    fun setLocation(width: Int, height: Int) = window.setLocation(width, height)
 
 }
