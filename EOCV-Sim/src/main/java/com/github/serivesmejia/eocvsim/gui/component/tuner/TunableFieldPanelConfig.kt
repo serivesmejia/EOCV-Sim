@@ -28,6 +28,8 @@ import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.gui.component.input.EnumComboBox
 import com.github.serivesmejia.eocvsim.gui.component.input.SizeFields
 import com.github.serivesmejia.eocvsim.tuner.TunableField
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.awt.Dimension
@@ -35,7 +37,6 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.GridLayout
 import javax.swing.*
-import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
 class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions,
@@ -122,7 +123,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         //display or hide apply to all mode buttons
         applyToAllButton.addActionListener {
             //create a new popup for displaying the apply modes button
-            if(applyToAllButton.isSelected) {
+            if(applyToAllButton.isSelected && (lastApplyPopup == null || lastApplyPopup?.window?.isVisible == false)) {
                 val window   = SwingUtilities.getWindowAncestor(fieldOptions) //gets the parent frame
                 val location = applyToAllButton.locationOnScreen
 
@@ -132,7 +133,14 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                 //so that the main config popup doesn't get closed
                 //when it gets unfocused in favour of this new frame
                 fieldOptions.lastConfigPopup?.closeOnFocusLost = false
-                
+
+                popup.onShow.doPersistent {
+                    popup.setLocation(
+                        popup.window.location.x - applyModesPanel.width / 8,
+                        popup.window.location.y + applyModesPanel.height + applyToAllButton.height
+                    )
+                }
+
                 //untoggle the apply to all button if the popup closes
                 popup.onHide.doPersistent {
                     applyToAllButton.isSelected = false
@@ -140,9 +148,16 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                     fieldOptions.lastConfigPopup?.let {
                         //allow the main config popup to close when losing focus now
                         it.closeOnFocusLost = true
-                        //close config popup if it lost focus too
-                        if(!it.window.hasFocus()) {
-                            it.hide()
+
+                        //launch the waiting in the background
+                        GlobalScope.launch {
+                            delay(200)
+                            //close config popup if still hasn't focused after a bit
+                            launch(Dispatchers.Swing) {
+                                if (!it.window.isFocused && (lastApplyPopup == null || lastApplyPopup?.window?.isFocused == false)) {
+                                    it.hide()
+                                }
+                            }
                         }
                     }
                 }

@@ -34,11 +34,13 @@ import javax.swing.JPopupMenu
 import javax.swing.JWindow
 import javax.swing.Popup
 
-class PopupX(windowAncestor: Window,
-             private val panel: JPanel,
-             private val x: Int,
-             private val y: Int,
-             var closeOnFocusLost: Boolean = true) : Popup(), WindowFocusListener {
+class PopupX @JvmOverloads constructor(windowAncestor: Window,
+                                       private val panel: JPanel,
+                                       private var x: Int,
+                                       private var y: Int,
+                                       var closeOnFocusLost: Boolean = true,
+                                       private val fixX: Boolean = false,
+                                       private val fixY: Boolean = true) : Popup(), WindowFocusListener {
 
     val window = JWindow(windowAncestor)
 
@@ -70,7 +72,9 @@ class PopupX(windowAncestor: Window,
 
         //fixes position since our panel dimensions
         //aren't known until it's set visible (above)
-        setLocation(x, y - panel.height)
+        if(fixX) x -= panel.width / 4
+        if(fixY) y -= panel.height
+        setLocation(x, y)
 
         onShow.run()
     }
