@@ -47,8 +47,9 @@ public class TunerManager {
 
     private final List<TunableField> fields = new ArrayList<>();
 
-    private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
+    private TunableFieldAcceptorManager acceptorManager = null;
 
+    private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
     private boolean firstInit = true;
 
     public TunerManager(EOCVSim eocvSim) {
@@ -57,8 +58,12 @@ public class TunerManager {
 
     public void init() {
         if(tunableFieldsTypes == null) {
-            tunableFieldsTypes = new AnnotatedTunableFieldScanner(eocvSim.getParams().getScanForTunableFieldsIn())
-                                .scan().getTunableFields();
+            AnnotatedTunableFieldScanner.ScanResult result = new AnnotatedTunableFieldScanner(
+                    eocvSim.getParams().getScanForTunableFieldsIn()
+            ).scan();
+
+            tunableFieldsTypes = result.getTunableFields();
+            acceptorManager = new TunableFieldAcceptorManager(result.getAcceptors());
         }
 
         if (firstInit) {
@@ -113,24 +118,12 @@ public class TunerManager {
             if(tunableFieldsTypes.containsKey(type)) {
                 tunableFieldClass = tunableFieldsTypes.get(type);
             } else {
-                for (Map.Entry<Type, Class<? extends TunableField<?>>> entry : tunableFieldsTypes.entrySet()) {
-                    try {
-                        if (ReflectUtil.hasSuperclass(type, (Class<?>) entry.getKey())) {
-                            tunableFieldClass = entry.getValue();
-                            break;
-                        }
-                    } catch(ClassCastException ignored) {}
-                }
+                //if we don't have a class yet, use our acceptors
+                tunableFieldClass = acceptorManager.accept(type);
+                //still haven't got anything, give up here.
+                if(tunableFieldClass == null) continue;
             }
 
-            if(tunableFieldClass == null) {
-                //for now we'll hard-code enum type, sadly...
-                if(type.isEnum()) {
-                    tunableFieldClass = EnumField.class;
-                } else {
-                    return;
-                }
-            }
 
             //yay we have a registered TunableField which handles this
             //now, lets do some more reflection to instantiate this TunableField

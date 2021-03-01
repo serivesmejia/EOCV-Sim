@@ -35,7 +35,7 @@ import kotlin.reflect.KClass
 class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
 
     data class ScanResult(val tunableFields: HashMap<Type, Class<out TunableField<*>>>,
-                          val acceptors: HashMap<KClass<out TunableField<*>>, Class<out TunableFieldAcceptor>>)
+                          val acceptors: HashMap<Class<out TunableField<*>>, Class<out TunableFieldAcceptor>>)
 
     fun scan(): ScanResult {
         val tunableFields = HashMap<Type, Class<out TunableField<*>>>()
@@ -46,12 +46,14 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
         val classGraph = ClassGraph().enableAnnotationInfo().acceptPackages(lookInPackage)
         val result = classGraph.scan()
 
+        //SCANNING FOR TUNABLE FIELDS
+
         for (classInfo in result.getClassesWithAnnotation(RegisterTunableField::class.java.name)) {
             try {
                 val foundClass: Class<*> = try {
                     Class.forName(classInfo.name)
-                } catch (e1: ClassNotFoundException) {
-                    e1.printStackTrace()
+                } catch (ex: ClassNotFoundException) {
+                    Log.error("AnnotatedTunableFieldScanner", "Unable to find class ${classInfo.name}", ex)
                     continue  //continue because we couldn't get the class...
                 }
 
@@ -74,14 +76,15 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
         Log.info("AnnotatedTunableFieldScanner", "Found " + tunableFields.size + " TunableField(s)")
         Log.white()
 
-        //scanning for tunable field acceptors...
-        val acceptors = HashMap<KClass<out TunableField<*>>, Class<out TunableFieldAcceptor>>()
+        //SCANNING FOR TUNABLE FIELD ACCEPTORS
+
+        val acceptors = HashMap<Class<out TunableField<*>>, Class<out TunableFieldAcceptor>>()
 
         for (classInfo in result.getClassesWithAnnotation(RegisterTunableFieldAcceptor::class.java.name)) {
             val foundClass: Class<*> = try {
                 Class.forName(classInfo.name)
-            } catch (e1: ClassNotFoundException) {
-                e1.printStackTrace()
+            } catch (ex: ClassNotFoundException) {
+                Log.error("AnnotatedTunableFieldScanner", "Unable to find class ${classInfo.name}", ex)
                 continue  //continue because we couldn't get the class...
             }
 
@@ -92,13 +95,16 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
             for(annotation in foundClassAcceptor.annotations) {
                 if(annotation.annotationClass == RegisterTunableFieldAcceptor::class) {
                     val acceptorAnnotation = annotation as RegisterTunableFieldAcceptor
-                    val type = acceptorAnnotation.tunableFieldType
+                    val type = acceptorAnnotation.tunableFieldType.java
 
                     acceptors[type] = foundClassAcceptor
 
-                    Log.info("AnnotatedTunableFieldScanner", "Found acceptor ${foundClassAcceptor.name} (for $type)")
+                    Log.info("AnnotatedTunableFieldScanner", "Found TunableFieldAcceptor for ${type.typeName} (${foundClassAcceptor.name})")
                 }
             }
+
+            Log.info("AnnotatedTunableFieldScanner", "Found " + acceptors.size + " TunableFieldAcceptors(s)")
+            Log.white()
         }
 
         return ScanResult(tunableFields, acceptors)

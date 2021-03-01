@@ -58,11 +58,9 @@ class EnumField(private val instance: OpenCvPipeline,
 
     override fun hasChanged() = reflectionField.get(instance) == beforeValue
 
-    @RegisterTunableFieldAcceptor(EnumField::class)
+    @RegisterTunableFieldAcceptor(tunableFieldType = EnumField::class)
     class EnumFieldAcceptor: TunableFieldAcceptor {
-        override fun accept(clazz: Class<*>): Boolean {
-            return false
-        }
+        override fun accept(clazz: Class<*>) = clazz.isEnum
     }
 
 }
