@@ -301,12 +301,10 @@ class PipelineManager(var eocvSim: EOCVSim) {
             onResume.run()
         }
 
-        eocvSim.visualizer.pipelinePauseBtt.isSelected = this.paused
+        eocvSim.visualizer.pipelineSelector.pipelinePauseBtt.isSelected = this.paused
     }
 
-    fun togglePause() {
-        setPaused(!paused)
-    }
+    fun togglePause() = setPaused(!paused)
 
     @JvmOverloads
     fun requestSetPaused(paused: Boolean, pauseReason: PauseReason = PauseReason.USER_REQUESTED) {

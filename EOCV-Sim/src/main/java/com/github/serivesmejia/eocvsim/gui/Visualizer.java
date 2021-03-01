@@ -30,6 +30,7 @@ import com.github.serivesmejia.eocvsim.gui.component.PopupX;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.PipelineSelector;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
@@ -84,12 +85,7 @@ public class Visualizer {
     public JSplitPane globalSplitPane = null;
     public JSplitPane imageTunerSplitPane = null;
 
-    public JPanel pipelineSelectorContainer = null;
-    public volatile JList<String> pipelineSelector = null;
-    public JScrollPane pipelineSelectorScroll = null;
-    public JPanel pipelineButtonsContainer = null;
-    public JToggleButton pipelinePauseBtt = null;
-    public JToggleButton pipelineRecordBtt = null;
+    public PipelineSelector pipelineSelector = null;
 
     public JPanel sourceSelectorContainer = null;
     public volatile JList<String> sourceSelector = null;
@@ -153,13 +149,8 @@ public class Visualizer {
 
         tunerMenuPanel = new JPanel();
 
-        pipelineSelectorContainer = new JPanel();
-        pipelineSelector = new JList<>();
-        pipelineSelectorScroll = new JScrollPane();
-        pipelineButtonsContainer = new JPanel();
-        pipelinePauseBtt = new JToggleButton("Pause");
-        pipelineRecordBtt = new JToggleButton("Record");
-
+        pipelineSelector = new PipelineSelector(eocvSim);
+        
         sourceSelectorContainer = new JPanel();
         sourceSelector = new JList<>();
         sourceSelectorScroll = new JScrollPane();
@@ -197,38 +188,7 @@ public class Visualizer {
          * PIPELINE SELECTOR
          */
 
-        pipelineSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-        //pipelineSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-
-        JLabel pipelineSelectorLabel = new JLabel("Pipelines");
-
-        pipelineSelectorLabel.setFont(pipelineSelectorLabel.getFont().deriveFont(20.0f));
-
-        pipelineSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
-        pipelineSelectorContainer.add(pipelineSelectorLabel);
-
-        pipelineSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        JPanel pipelineSelectorScrollContainer = new JPanel();
-        pipelineSelectorScrollContainer.setLayout(new GridLayout());
-        pipelineSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-
-        pipelineSelectorScrollContainer.add(pipelineSelectorScroll);
-
-        pipelineSelectorScroll.setViewportView(pipelineSelector);
-        pipelineSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        pipelineSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-        pipelineSelectorContainer.add(pipelineSelectorScrollContainer);
-
-        pipelineButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-        pipelineButtonsContainer.add(pipelinePauseBtt);
-        pipelineButtonsContainer.add(pipelineRecordBtt);
-
-        pipelineSelectorContainer.add(pipelineButtonsContainer);
-
-        rightContainer.add(pipelineSelectorContainer);
+        rightContainer.add(pipelineSelector);
 
         /*
          * SOURCE SELECTOR
@@ -393,48 +353,6 @@ public class Visualizer {
             }
         });
 
-        //listener for changing pause state
-        pipelinePauseBtt.addActionListener(e -> {
-            boolean selected = pipelinePauseBtt.isSelected();
-            pipelinePauseBtt.setText(selected ? "Resume" : "Pause");
-            eocvSim.onMainUpdate.doOnce(() -> eocvSim.pipelineManager.setPaused(selected));
-        });
-
-        pipelineRecordBtt.addActionListener(e -> eocvSim.onMainUpdate.doOnce(() -> {
-                if (pipelineRecordBtt.isSelected()) {
-                    if (!eocvSim.isCurrentlyRecording()) eocvSim.startRecordingSession();
-                } else {
-                    if (eocvSim.isCurrentlyRecording()) eocvSim.stopRecordingSession();
-                }
-            })
-        );
-
-        //listener for changing pipeline
-        pipelineSelector.addListSelectionListener(evt -> {
-            if (pipelineSelector.getSelectedIndex() != -1) {
-
-                int pipeline = pipelineSelector.getSelectedIndex();
-
-                if (!evt.getValueIsAdjusting() && pipeline != beforeSelectedPipeline) {
-                    if (!eocvSim.pipelineManager.getPaused()) {
-                        eocvSim.pipelineManager.requestChangePipeline(pipeline);
-                        beforeSelectedPipeline = pipeline;
-                    } else {
-                        if (eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
-                            pipelineSelector.setSelectedIndex(beforeSelectedPipeline);
-                        } else { //handling pausing
-                            eocvSim.pipelineManager.requestSetPaused(false);
-                            eocvSim.pipelineManager.requestChangePipeline(pipeline);
-                            beforeSelectedPipeline = pipeline;
-                        }
-                    }
-                }
-
-            } else {
-                pipelineSelector.setSelectedIndex(1);
-            }
-        });
-
         //listener for changing input sources
         sourceSelector.addListSelectionListener(evt -> {
 
@@ -521,15 +439,12 @@ public class Visualizer {
                 double ratio = frame.getSize().getHeight() / 820;
                 int columns = (int) Math.round(8 * ratio);
 
-                pipelineSelector.setVisibleRowCount(columns);
+                pipelineSelector.getPipelineSelector().setVisibleRowCount(columns);
 
                 //gotta revalidate and repaint
                 //for every single involved element...
                 //thanks swing, very cool
-                pipelineSelector.revalidate();
-                pipelineSelector.repaint();
-                pipelineSelectorScroll.revalidate();
-                pipelineSelectorScroll.repaint();
+                pipelineSelector.revalAndRepaint();
 
                 sourceSelector.setVisibleRowCount(columns);
 
@@ -617,22 +532,6 @@ public class Visualizer {
         this.titleMsg = titleMsg;
         if (!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
         beforeTitleMsg = titleMsg;
-    }
-
-    public void updatePipelinesList() {
-        //SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-
-            for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.getPipelines()) {
-                listModel.addElement(pipelineClass.getSimpleName());
-            }
-
-            pipelineSelector.setFixedCellWidth(240);
-
-            pipelineSelector.setModel(listModel);
-            pipelineSelector.revalidate();
-            pipelineSelectorScroll.revalidate();
-        //});
     }
 
     public void updateSourcesList() {
