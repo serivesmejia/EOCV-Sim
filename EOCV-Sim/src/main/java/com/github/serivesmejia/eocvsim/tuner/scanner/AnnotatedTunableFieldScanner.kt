@@ -20,6 +20,7 @@
  * SOFTWARE.
  *
  */
+
 package com.github.serivesmejia.eocvsim.tuner.scanner
 
 import com.github.serivesmejia.eocvsim.tuner.TunableField
@@ -40,6 +41,7 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
         val tunableFields = HashMap<Type, Class<out TunableField<*>>>()
 
         Log.info("AnnotatedTunableFieldScanner", "Scanning in $lookInPackage...")
+        Log.blank()
 
         //Scan for all classes in the specified package
         val classGraph = ClassGraph().enableAnnotationInfo().acceptPackages(lookInPackage)

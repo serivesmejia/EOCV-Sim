@@ -25,11 +25,12 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.component.CreateSourcePanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.CreateSourcePanel;
 import com.github.serivesmejia.eocvsim.gui.component.PopupX;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
@@ -73,11 +74,7 @@ public class Visualizer {
 
     public Viewport viewport = null;
 
-    public JMenuBar menuBar = null;
-
-    public JMenu fileMenu = null;
-    public JMenu editMenu = null;
-    public JMenu helpMenu = null;
+    public TopMenuBar menuBar = null;
 
     public JPanel tunerMenuPanel = new JPanel();
 
@@ -152,7 +149,7 @@ public class Visualizer {
         frame = new JFrame();
         viewport = new Viewport(eocvSim, eocvSim.getConfig().maxFps);
 
-        menuBar = new JMenuBar();
+        menuBar = new TopMenuBar(this, eocvSim);
 
         tunerMenuPanel = new JPanel();
 
@@ -179,68 +176,6 @@ public class Visualizer {
         /*
          * TOP MENU BAR
          */
-
-        fileMenu = new JMenu("File");
-
-        JMenu fileNewSubmenu = new JMenu("New");
-        fileMenu.add(fileNewSubmenu);
-
-        JMenu fileNewInputSourceSubmenu = new JMenu("Input Source");
-        fileNewSubmenu.add(fileNewInputSourceSubmenu);
-
-        //add all input source types to top bar menu
-        for(SourceType type : SourceType.values()) {
-            if(type == SourceType.UNKNOWN) continue;
-
-            JMenuItem fileNewInputSourceItem = new JMenuItem(type.coolName);
-            fileNewInputSourceItem.addActionListener(e ->
-                DialogFactory.createSourceDialog(eocvSim, type)
-            );
-
-            fileNewInputSourceSubmenu.add(fileNewInputSourceItem);
-        }
-
-        JMenuItem fileSaveMatItem = new JMenuItem("Save Mat to disk");
-
-        fileSaveMatItem.addActionListener(e ->
-                GuiUtil.saveMatFileChooser(frame, viewport.getLastVisualizedMat(), eocvSim)
-        );
-
-        fileMenu.add(fileSaveMatItem);
-
-        fileMenu.addSeparator();
-
-        JMenuItem fileRestart = new JMenuItem("Restart");
-
-        fileRestart.addActionListener((e) -> eocvSim.onMainUpdate.doOnce(eocvSim::restart));
-
-        fileMenu.add(fileRestart);
-
-        menuBar.add(fileMenu);
-
-        editMenu = new JMenu("Edit");
-
-        JMenuItem editSettings = new JMenuItem("Settings");
-
-        editSettings.addActionListener(e ->
-                DialogFactory.createConfigDialog(eocvSim)
-        );
-
-        editMenu.add(editSettings);
-
-        menuBar.add(editMenu);
-
-        helpMenu = new JMenu("Help");
-
-        JMenuItem helpAbout = new JMenuItem("About");
-
-        helpAbout.addActionListener((e) ->
-                DialogFactory.createAboutDialog(eocvSim)
-        );
-
-        helpMenu.add(helpAbout);
-
-        menuBar.add(helpMenu);
         
         frame.setJMenuBar(menuBar);
 
@@ -631,36 +566,41 @@ public class Visualizer {
     }
 
     public void close() {
-        frame.setVisible(false);
-        viewport.stop();
+        SwingUtilities.invokeLater(() -> {
+            frame.setVisible(false);
+            viewport.stop();
 
-        for (AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
-            if (dialog != null) {
-                dialog.destroyDialog();
+            //close all asyncpleasewait dialogs
+            for (AsyncPleaseWaitDialog dialog : pleaseWaitDialogs) {
+                if (dialog != null) {
+                    dialog.destroyDialog();
+                }
             }
-        }
 
-        pleaseWaitDialogs.clear();
+            pleaseWaitDialogs.clear();
 
-        for (JFrame frame : childFrames) {
-            if (frame != null && frame.isVisible()) {
-                frame.setVisible(false);
-                frame.dispose();
+            //close all opened frames
+            for (JFrame frame : childFrames) {
+                if (frame != null && frame.isVisible()) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                }
             }
-        }
 
-        childFrames.clear();
+            childFrames.clear();
 
-        for (JDialog dialog : childDialogs) {
-            if (dialog != null && dialog.isVisible()) {
-                dialog.setVisible(false);
-                dialog.dispose();
+            //close all opened dialogs
+            for (JDialog dialog : childDialogs) {
+                if (dialog != null && dialog.isVisible()) {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
             }
-        }
 
-        childDialogs.clear();
-        frame.dispose();
-        viewport.flush();
+            childDialogs.clear();
+            frame.dispose();
+            viewport.flush();
+        });
     }
 
     private void setFrameTitle(String title, String titleMsg) {
@@ -680,23 +620,23 @@ public class Visualizer {
     }
 
     public void updatePipelinesList() {
+        //SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.getPipelines()) {
+                listModel.addElement(pipelineClass.getSimpleName());
+            }
 
-        for (Class<? extends OpenCvPipeline> pipelineClass : eocvSim.pipelineManager.getPipelines()) {
-            listModel.addElement(pipelineClass.getSimpleName());
-        }
+            pipelineSelector.setFixedCellWidth(240);
 
-        pipelineSelector.setFixedCellWidth(240);
-
-        pipelineSelector.setModel(listModel);
-        pipelineSelector.revalidate();
-        pipelineSelectorScroll.revalidate();
-
+            pipelineSelector.setModel(listModel);
+            pipelineSelector.revalidate();
+            pipelineSelectorScroll.revalidate();
+        //});
     }
 
     public void updateSourcesList() {
-        SwingUtilities.invokeLater(() -> {
+        //SwingUtilities.invokeLater(() -> {
             DefaultListModel<String> listModel = new DefaultListModel<>();
 
             for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
@@ -708,7 +648,7 @@ public class Visualizer {
             sourceSelector.setModel(listModel);
             sourceSelector.revalidate();
             sourceSelectorScroll.revalidate();
-        });
+        //});
     }
 
     public void updateTelemetry(Telemetry telemetry) {
@@ -718,7 +658,7 @@ public class Visualizer {
         if (telemetry != null && telemetry.hasChanged()) {
             telemetryText[0] = telemetry.toString();
 
-            SwingUtilities.invokeLater(() -> {
+            //SwingUtilities.invokeLater(() -> {
                 DefaultListModel<String> listModel = new DefaultListModel<>();
 
                 for (String line : telemetryText[0].split("\n")) {
@@ -730,17 +670,17 @@ public class Visualizer {
                 telemetryList.setModel(listModel);
                 telemetryList.revalidate();
                 telemetryScroll.revalidate();
-            });
+            //});
 
         }
 
         if(telemetryList.getModel().getSize() <= 0 || (telemetryText[0] != null && telemetryText[0].trim().equals(""))) {
-            SwingUtilities.invokeLater(() -> {
+            //SwingUtilities.invokeLater(() -> {
                 DefaultListModel<String> listModel = new DefaultListModel<>();
                 listModel.addElement("<html></html>");
 
                 telemetryList.setModel(listModel);
-            });
+            //});
         }
 
     }

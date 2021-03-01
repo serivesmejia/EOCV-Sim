@@ -21,10 +21,11 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.component
+package com.github.serivesmejia.eocvsim.gui.component.visualizer
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
+import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.gui.component.input.EnumComboBox
 import com.github.serivesmejia.eocvsim.input.SourceType
 import java.awt.FlowLayout

@@ -160,7 +160,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
                         //launch the waiting in the background
                         GlobalScope.launch {
-                            delay(200)
+                            delay(100)
                             //close config popup if still hasn't focused after a bit
                             launch(Dispatchers.Swing) {
                                 if (!it.window.isFocused && (lastApplyPopup == null || lastApplyPopup?.window?.isFocused == false)) {

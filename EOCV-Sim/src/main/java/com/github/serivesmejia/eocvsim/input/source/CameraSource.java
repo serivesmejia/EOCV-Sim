@@ -33,8 +33,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 import org.openftc.easyopencv.MatRecycler;
 
-import java.util.Objects;
-
 public class CameraSource extends InputSource {
 
     @Expose
@@ -165,7 +163,7 @@ public class CameraSource extends InputSource {
     @Override
     public void onResume() {
 
-        Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.checkCameraDialogPleaseWait(name);
+        Visualizer.AsyncPleaseWaitDialog apwdCam = eocvSim.inputSourceManager.showApwdIfNeeded(name);
 
         camera = new VideoCapture();
         camera.open(webcamIndex);

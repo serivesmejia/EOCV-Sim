@@ -40,6 +40,10 @@ import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtEx
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
 import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.swing.Swing
 import nu.pattern.OpenCV
 import org.opencv.core.Size
 import java.awt.Dimension
@@ -63,14 +67,13 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     @JvmField val visualizer = Visualizer(this)
 
-    @JvmField val configManager = ConfigManager()
+    @JvmField val configManager      = ConfigManager()
     @JvmField val inputSourceManager = InputSourceManager(this)
-    @JvmField val pipelineManager = PipelineManager(this)
+    @JvmField val pipelineManager    = PipelineManager(this)
+    @JvmField val tunerManager       = TunerManager(this)
 
     val config: Config
         get() = configManager.config
-
-    @JvmField var tunerManager = TunerManager(this)
 
     var currentRecordingSession: VideoRecordingSession? = null
 
@@ -111,6 +114,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         pipelineManager.init() //init pipeline manager (scan for pipelines)
         tunerManager.init() //init tunable variables manager
 
+        //shows a warning when a pipeline gets "stuck"
         pipelineManager.onPipelineTimeout.doPersistent {
             visualizer.asyncPleaseWaitDialog("Current pipeline took too long to processFrame", "Falling back to DefaultPipeline",
                 "Close", Dimension(300, 150), true, true)
@@ -118,10 +122,14 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         visualizer.waitForFinishingInit()
 
-        visualizer.updateSourcesList() //update sources and pick first one
-        visualizer.sourceSelector.selectedIndex = 0
-        visualizer.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
-        visualizer.pipelineSelector.selectedIndex = 0
+        runBlocking {
+            launch(Dispatchers.Swing) {
+                visualizer.updateSourcesList() //update sources and pick first one
+                visualizer.sourceSelector.selectedIndex = 0
+                visualizer.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
+                visualizer.pipelineSelector.selectedIndex = 0
+            }
+        }
 
         start()
     }
@@ -132,6 +140,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
 
+        //post output mats from the pipeline to the visualizer viewport
         pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
         while (!eocvSimThread.isInterrupted) {
@@ -145,16 +154,17 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             try {
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
-            } catch(ex: MaxActiveContextsException) {
+            } catch(ex: MaxActiveContextsException) { //handles when a lot of pipelines are stuck in the background
                 visualizer.asyncPleaseWaitDialog("There are many pipelines stuck in processFrame running in the background", "To avoid further issues, EOCV-Sim will exit now.",
                     "Ok", Dimension(430, 150), true, true
                 ).onCancel {
-                    destroy(DestroyReason.CRASH)
+                    destroy(DestroyReason.CRASH) //destroy eocv sim when pressing "exit"
                 }
 
-                Log.info("EOCVSim","Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
+                //print exception
+                Log.error("EOCVSim","Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
 
-                while(eocvSimThread.isInterrupted);
+                while(eocvSimThread.isInterrupted); //block until user closes the async dialog
                 break
             }
 
@@ -174,12 +184,13 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         Log.warn("EOCVSim", "Destroying current EOCVSim ($hexCode) due to $reason")
 
+        //stop recording session if there's currently an ongoing one
         currentRecordingSession?.stopRecordingSession()
         currentRecordingSession?.discardVideo()
 
         Log.info("EOCVSim", "Trying to save config file...")
 
-        configManager.saveToFile()
+        configManager.saveToFile() //
         visualizer.close()
 
         eocvSimThread.interrupt()

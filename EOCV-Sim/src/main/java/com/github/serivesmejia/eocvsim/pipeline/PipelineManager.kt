@@ -172,7 +172,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             } catch (ex: TimeoutCancellationException) {
                 //oops, pipeline ran out of time! we'll fall back
                 //to default pipeline to avoid further issues.
-                requestChangePipeline(0)
+                requestForceChangePipeline(0)
                 //also call the event listeners in case
                 //someone wants to do something here
                 onPipelineTimeout.run()
@@ -199,10 +199,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    /**
+     * Changes to the requested pipeline, no matter
+     * if we're currently on the same pipeline or not
+     */
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun changePipeline(index: Int) {
-        if (index == currentPipelineIndex) return
-
+    fun forceChangePipeline(index: Int) {
         var nextPipeline: OpenCvPipeline? = null
         var nextTelemetry: Telemetry? = null
         val pipelineClass = pipelines[index]
@@ -270,9 +272,18 @@ class PipelineManager(var eocvSim: EOCVSim) {
         onPipelineChange.run()
     }
 
-    fun requestChangePipeline(index: Int) {
-        onUpdate.doOnce { changePipeline(index) }
+    /**
+     * Change to the requested pipeline only if we're
+     * not in the requested pipeline right now.
+     */
+    fun changePipeline(index: Int) {
+        if (index == currentPipelineIndex) return
+        forceChangePipeline(index)
     }
+
+    fun requestChangePipeline(index: Int) = onUpdate.doOnce { changePipeline(index) }
+
+    fun requestForceChangePipeline(index: Int) = onUpdate.doOnce { forceChangePipeline(index) }
 
     fun runThenPause() {
         setPaused(false)
