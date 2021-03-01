@@ -29,7 +29,6 @@ import com.github.serivesmejia.eocvsim.util.ReflectUtil
 import io.github.classgraph.ClassGraph
 import java.lang.reflect.Type
 import java.util.*
-import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST")
 class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
@@ -74,7 +73,7 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
         }
 
         Log.info("AnnotatedTunableFieldScanner", "Found " + tunableFields.size + " TunableField(s)")
-        Log.white()
+        Log.blank()
 
         //SCANNING FOR TUNABLE FIELD ACCEPTORS
 
@@ -104,7 +103,7 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
             }
 
             Log.info("AnnotatedTunableFieldScanner", "Found " + acceptors.size + " TunableFieldAcceptors(s)")
-            Log.white()
+            Log.blank()
         }
 
         return ScanResult(tunableFields, acceptors)

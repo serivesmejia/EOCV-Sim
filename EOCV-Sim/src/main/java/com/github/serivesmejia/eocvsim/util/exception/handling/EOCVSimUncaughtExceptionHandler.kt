@@ -26,7 +26,7 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
         uncaughtExceptionsCount++
 
         Log.error("Uncaught exception thrown in \"${t.name}\" thread", e)
-        Log.white()
+        Log.blank()
 
         //Exit if uncaught exception happened in the main thread
         //since we would be basically in a deadlock state if that happened
@@ -35,7 +35,7 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
             CrashReport(e).saveCrashReport()
 
             Log.warn("If this error persists, open an issue on EOCV-Sim's GitHub attaching the crash report file.")
-            Log.white()
+            Log.blank()
             Log.warn("The application will exit now (exit code 1)")
 
             exitProcess(1)
@@ -44,7 +44,7 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
             //so we might not need to exit in this point, but we'll need to send a warning
             //to the user
             Log.warn("If this error persists, open an issue on EOCV-Sim's GitHub.")
-            Log.white()
+            Log.blank()
             Log.warn("The application might not work as expected from this point")
         }
     }

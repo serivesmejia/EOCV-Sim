@@ -70,7 +70,7 @@ public class InputSourceManager {
             addInputSource(entry.getKey(), entry.getValue());
         }
 
-        Log.white();
+        Log.blank();
     }
 
     private void createDefaultImgInputSource(String resourcePath, String fileName, String sourceName, Size imgSize) {

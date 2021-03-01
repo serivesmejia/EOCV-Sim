@@ -105,7 +105,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         Log.info("PipelineManager", "Found " + pipelines.size + " pipeline(s)")
-        Log.white()
+        Log.blank()
 
         //we don't need to do anything else with it other than doing this
         //since it will attach to the "update" and "pipeline change" event
@@ -178,7 +178,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 onPipelineTimeout.run()
 
                 Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to processFrame (more than $PIPELINE_TIMEOUT_MS ms), falling back to DefaultPipeline.")
-                Log.white()
+                Log.blank()
             } finally {
                 //we cancel our pipeline job so that it
                 //doesn't post the output mat from the
@@ -233,13 +233,13 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
             eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
-            Log.white()
+            Log.blank()
         } catch (ex: Exception) {
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
                     "Close", Dimension(300, 150), true, true)
 
             Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
-            Log.white()
+            Log.blank()
 
             eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
 
@@ -247,7 +247,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.name)
-        Log.white()
+        Log.blank()
 
         currentPipeline = nextPipeline
         currentTelemetry = nextTelemetry

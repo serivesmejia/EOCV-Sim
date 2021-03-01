@@ -48,7 +48,7 @@ public class ConfigManager {
             configLoader.saveToFile(config);
         }
 
-        Log.white();
+        Log.blank();
 
     }
 

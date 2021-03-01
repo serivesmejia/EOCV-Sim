@@ -98,17 +98,24 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                       var source: ConfigSource)
 
     init {
-        layout = GridLayout(4, 1)
+        layout = GridBagLayout()
+
+        val mConstraints   = GridBagConstraints()
+        mConstraints.ipady = 10
 
         //adding into an individual panel so that we can add
         //and remove later when recreating without much problem
         sliderRangeFieldsPanel.add(sliderRangeFields)
-        add(sliderRangeFieldsPanel)
+
+        mConstraints.gridy = 0
+        add(sliderRangeFieldsPanel, mConstraints)
 
         colorSpaceComboBox.onSelect.doPersistent { updateConfigSourceLabel(currentConfig) }
         //combo box to select color space
         colorSpaceComboBox.selectedEnum = localConfig.pickerColorSpace
-        add(colorSpaceComboBox)
+
+        mConstraints.gridy = 1
+        add(colorSpaceComboBox, mConstraints)
 
         //centering apply to all button...
         val constCenter    = GridBagConstraints()
@@ -118,7 +125,9 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         //add apply to all button to a centered pane
         applyToAllButtonPanel.add(applyToAllButton, constCenter)
-        add(applyToAllButtonPanel)
+
+        mConstraints.gridy = 2
+        add(applyToAllButtonPanel, mConstraints)
 
         //display or hide apply to all mode buttons
         applyToAllButton.addActionListener {
@@ -198,7 +207,9 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
 
         configSourceLabel.horizontalAlignment = JLabel.CENTER
         configSourceLabel.verticalAlignment = JLabel.CENTER
-        add(configSourceLabel)
+
+        mConstraints.gridy = 3
+        add(configSourceLabel, mConstraints)
 
         applyFromEOCVSimConfig()
     }

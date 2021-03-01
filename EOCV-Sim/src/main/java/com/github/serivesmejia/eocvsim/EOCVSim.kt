@@ -27,7 +27,6 @@ import com.github.serivesmejia.eocvsim.config.Config
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
-import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker
 import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
 import com.github.serivesmejia.eocvsim.output.VideoRecordingSession
@@ -85,7 +84,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     fun init() {
         Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v$VERSION")
-        Log.white()
+        Log.blank()
 
         EOCVSimUncaughtExceptionHandler.register()
 
@@ -100,7 +99,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 Log.info("EOCVSim", "Retrying with old method...")
                 SysUtil.loadCvNativeLib()
             }
-            Log.white()
+            Log.blank()
         }
 
         alreadyInitializedOnce = true
@@ -129,7 +128,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     private fun start() {
         Log.info("EOCVSim", "Begin EOCVSim loop")
-        Log.white()
+        Log.blank()
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
 
@@ -193,9 +192,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun restart() {
         Log.info("EOCVSim", "Restarting...")
 
-        Log.white()
+        Log.blank()
         destroy(DestroyReason.RESTART)
-        Log.white()
+        Log.blank()
 
         Thread({ EOCVSim().init() }, "main").start() //run next instance on a separate thread for the old one to get interrupted and ended
     }
