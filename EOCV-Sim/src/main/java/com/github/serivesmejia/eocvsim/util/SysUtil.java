@@ -28,7 +28,6 @@ import org.opencv.core.Core;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -99,7 +98,7 @@ public class SysUtil {
             } catch (Throwable ex) {
                 ex.printStackTrace();
             }
-            Log.white();
+            Log.blank();
         }
 
         Log.info("SysUtil", "Loading native lib \"" + libNameExt + "\"");
