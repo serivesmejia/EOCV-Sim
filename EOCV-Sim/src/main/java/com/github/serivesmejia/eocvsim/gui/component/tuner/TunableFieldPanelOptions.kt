@@ -52,8 +52,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
     var lastConfigPopup: PopupX? = null
         private set
 
-    //toggle between textbox and slider ico,
-    //and adding and removing config button
+    //toggle between textbox and slider ico
     var mode = TunableFieldPanel.Mode.TEXTBOXES
         set(value) {
             when(value) {
