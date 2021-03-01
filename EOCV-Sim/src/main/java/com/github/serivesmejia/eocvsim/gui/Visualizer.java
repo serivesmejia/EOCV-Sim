@@ -46,6 +46,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Visualizer {
 
@@ -330,10 +331,10 @@ public class Visualizer {
             }
             CreateSourcePanel panel = new CreateSourcePanel(eocvSim);
 
-            int buttonHeight = sourceSelectorCreateBtt.getHeight() / 2;
+            int buttonHeight = sourceSelectorCreateBtt.getHeight();
             Point location   = sourceSelectorCreateBtt.getLocationOnScreen();
 
-            PopupX popup = new PopupX(frame, panel, location.x, location.y - buttonHeight, true);
+            PopupX popup = new PopupX(frame, panel, location.x, location.y, true);
 
             lastCreateSourcePopup = popup;
             popup.show();
@@ -695,62 +696,67 @@ public class Visualizer {
     }
 
     public void updateSourcesList() {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
 
-        DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
+                listModel.addElement(source.getName());
+            }
 
-        for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
-            listModel.addElement(source.getName());
-        }
+            sourceSelector.setFixedCellWidth(240);
 
-        sourceSelector.setFixedCellWidth(240);
-
-        sourceSelector.setModel(listModel);
-        sourceSelector.revalidate();
-        sourceSelectorScroll.revalidate();
-
+            sourceSelector.setModel(listModel);
+            sourceSelector.revalidate();
+            sourceSelectorScroll.revalidate();
+        });
     }
 
     public void updateTelemetry(Telemetry telemetry) {
 
-        String telemetryText = null;
+        String[] telemetryText = {null};
 
         if (telemetry != null && telemetry.hasChanged()) {
+            telemetryText[0] = telemetry.toString();
 
-            telemetryText = telemetry.toString();
+            SwingUtilities.invokeLater(() -> {
+                DefaultListModel<String> listModel = new DefaultListModel<>();
 
-            DefaultListModel<String> listModel = new DefaultListModel<>();
+                for (String line : telemetryText[0].split("\n")) {
+                    listModel.addElement(line);
+                }
 
-            for (String line : telemetryText.split("\n")) {
-                listModel.addElement(line);
-            }
+                telemetryList.setFixedCellWidth(240);
 
-            telemetryList.setFixedCellWidth(240);
-
-            telemetryList.setModel(listModel);
-            telemetryList.revalidate();
-            telemetryScroll.revalidate();
+                telemetryList.setModel(listModel);
+                telemetryList.revalidate();
+                telemetryScroll.revalidate();
+            });
 
         }
 
-        if(telemetryList.getModel().getSize() <= 0 || (telemetryText != null && telemetryText.trim().equals(""))) {
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-            listModel.addElement("<html></html>");
+        if(telemetryList.getModel().getSize() <= 0 || (telemetryText[0] != null && telemetryText[0].trim().equals(""))) {
+            SwingUtilities.invokeLater(() -> {
+                DefaultListModel<String> listModel = new DefaultListModel<>();
+                listModel.addElement("<html></html>");
 
-            telemetryList.setModel(listModel);
+                telemetryList.setModel(listModel);
+            });
         }
 
     }
 
     public void updateTunerFields(List<TunableFieldPanel> fields) {
-        tunerMenuPanel.removeAll();
+        SwingUtilities.invokeLater(() -> {
+            tunerMenuPanel.removeAll();
 
-        for (TunableFieldPanel fieldPanel : fields) {
-            tunerMenuPanel.add(fieldPanel);
-            fieldPanel.showFieldPanel();
-        }
+            for (TunableFieldPanel fieldPanel : fields) {
+                tunerMenuPanel.add(fieldPanel);
+                fieldPanel.showFieldPanel();
+            }
 
-        tunerMenuPanel.updateUI();
-        imageTunerSplitPane.updateUI();
+            tunerMenuPanel.updateUI();
+            imageTunerSplitPane.updateUI();
+        });
     }
 
     // PLEASE WAIT DIALOGS
@@ -815,11 +821,7 @@ public class Visualizer {
             apwd.cancelBtt = cancelBtt;
         }
 
-        if (size != null) {
-            dialog.setSize(size);
-        } else {
-            dialog.setSize(new Dimension(400, 200));
-        }
+        dialog.setSize(Objects.requireNonNullElseGet(size, () -> new Dimension(400, 200)));
 
         dialog.setLocationRelativeTo(null);
         dialog.setResizable(false);
@@ -862,22 +864,22 @@ public class Visualizer {
         public volatile JButton cancelBtt = null;
 
         public volatile boolean wasCancelled = false;
-        public volatile boolean isError = false;
+        public volatile boolean isError;
 
-        public volatile String initialMessage = "";
-        public volatile String initialSubMessage = "";
+        public volatile String initialMessage;
+        public volatile String initialSubMessage;
 
         public volatile boolean isDestroyed = false;
 
-        String message = "";
-        String subMessage = "";
-        String cancelBttText = "";
+        String message;
+        String subMessage;
+        String cancelBttText;
 
-        Dimension size = null;
+        Dimension size;
 
-        boolean cancellable = false;
+        boolean cancellable;
 
-        private final ArrayList<Runnable> onCancelRunnables = new ArrayList<Runnable>();
+        private final ArrayList<Runnable> onCancelRunnables = new ArrayList<>();
 
         public AsyncPleaseWaitDialog(String message, String subMessage, String cancelBttText, Dimension size, boolean cancellable, boolean isError, EOCVSim eocvSim) {
             this.message = message;
