@@ -27,7 +27,7 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 # Installation
 
-## Recommended installation method
+## Recommended installation method (IntelliJ IDEA)
 
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
