@@ -14,6 +14,10 @@ transfer it onto your robot!
 
 <img src='images/eocvsim_screenshot_1.png' width='75%' height='75%'>
 
+### If you'd like to learn how to use the simulator, you can find a complete usage explaination [here](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md)
+
+# Compatibility
+
 Since OpenCV in Java uses a native library, which is platform specific, the simulator is currently limited to the following platforms:
 
 * Windows x64 (tested)
@@ -23,7 +27,7 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 # Installation
 
-## Recommended installation method
+## Recommended installation method (IntelliJ IDEA)
 
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
