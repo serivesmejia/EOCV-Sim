@@ -102,6 +102,7 @@ fabric.properties
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
+!/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SimpleThresholdPipeline.java
 
 *.log
 
