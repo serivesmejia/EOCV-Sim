@@ -8,11 +8,14 @@ to be the same as they would if you were using the FTC SDK with EasyOpenCV, allo
 onto your Android Studio project once you want to transfer it to a robot.<br/>
 
 ## Table of Contents
-- Pipelines
+- [IntelliJ project structure](#intellij-project-structure)
+- [Pipelines](#pipelines)
     - Sample Pipeline
-- Input Sources
+- [Input Sources](#input-sources)
+- [Telemetry](#telemetry)
+- [Variable Tuner](#variable-tuner)
 
-## Popping out the TeamCode module
+## IntelliJ project structure
 
 EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:</br>
 1) Pop out the parent EOCV-Sim project folder by clicking on the horizontal arrow
@@ -63,7 +66,7 @@ public class SamplePipeline extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat input) {
         /* Executed each frame, the returned mat will be the one displayed */
-        /* Processing and detection stuff */
+        /* Processing and detection stuff here */
         return input; // Return the input mat
                       // (Or a new, processed mat)
     }
@@ -72,8 +75,8 @@ public class SamplePipeline extends OpenCvPipeline {
     public void onViewportTapped() {
         /*
          * Executed everytime when the pipeline view is tapped/clicked.
-         * This is executed from the UI thread, so whatever we do here
-         * we must do it quickly.
+         * This is executed from the UI thread, so whatever you do here,
+         * it must be done it quickly.
          */
     }
 
@@ -84,18 +87,30 @@ public class SamplePipeline extends OpenCvPipeline {
 
 ## Input Sources
 
-To allow multiple ways to test your pipeline, the simulator comes with so called *Input Sources*, which are the ones in charge of giving your pipeline the input Mats, As of right now, the sim has two types of Input Sources:
+To allow multiple ways to test your pipeline, the simulator comes with *Input Sources*, which are the ones in charge of giving your pipeline the input Mats, As of right now, the sim has three types of Input Sources:
 
 - Image Source:</br></br>
-    These will feed your pipeline with a static Mat from an image loaded in your computer hard drive.</br>
+    These will feed your pipeline with a static image loaded in your computer's hard drive.</br></br>
     To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the           "Pause" button under the pipeline selector.</br></br>
 - Camera Source:</br></br>
-    These will feed your pipeline with a constantly changing Mat from a specified camera plugged in your computer.</br>
-    Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.
+    These will feed your pipeline with a constantly changing video stream from a specified camera plugged in your computer.</br></br>
+    Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.</br></br>
+- Video Source:</br></br>
+    These will feed your pipeline with a constantly changing video stream from a file in your hard drive, pause rules are the same as camera sources.<br/></br>
+    Most tested video format is *\*.avi*, although it depends on your operating system's codecs
+    
     
 ### Creating an Input Source
 
-    1) 
+   1) Go to the panel located at the right. Under the "Sources" section, click on "Create"<br/><br/>
+   
+      <img src='images/eocvsim_usage_createsource_2.png' width='25%' height='25%'><br/><br/>
+      
+      - Alternatively, you can also go to *File -> New -> Input Source* in the top bar menu<br/><br/>
+      
+        <img src='images/eocvsim_usage_createsource_menubar.png' width='30%' height='30%'><br/><br/>
+      
+   2) Select the type of InputSource you want to create. If you're on the "Sources" section, click on next.<br/><br/>
 
 ## Telemetry
 
@@ -136,6 +151,16 @@ Which then produces the following result:<br/>
 
 For further information about telemetry, you can check out the [SDK docs on Telemetry](https://ftctechnh.github.io/ftc_app/doc/javadoc/org/firstinspires/ftc/robotcore/external/Telemetry.html), note that not all the methods are implemented for EOCV-Sim
 
-# Variable Tuner
+## Variable Tuner
 
-From 2.0.0, there's a variable tuner implemented into the simulator, inspired by the one in FTC Dashboard, it allows to edit variables in real time seamlessly through Java reflection.
+From 2.0.0 and on, there's a variable tuner implemented into the simulator, inspired by the one in FTC Dashboard, it allows to edit public, non-final variables from your pipeline in real time seamlessly through Java reflection.<br/>
+
+This variable tuner can be found at the bottom part of the sim, click on the divider bar to open it:<br/>
+
+<img src='images/eocvsim_usage_tuneropen.png' width='55%' height='55%'><br/>
+<img src='images/eocvsim_usage_tunerposition.png' width='55%' height='55%'><br/>
+
+This screenshot is from the DefaultPipeline (the one selected when the simulator opens), which controls the blur value for the output Mat. You can play with it to see the tuner functionality.<br/>
+If we look into the DefaultPipeline code, we can see that it is simply a **public** (not markes as "final"), int instance variable (alongside with the Telemetry initialization stuff we explained before):<br/>
+
+<img src='images/eocvsim_usage_defaultpipeline.png' width='35%' height='35%'><br/>
