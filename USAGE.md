@@ -307,4 +307,10 @@ Anyways, back to the sample. After a bit of playing around with the sliders, it'
 
 <img src='images/eocvsim_usage_tuner_thresholdsample_2.png' width='55%' height='55%'><br/>
 
-A problem with the YCrCb color space, especially this year, is that the difference between red and orange is very subtle. So therefore we need to play with the values for a good while until we find some that filters out the red from the goals but displays the ring stack. Or do some other technique alongside thresholding such as [FTCLib's contour ring pipeline](https://github.com/FTCLib/FTCLib/blob/3a43b191b18581a2f741588f9b8ab60c13b7fb6c/core/vision/src/main/java/com/arcrobotics/ftclib/vision/UGContourRingPipeline.kt#L46) with the "horizon" mechanism.
+A problem with the YCrCb color space, especially this year, is that the difference between red and orange is very subtle. So therefore we need to play with the values for a good while until we find some that filters out the red from the goals but displays the ring stack. Or do some other technique alongside thresholding such as [FTCLib's contour ring pipeline](https://github.com/FTCLib/FTCLib/blob/3a43b191b18581a2f741588f9b8ab60c13b7fb6c/core/vision/src/main/java/com/arcrobotics/ftclib/vision/UGContourRingPipeline.kt#L46) with the "horizon" mechanism.<br/>
+
+Some other nice features can be added to this sample, such as an enum for choosing the color space and Telemetry:
+
+<img src='images/eocvsim_usage_tuner_thresholdsample_final.png' width='75%' height='75%'><br/>
+
+To keep this explaination simple, you can find the final pipeline [here](https://github.com/serivesmejia/EOCV-Sim/blob/dev/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SimpleThresholdPipeline.java) with the new demonstrated features, in the TeamCode module, since serves as a good sample alongside other sample classes from EOCV itself.
