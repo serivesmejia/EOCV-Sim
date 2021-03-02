@@ -15,6 +15,8 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
     - [Creating an input source](#creating-an-input-source)
 - [Telemetry](#telemetry)
 - [Variable Tuner](#variable-tuner)
+    - [Functionality](#tuner-functionality)
+    - [Configuration](#tuner-configuration) 
     - [Sample Usage](#sample-usage-of-the-variable-tuner)
 
 ## IntelliJ project structure
@@ -164,8 +166,8 @@ This variable tuner can be found at the bottom part of the sim, click on the div
 <img src='images/eocvsim_usage_tuneropen.png' width='55%' height='55%'><br/>
 <img src='images/eocvsim_usage_tunerposition.png' width='55%' height='55%'><br/>
 
-This screenshot is from the DefaultPipeline (the one selected when the simulator opens), which controls the blur value for the output Mat. You can play with it to see the tuner functionality.<br/><br/>
-If we look into the DefaultPipeline code, we can see that it is simply a **public** (not marked as "final") "int" instance variable (alongside with the Telemetry initialization stuff we explained before):<br/>
+This screenshot is from the DefaultPipeline (the one selected when the simulator opens). This variable controls the blur value for the output Mat. You can play with this value to see the tuner functionality.<br/><br/>
+If we look into the DefaultPipeline code, we can see that it is simply a **public int** instance variable, not marked as final (alongside with the Telemetry initialization stuff we explained before):<br/>
 
 <img src='images/eocvsim_usage_defaultpipeline.png' width='35%' height='35%'><br/>
 
@@ -185,6 +187,79 @@ The full list of types currently supported by the tuner on the latest version is
       - Scalar
       - Rect
       - Point
+    
+### Tuner functionality
+
+In the screenshot above, you might have noticed we have three buttons in the field (these buttons appear on field types with at least one textbox/slider). Those were introduced in 2.1.0 to provide extra functionality to the tuner. We have three buttons (options), five parts:
+
+<img src='images/eocvsim_usage_tuner_parts.png' width='40%' height='40%'><br/>
+
+1) **Text fields/slider toggle**
+   - Toggles between sliders and textboxes for setting the value to this field
+2) **Config**
+   - Configures various aspects of this tunable field, such as the slider range and picker's color space
+3) **Color picker** 
+   - Turns on "color picker" mode, which allows to grab a single pixel from the image and sets it to the selected tunable field
+   - Sets the color value to the first four textboxes/sliders of this field, if less than four textboxes/sliders are available, it will set the values to the available ones and discard all of the value(s) that can't be copied into the field 
+4) **Name**
+   - Displays the name of the variable (declared in the pipeline)
+5) **Text field**
+   - The part in which you can modify the value for this field. Can be toggled to sliders as mentioned before
+   - Some fields (such as OpenCV Scalars) might have more than one text field
+
+### Tuner configuration
+
+When opening the config for a specific field with the aforementioned button (figure #2), you'll see this popup:
+
+<img src='images/eocvsim_usage_tuner_config.png' width='40%' height='40%'><br/>
+
+1) **Slider range**
+   - Sets the **range for the sliders**, defaults to 0-255 since that's the most commonly used, especially for color tuning.
+   - Negative & positive values allowed, decimal values are allowed only if the field is decimal (such as floats or doubles)
+2) **Color space**
+   - Sets the **color space** for the color picker to return. Defaults to RGB
+3) **Apply to all fields...**
+   - Applies **this configuration** globally or specifically to this field *(see below for further details)*
+4) **Config source**
+   - Displays the source of this config: default global, global, local or specific *(see below for further details)*
+
+#### Applying tuner configuration
+    
+When using the variable tuner and making configurations, it's sometimes convenient to have some way to store those configurations so that you don't have to reconfig for every field, or every time you select a new pipeline.<br/>
+
+For this, the sim has a "apply to all" functionality to store common configurations:
+
+<img src='images/eocvsim_usage_tuner_config_apply.png' width='30%' height='30%'><br/>
+
+As you can see in the image, when clicking the "apply to all" button, two options appear:
+    
+- **"Globally"**
+    - Applies the configuration **globally** (to all fields without an "specific" config)
+    - Note that this doesn't mean that by clicking this option will override all configurations, see below.    
+- **"Of this type"** (or "specific")
+    - Applies the configuration to all fields **of the same type** as the current config one. 
+    - (In the case of the example in the screenshot, the blur field in DefaultPipeline, this config will be applied to all *int* fields)
+
+#### Tuner configuration priority order
+
+As mentioned before, by applying a "global" configuration, it doesn't mean that it will override the specific configs.<br/>
+Rather, there's an specific priority order to determine the configuration that will be given to each tunable field:
+
+1) **Local**
+    - This is the one that applies when you modify the configuration values without applying *"globally"* or *"specifically to this type"*
+    - Simply means that you modified the config without saving it. It will be reset once you select a different pipeline
+2) **Type-specific**
+    - If there's a specific configuration for the type *(such as **int** in the example)*, it will be the one that gets the most priority
+    - You can define a "type-specific" configuration by clicking on "Applying to all fields..." -> "Of this type"
+3) **Global**
+    - If there's not a type-specific configuration present, the configuration will default to the "global" one
+    - You can define a "Global" configuration by clicking on "Applying to all fields..." -> "Globally"
+5) **Tunable field suggestion**
+    - If there's not a global configuration, but the current tunable field suggests a *"mode" (sliders or textboxes)*, then that suggestion will be applied
+    - For example, with OpenCV's Scalars, the tunable field suggest to use sliders since it's more convenient for tuning this type of field
+6) **Default global**
+    - If there's not any configuration or suggestion at all, the field will default to the *"default global"* configuration
+    - The default config has a slider range from 0 to 255 and a color space of RGB
     
 ### Sample usage of the variable tuner
 
