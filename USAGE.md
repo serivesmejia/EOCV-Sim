@@ -29,14 +29,14 @@ EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a b
 
 These steps are illustrated in this gif:</br>
 
-<img src='images/eocvsim_usage_popup_teamcode.gif' width='60%' height='60%'><br/>
+<img src='doc/images/eocvsim_usage_popup_teamcode.gif' width='60%' height='60%'><br/>
 
 ## Pipelines
 
 As said before, all of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
 automatically detected by the simulator and will be selectionable from the GUI.
 
-<img src='images/eocvsim_screenshot_structure.png' width='25%' height='25%'><br/>
+<img src='doc/images/eocvsim_screenshot_structure.png' width='25%' height='25%'><br/>
 
 *(Also, the simulator already comes by default with some EasyOpenCV samples)*<br/>
 
@@ -49,7 +49,7 @@ To create a new java class, follow these steps:<br/>
 
 Here's a quick gif illustrating these steps:<br/>
 
-<img src='images/eocvsim_usage_createclass.gif' width='75%' height='75%'><br/>
+<img src='doc/images/eocvsim_usage_createclass.gif' width='75%' height='75%'><br/>
 
 ### Empty sample pipeline
 
@@ -97,7 +97,7 @@ To allow multiple ways to test your pipeline, the simulator comes with *Input So
 
 - Image Source:</br></br>
     These will feed your pipeline with a static image loaded in your computer's hard drive.</br></br>
-    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the           "Pause" button under the pipeline selector.</br></br>
+    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the "Pause" button under the pipeline selector.</br></br>
 - Camera Source:</br></br>
     These will feed your pipeline with a constantly changing video stream from a specified camera plugged in your computer.</br></br>
     Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.</br></br>
@@ -110,11 +110,11 @@ To allow multiple ways to test your pipeline, the simulator comes with *Input So
 
    1) Go to the panel located at the right. Under the "Sources" section, click on "Create"<br/><br/>
    
-      <img src='images/eocvsim_usage_createsource_2.png' width='25%' height='25%'><br/><br/>
+      <img src='doc/images/eocvsim_usage_createsource_2.png' width='25%' height='25%'><br/><br/>
       
       - Alternatively, you can also go to *File -> New -> Input Source* in the top bar menu<br/><br/>
       
-        <img src='images/eocvsim_usage_createsource_menubar.png' width='30%' height='30%'><br/><br/>
+        <img src='doc/images/eocvsim_usage_createsource_menubar.png' width='30%' height='30%'><br/><br/>
       
    2) Select the type of InputSource you want to create. If you're on the "Sources" section, click on next.<br/><br/>
 
@@ -153,7 +153,7 @@ public class TelemetryPipeline extends OpenCvPipeline {
 
 Which then produces the following result:<br/>
 
-<img src='images/eocvsim_usage_telemetry.png' width='25%' height='25%'><br/>
+<img src='doc/images/eocvsim_usage_telemetry.png' width='25%' height='25%'><br/>
 
 For further information about telemetry, you can check out the [SDK docs on Telemetry](https://ftctechnh.github.io/ftc_app/doc/javadoc/org/firstinspires/ftc/robotcore/external/Telemetry.html), note that not all the methods are implemented for EOCV-Sim
 
@@ -163,13 +163,13 @@ From 2.0.0 and on, there's a variable tuner implemented into the simulator, insp
 
 This variable tuner can be found at the bottom part of the sim, click on the divider bar to open it:<br/>
 
-<img src='images/eocvsim_usage_tuneropen.png' width='55%' height='55%'><br/>
-<img src='images/eocvsim_usage_tunerposition.png' width='55%' height='55%'><br/>
+<img src='doc/images/eocvsim_usage_tuneropen.png' width='55%' height='55%'><br/>
+<img src='doc/images/eocvsim_usage_tunerposition.png' width='55%' height='55%'><br/>
 
 This screenshot is from the DefaultPipeline (the one selected when the simulator opens). This variable controls the blur value for the output Mat. You can play with this value to see the tuner functionality.<br/><br/>
 If we look into the DefaultPipeline code, we can see that it is simply a **public int** instance variable, not marked as final (alongside with the Telemetry initialization stuff we explained before):<br/>
 
-<img src='images/eocvsim_usage_defaultpipeline.png' width='35%' height='35%'><br/>
+<img src='doc/images/eocvsim_usage_defaultpipeline.png' width='35%' height='35%'><br/>
 
 The tuner supports a handful of Java types such as most primivites (int, boolean...) and some other types from OpenCV.<br/>
 The full list of types currently supported by the tuner on the latest version is:<br/>
@@ -192,7 +192,7 @@ The full list of types currently supported by the tuner on the latest version is
 
 In the screenshot above, you might have noticed we have three buttons in the field (these buttons appear on field types with at least one textbox/slider). Those were introduced in 2.1.0 to provide extra functionality to the tuner. We have three buttons (options), five parts:
 
-<img src='images/eocvsim_usage_tuner_parts.png' width='40%' height='40%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_parts.png' width='40%' height='40%'><br/>
 
 1) **Text fields/slider toggle**
    - Toggles between sliders and textboxes for setting the value to this field
@@ -211,7 +211,7 @@ In the screenshot above, you might have noticed we have three buttons in the fie
 
 When opening the config for a specific field with the aforementioned button (figure #2), you'll see this popup:
 
-<img src='images/eocvsim_usage_tuner_config.png' width='40%' height='40%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_config.png' width='40%' height='40%'><br/>
 
 1) **Slider range**
    - Sets the **range for the sliders**, defaults to 0-255 since that's the most commonly used, especially for color tuning.
@@ -229,7 +229,7 @@ When using the variable tuner and making configurations, it's sometimes convenie
 
 For this, the sim has a "apply to all" functionality to store common configurations:
 
-<img src='images/eocvsim_usage_tuner_config_apply.png' width='30%' height='30%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_config_apply.png' width='30%' height='30%'><br/>
 
 As you can see in the image, when clicking the "apply to all" button, two options appear:
     
@@ -371,7 +371,7 @@ public class SimpleThresholdPipeline extends OpenCvPipeline {
 
 And so, when initially selecting this pipeline in the simulator, it's initial state should look something like this:<br/>
 
-<img src='images/eocvsim_usage_tuner_thresholdsample_1.png' width='55%' height='55%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_thresholdsample_1.png' width='55%' height='55%'><br/>
 
 All pixels from the input Mat are visible entirely, this is because we specified a range of 0-255 for all three channels (see the sliders values). Since those values are the minimum (0%) and maximum (100%) for YCrCb respectively, all pixels are able to go through our "threshold".<br/>
 
@@ -380,12 +380,12 @@ If you want to permanently change this, go into the field config by clicking on 
 
 Anyways, back to the sample. After a bit of playing around with the sliders, it's possible to come up with some decent values which successfully filter out the orange ring stack out of everything else:<br/>
 
-<img src='images/eocvsim_usage_tuner_thresholdsample_2.png' width='55%' height='55%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_thresholdsample_2.png' width='55%' height='55%'><br/>
 
 A problem with the YCrCb color space, especially this year, is that the difference between red and orange is very subtle. So therefore we need to play with the values for a good while until we find some that filters out the red from the goals but displays the ring stack. Or do some other technique alongside thresholding such as [FTCLib's contour ring pipeline](https://github.com/FTCLib/FTCLib/blob/3a43b191b18581a2f741588f9b8ab60c13b7fb6c/core/vision/src/main/java/com/arcrobotics/ftclib/vision/UGContourRingPipeline.kt#L46) with the "horizon" mechanism.<br/>
 
 Some other nice features can be added to this sample, such as an enum for choosing the color space and Telemetry:
 
-<img src='images/eocvsim_usage_tuner_thresholdsample_final.png' width='75%' height='75%'><br/>
+<img src='doc/images/eocvsim_usage_tuner_thresholdsample_final.png' width='75%' height='75%'><br/>
 
 To keep this explaination simple, you can find the final pipeline [here](https://github.com/serivesmejia/EOCV-Sim/blob/dev/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SimpleThresholdPipeline.java) with the new demonstrated features, in the TeamCode module, since serves as a good sample alongside other sample classes from EOCV itself.
