@@ -10,7 +10,7 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
 ## Table of Contents
 - [IntelliJ project structure](#intellij-project-structure)
 - [Pipelines](#pipelines)
-    - Sample Pipeline
+    - [Empty Sample Pipeline](#empty-sample-pipeline)
 - [Input Sources](#input-sources)
     - [Creating an input source](#creating-an-input-source)
 - [Telemetry](#telemetry)
@@ -48,6 +48,8 @@ To create a new java class, follow these steps:<br/>
 Here's a quick gif illustrating these steps:<br/>
 
 <img src='images/eocvsim_usage_createclass.gif' width='75%' height='75%'><br/>
+
+### Empty sample pipeline
 
 If you want your class to be a pipeline, it **should also** extend the EOCV's OpenCvPipeline abstract class and override the processFrame() method.<br/><br/>
 Here's a empty pipeline template, with the SamplePipeline class we created before:
