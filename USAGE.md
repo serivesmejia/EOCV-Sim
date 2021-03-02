@@ -12,16 +12,18 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
 - [Pipelines](#pipelines)
     - Sample Pipeline
 - [Input Sources](#input-sources)
+    - [Creating an input source](#creating-an-input-source)
 - [Telemetry](#telemetry)
 - [Variable Tuner](#variable-tuner)
+    - [Sample Usage](#sample-usage-of-the-variable-tuner)
 
 ## IntelliJ project structure
 
-EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:</br>
-1) Pop out the parent EOCV-Sim project folder by clicking on the horizontal arrow
+EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:<br/>
+1) Pop out the parent EOCV-Sim project folder by clicking on the "*>*" arrow
 2) Find the TeamCode module (folder) and pop it out just like before
 3) Find the src folder and open it
-4) Now you will find the *org.firstinspires.ftc.teamcode* package, in which some sample pipelines are already placed.
+4) Now you will find the *org.firstinspires.ftc.teamcode* package, in which you should place all your pipelines and some sample pipelines are already there.<br/>
 
 These steps are illustrated in this gif:</br>
 
@@ -160,7 +162,147 @@ This variable tuner can be found at the bottom part of the sim, click on the div
 <img src='images/eocvsim_usage_tuneropen.png' width='55%' height='55%'><br/>
 <img src='images/eocvsim_usage_tunerposition.png' width='55%' height='55%'><br/>
 
-This screenshot is from the DefaultPipeline (the one selected when the simulator opens), which controls the blur value for the output Mat. You can play with it to see the tuner functionality.<br/>
-If we look into the DefaultPipeline code, we can see that it is simply a **public** (not markes as "final"), int instance variable (alongside with the Telemetry initialization stuff we explained before):<br/>
+This screenshot is from the DefaultPipeline (the one selected when the simulator opens), which controls the blur value for the output Mat. You can play with it to see the tuner functionality.<br/><br/>
+If we look into the DefaultPipeline code, we can see that it is simply a **public** (not marked as "final") "int" instance variable (alongside with the Telemetry initialization stuff we explained before):<br/>
 
 <img src='images/eocvsim_usage_defaultpipeline.png' width='35%' height='35%'><br/>
+
+The tuner supports a handful of Java types such as most primivites (int, boolean...) and some other types from OpenCV.<br/>
+The full list of types currently supported by the tuner on the latest version is:<br/>
+
+    Java: 
+      - int (or Integer)
+      - float (or Float)
+      - double (or Double)
+      - long (or Long)
+      - boolean (or Boolean)
+      - String
+      - Enums
+    
+    OpenCV:
+      - Scalar
+      - Rect
+      - Point
+    
+### Sample usage of the variable tuner
+
+Let's say we need to tune a threshold for finding the ring stack in the 2020-2021 "Ultimate Goal" game. For this, we will use the YCrCb color space since it's one of the most used ones in FTC and it behaves better under different lightning conditions. (see [this article](https://learnopencv.com/color-spaces-in-opencv-cpp-python/) for more extended explaination and comparation of different color spaces).<br/>
+
+We can write a simple pipeline for achieving this, taking advantage of the variable tuner. Here's an example code with detailed comments:
+
+```java
+package org.firstinspires.ftc.teamcode;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvPipeline;
+
+public class SimpleThresholdPipeline extends OpenCvPipeline {
+
+    /*
+     * These are our variables that will be
+     * modifiable from the variable tuner.
+     *
+     * Scalars in OpenCV are generally used to
+     * represent color. So our values in the
+     * lower and upper Scalars here represent
+     * the Y, Cr and Cb values respectively.
+     *
+     * YCbCr, like most color spaces, range
+     * from 0-255, so we default to those
+     * min and max values here for now, meaning
+     * that all pixels will be shown.
+     */
+    public Scalar lower = new Scalar(0, 0, 0);
+    public Scalar upper = new Scalar(255, 255, 255);
+
+    /*
+     * A good practice when typing EOCV pipelines is
+     * declaring the Mats you will use here at the top
+     * of your pipeline, to reuse the same buffers every
+     * time. This removes the need to call mat.release()
+     * with every Mat you create on the processFrame method,
+     * and therefore, reducing the possibility of getting a
+     * memory leak and causing the app to crash due to an
+     * "Out of Memory" error.
+     */
+    private Mat ycrcbMat       = new Mat();
+    private Mat binaryMat      = new Mat();
+    private Mat maskedInputMat = new Mat();
+
+    @Override
+    public Mat processFrame(Mat input) {
+        /*
+         * Converts our input mat from RGB to YCrCb.
+         * EOCV ALWAYS returns RGB mats, so you'd
+         * always convert from RGB to the color
+         * space you want to use.
+         *
+         * Takes our "input" mat as an input, and outputs
+         * to a separate Mat buffer "ycrcbMat"
+         */
+        Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
+
+        /*
+         * This is where our thresholding actually happens.
+         * Takes our "ycrcbMat" as input and outputs a "binary"
+         * Mat to "binaryMat" of the same size as our input.
+         * "Discards" all the pixels outside the bounds specified
+         * by the scalars above (and modifiable with EOCV-Sim's
+         * live variable tuner.)
+         *
+         * Binary meaning that we have either a 0 or 255 value
+         * for every pixel.
+         *
+         * 0 represents our pixels that were outside the bounds
+         * 255 represents our pixels that are inside the bounds
+         */
+        Core.inRange(ycrcbMat, lower, upper, binaryMat);
+
+        /*
+         * Release the reusable Mat so that old data doesn't
+         * affect the next step in the current processing
+         */
+        maskedInputMat.release();
+
+        /*
+         * Now, with our binary Mat, we perform a "bitwise and"
+         * to our input image, meaning that we will perform a mask
+         * which will include the pixels from our input Mat which
+         * are "255" in our binary Mat (meaning that they're inside
+         * the range) and will discard any other pixel outside the
+         * range (RGB 0, 0, 0. All discarded pixels will be black)
+         */
+        Core.bitwise_and(input, input, maskedInputMat, binaryMat);
+
+        /*
+         * The Mat returned from this method is the
+         * one displayed on the viewport.
+         *
+         * To visualize our threshold, we'll return
+         * the "masked input mat" which shows the
+         * pixel from the input Mat that were inside
+         * the threshold range.
+         */
+        return maskedInputMat;
+    }
+
+}
+```
+
+And so, when initially selecting this pipeline in the simulator, it's initial state should look something like this:<br/>
+
+<img src='images/eocvsim_usage_tuner_thresholdsample_1.png' width='55%' height='55%'><br/>
+
+All pixels from the input Mat are visible entirely, this is because we specified a range of 0-255 for all three channels (see the sliders values). Since those values are the minimum (0%) and maximum (100%) for YCrCb respectively, all pixels are able to go through our "threshold".<br/>
+
+Other thing to note here is that we have sliders instead of textboxes for both Scalars. This is the "default" behavior when using a variable of this type, since sliders are the most optimal option to tune thresholds. This behavior can be overriden by any user configuration, by toggling off the button located at the top left with the sliders icon.<br/><br/>
+If you want to permanently change this, go into the field config by clicking on the button with the gear icon, then click "apply to all" and select whether you wanna apply this config to all fields globally, or specifically to the field type (Scalar in this case), as explained before.<br/>
+
+Anyways, back to the sample. After a bit of playing around with the sliders, it's possible to come up with some decent values which successfully filter out the orange ring stack out of everything else:<br/>
+
+<img src='images/eocvsim_usage_tuner_thresholdsample_2.png' width='55%' height='55%'><br/>
+
+A problem with the YCrCb color space, especially this year, is that the difference between red and orange is very subtle. So therefore we need to play with the values for a good while until we find some that filters out the red from the goals but displays the ring stack. Or do some other technique alongside thresholding such as [FTCLib's contour ring pipeline](https://github.com/FTCLib/FTCLib/blob/3a43b191b18581a2f741588f9b8ab60c13b7fb6c/core/vision/src/main/java/com/arcrobotics/ftclib/vision/UGContourRingPipeline.kt#L46) with the "horizon" mechanism.
