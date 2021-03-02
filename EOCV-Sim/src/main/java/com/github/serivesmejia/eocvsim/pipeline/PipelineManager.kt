@@ -46,11 +46,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
         const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
     }
 
-    @JvmField val onUpdate = EventHandler("OnPipelineUpdate")
-    @JvmField val onPipelineChange = EventHandler("OnPipelineChange")
+    @JvmField val onUpdate          = EventHandler("OnPipelineUpdate")
+    @JvmField val onPipelineChange  = EventHandler("OnPipelineChange")
     @JvmField val onPipelineTimeout = EventHandler("OnPipelineTimeout")
-    @JvmField val onPause = EventHandler("OnPipelinePause")
-    @JvmField val onResume = EventHandler("OnPipelineResume")
+    @JvmField val onPause           = EventHandler("OnPipelinePause")
+    @JvmField val onResume          = EventHandler("OnPipelineResume")
 
     var pipelineOutputPosters: ArrayList<MatPoster> = ArrayList()
     val pipelineFpsCounter = FpsCounter()
@@ -110,11 +110,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.info("PipelineManager", "Found " + pipelines.size + " pipeline(s)")
         Log.blank()
 
-        //we don't need to do anything else with it other than doing this
-        //since it will attach to the "update" and "pipeline change" event
-        //handlers by passing the "this" instance.
-        timestampedPipelineHandler.attachToPipelineManager(this)
-
         requestChangePipeline(0) //change to the default pipeline
     }
 
@@ -126,6 +121,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         if(paused) return
+
+        timestampedPipelineHandler.update(currentPipeline)
 
         lastPipelineAction = if(!hasInitCurrentPipeline) {
             "init/processFrame"
@@ -147,6 +144,10 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
                 if(!hasInitCurrentPipeline) {
                     currentPipeline?.init(inputMat)
+
+                    Log.info("PipelineManager", "Initialized pipeline $currentPipelineName")
+                    Log.blank()
+
                     hasInitCurrentPipeline = true
                 }
 
@@ -299,9 +300,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
             return
         }
-
-        Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.name)
-        Log.blank()
 
         currentPipeline      = nextPipeline
         currentTelemetry     = nextTelemetry

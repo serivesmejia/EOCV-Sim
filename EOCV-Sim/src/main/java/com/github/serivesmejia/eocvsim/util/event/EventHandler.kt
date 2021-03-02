@@ -24,13 +24,11 @@
 package com.github.serivesmejia.eocvsim.util.event
 
 import com.github.serivesmejia.eocvsim.util.Log
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.BlockingQueue
-import kotlin.collections.Map.Entry
 
 class EventHandler(val name: String) : Runnable {
 
     private val lock = Any()
+    private val onceLock = Any()
 
     val listeners: Array<EventListener>
         get()  {
@@ -39,7 +37,15 @@ class EventHandler(val name: String) : Runnable {
             }
         }
 
-    private val internalListeners = HashMap<Int, EventListener>()
+    val onceListeners: Array<EventListener>
+        get() {
+            synchronized(onceLock) {
+                return internalOnceListeners.toTypedArray()
+            }
+        }
+
+    private val internalListeners     = HashMap<Int, EventListener>()
+    private val internalOnceListeners = ArrayList<EventListener>()
 
     companion object {
         private var idCount = 0
@@ -52,18 +58,25 @@ class EventHandler(val name: String) : Runnable {
             } catch (ex: Exception) {
                 Log.error("${name}-EventHandler", "Error while running listener #${listener.id} (${listener.javaClass})", ex)
             }
+        }
 
-            if(!listener.persistent) {
-                removeListener(listener.id)
+        //executing "doOnce" listeners
+        for(listener in onceListeners) {
+            try {
+                listener.run()
+            } catch (ex: Exception) {
+                Log.error("${name}-EventHandler", "Error while running \"once\" listener (${listener.javaClass})", ex)
+            }
+
+            synchronized(onceLock) {
+                internalOnceListeners.remove(listener)
             }
         }
     }
 
-    fun doOnce(listener: EventListener): Int = synchronized(lock) {
-        internalListeners[idCount + 1] = listener
-        listener.id = idCount + 1
-
-        return listener.id
+    fun doOnce(listener: EventListener) = synchronized(onceLock) {
+        internalOnceListeners.add(listener)
+        listener.id = idCount + 1 //id doesn't matter
     }
 
     fun doOnce(runnable: Runnable) = doOnce(KEventListener { runnable.run() })
@@ -71,8 +84,8 @@ class EventHandler(val name: String) : Runnable {
     fun doOnce(listener: (Int) -> Unit) = doOnce(KEventListener(listener))
 
     fun doPersistent(listener: EventListener) = synchronized(lock) {
-        doOnce(listener)
-        listener.persistent = true
+        listener.id = idCount + 1
+        internalListeners[listener.id] = listener
     }
 
     fun doPersistent(runnable: Runnable) = doPersistent(KEventListener { runnable.run() })
