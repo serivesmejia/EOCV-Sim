@@ -585,17 +585,15 @@ public class Visualizer {
     }
 
     public void updateTunerFields(List<TunableFieldPanel> fields) {
-        SwingUtilities.invokeLater(() -> {
-            tunerMenuPanel.removeAll();
+        tunerMenuPanel.removeAll();
 
-            for (TunableFieldPanel fieldPanel : fields) {
-                tunerMenuPanel.add(fieldPanel);
-                fieldPanel.showFieldPanel();
-            }
+        for (TunableFieldPanel fieldPanel : fields) {
+            tunerMenuPanel.add(fieldPanel);
+            fieldPanel.showFieldPanel();
+        }
 
-            tunerMenuPanel.updateUI();
-            imageTunerSplitPane.updateUI();
-        });
+        tunerMenuPanel.updateUI();
+        imageTunerSplitPane.updateUI();
     }
 
     // PLEASE WAIT DIALOGS
