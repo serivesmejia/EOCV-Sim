@@ -338,7 +338,6 @@ public class Visualizer {
         }
 
         hasFinishedInitializing = true;
-
     }
 
     public void initAsync(Theme simTheme) {
@@ -355,7 +354,6 @@ public class Visualizer {
 
         //listener for changing input sources
         sourceSelector.addListSelectionListener(evt -> {
-
             try {
                 if (sourceSelector.getSelectedIndex() != -1) {
 
@@ -377,7 +375,6 @@ public class Visualizer {
                                 beforeSelectedSource = source;
                                 beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
                             }
-
                         }
                     }
 
@@ -391,8 +388,8 @@ public class Visualizer {
         //handling onViewportTapped evts
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                OpenCvPipeline pipeline = eocvSim.pipelineManager.getCurrentPipeline();
-                if(pipeline != null && !colorPicker.isPicking()) pipeline.onViewportTapped();
+                if(!colorPicker.isPicking())
+                    eocvSim.pipelineManager.callViewportTapped();
             }
         });
 
@@ -408,7 +405,7 @@ public class Visualizer {
         //VIEWPORT RESIZE HANDLING
         imgScrollPane.addMouseWheelListener(e -> {
             if (isCtrlPressed) { //check if control key is pressed
-                double scale = viewport.getViewportScale() - (0.3 * e.getPreciseWheelRotation());
+                double scale = viewport.getViewportScale() - (0.15 * e.getPreciseWheelRotation());
                 viewport.setViewportScale(scale);
             }
         });

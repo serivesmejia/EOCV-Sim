@@ -53,8 +53,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmField val onResume = EventHandler("OnPipelineResume")
 
     var pipelineOutputPosters: ArrayList<MatPoster> = ArrayList()
-
     val pipelineFpsCounter = FpsCounter()
+
+    private var hasInitCurrentPipeline = false
+    var lastPipelineAction = "processFrame"
+        private set
 
     val pipelines = ArrayList<Class<out OpenCvPipeline>>()
 
@@ -124,6 +127,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         if(paused) return
 
+        lastPipelineAction = if(!hasInitCurrentPipeline) {
+            "init/processFrame"
+        } else {
+            "processFrame"
+        }
+
         //run our pipeline in the background until it finishes or gets cancelled
         val pipelineJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {
             try {
@@ -133,16 +142,29 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //forever to finish its job). if we run out of time, and if the
                 //pipeline ever returns, we will not post the frame, since we
                 //don't know when it was actually requested, we might even be in
-                //a different pipeline at this point.
+                //a different pipeline at this point. we also call init if we
+                //haven't done so.
+
+                if(!hasInitCurrentPipeline) {
+                    currentPipeline?.init(inputMat)
+                    hasInitCurrentPipeline = true
+                }
+
+                //check if we're still active (not timeouted)
+                //after initialization
                 currentPipeline?.processFrame(inputMat)?.let { outputMat ->
-                    if(isActive) {
+                    if (isActive) {
                         pipelineFpsCounter.update()
 
-                        for(poster in pipelineOutputPosters.toTypedArray()) {
+                        for (poster in pipelineOutputPosters.toTypedArray()) {
                             try {
                                 poster.post(outputMat)
-                            } catch(ex: Exception) {
-                                Log.error("PipelineManager", "Uncaught exception thrown while posting pipeline output Mat to ${poster.name} poster", ex)
+                            } catch (ex: Exception) {
+                                Log.error(
+                                    "PipelineManager",
+                                    "Uncaught exception thrown while posting pipeline output Mat to ${poster.name} poster",
+                                    ex
+                                )
                             }
                         }
                     } else {
@@ -163,8 +185,15 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         runBlocking {
             try {
+                //allow double timeout if we haven't initialized the pipeline
+                val timeout = if(hasInitCurrentPipeline) {
+                    PIPELINE_TIMEOUT_MS
+                } else {
+                    PIPELINE_TIMEOUT_MS * 2
+                }
+
                 //ok! this is the part in which we'll wait for the pipeline with a timeout
-                withTimeout(PIPELINE_TIMEOUT_MS) {
+                withTimeout(timeout) {
                     pipelineJob.join()
                 }
 
@@ -177,7 +206,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //someone wants to do something here
                 onPipelineTimeout.run()
 
-                Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to processFrame (more than $PIPELINE_TIMEOUT_MS ms), falling back to DefaultPipeline.")
+                Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to $lastPipelineAction (more than $PIPELINE_TIMEOUT_MS ms), falling back to DefaultPipeline.")
                 Log.blank()
             } finally {
                 //we cancel our pipeline job so that it
@@ -185,6 +214,30 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //pipeline if it ever returns.
                 pipelineJob.cancel()
             }
+        }
+    }
+
+    fun callViewportTapped() = currentPipeline?.let { pipeline -> //run only if our pipeline is not null
+        //similar to pipeline processFrame, call the user function in the background
+        //and wait for some X timeout for the user to finisih doing what it has to do.
+        val viewportTappedJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {
+            pipeline.onViewportTapped()
+        }
+
+        try {
+            //perform the timeout here (we'll block for a bit
+            //and if it runs out of time, give up and move on)
+            runBlocking {
+                withTimeout(PIPELINE_TIMEOUT_MS) {
+                    viewportTappedJob.join()
+                }
+            }
+        } catch(ex: TimeoutCancellationException) {
+            //send a warning to the user
+            Log.warn("PipelineManager" , "User pipeline $currentPipelineName took too long to handle onViewportTapped (more than $PIPELINE_TIMEOUT_MS ms).")
+        } finally {
+            //cancel the job
+            viewportTappedJob.cancel()
         }
     }
 
@@ -225,7 +278,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
             }
 
             Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.name)
-            nextPipeline!!.init(eocvSim.inputSourceManager.lastMatFromSource)
         } catch (ex: NoSuchMethodException) {
             eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Check console for details",
                     "Close", Dimension(300, 150), true, true)
@@ -251,10 +303,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.info("PipelineManager", "Initialized pipeline " + pipelineClass.name)
         Log.blank()
 
-        currentPipeline = nextPipeline
-        currentTelemetry = nextTelemetry
+        currentPipeline      = nextPipeline
+        currentTelemetry     = nextTelemetry
         currentPipelineIndex = index
-        currentPipelineName = currentPipeline!!.javaClass.simpleName
+        currentPipelineName  = currentPipeline!!.javaClass.simpleName
+
+        hasInitCurrentPipeline = false
 
         currentPipelineContext?.close()
         currentPipelineContext = newSingleThreadContext("Pipeline-$currentPipelineName")

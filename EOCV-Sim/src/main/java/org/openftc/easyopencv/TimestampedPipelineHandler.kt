@@ -33,13 +33,13 @@ class TimestampedPipelineHandler {
     //update called from the attached pipelineManager onUpdate event handler
     fun update() {
         if(lastNanos == 0L) updateLastNanos()
-
         timestampedPipeline?.setTimestamp(System.nanoTime() - lastNanos)
 
         updateLastNanos()
     }
 
     fun pipelineChange(newPipeline: OpenCvPipeline?) {
+        newPipeline?.let { println("pipelineChange ${it::class.java.name}") }
         timestampedPipeline = if(newPipeline is TimestampedOpenCvPipeline) newPipeline else null
     }
 

@@ -70,12 +70,7 @@ public class MatPoster {
 
         this.name = name;
 
-        postQueue.setEvictAction((m) -> {
-            if (m instanceof MatRecycler.RecyclableMat) {
-                ((MatRecycler.RecyclableMat) m).returnMat();
-            }
-            m.release();
-        }); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
+        postQueue.setEvictAction(this::evict); //release mat and return it to recycler if it's dropped by the EvictingBlockingQueue
     }
 
     public void post(Mat m) {
@@ -85,6 +80,11 @@ public class MatPoster {
         }
 
         if (matRecycler != null) {
+            if(matRecycler.getAvailableMats() < 1) {
+                //evict one if we don't have any available mats in the recycler
+                evict(postQueue.poll());
+            }
+
             MatRecycler.RecyclableMat recycledMat = matRecycler.takeMat();
             m.copyTo(recycledMat);
 
@@ -141,6 +141,13 @@ public class MatPoster {
         }
 
         matRecycler.releaseAll();
+    }
+
+    private void evict(Mat m) {
+        if (m instanceof MatRecycler.RecyclableMat) {
+            ((MatRecycler.RecyclableMat) m).returnMat();
+        }
+        m.release();
     }
 
     public void setPaused(boolean paused) {

@@ -36,14 +36,10 @@ import com.github.serivesmejia.eocvsim.util.FileFilters
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
-import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
+import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.swing.Swing
 import nu.pattern.OpenCV
 import org.opencv.core.Size
 import java.awt.Dimension
@@ -116,8 +112,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         //shows a warning when a pipeline gets "stuck"
         pipelineManager.onPipelineTimeout.doPersistent {
-            visualizer.asyncPleaseWaitDialog("Current pipeline took too long to processFrame", "Falling back to DefaultPipeline",
-                "Close", Dimension(300, 150), true, true)
+            visualizer.asyncPleaseWaitDialog("Current pipeline took too long to ${pipelineManager.lastPipelineAction}", "Falling back to DefaultPipeline",
+                "Close", Dimension(310, 150), true, true)
         }
 
         visualizer.waitForFinishingInit()
