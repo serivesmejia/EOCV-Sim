@@ -177,7 +177,13 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
         revalAndRepaint()
     }
 
-    fun reevaluateConfig() = configPanel.applyFromEOCVSimConfig()
+    //reevaluates the config of this field panel from the eocv sim config
+    fun reevaluateConfig() {
+        //only reevaluate if our config is not local
+        if(configPanel.localConfig.source != TunableFieldPanelConfig.ConfigSource.LOCAL) {
+            configPanel.applyFromEOCVSimConfig() 
+        }
+    }
 
     private fun revalAndRepaint() {
         textBoxSliderToggle.revalidate()
