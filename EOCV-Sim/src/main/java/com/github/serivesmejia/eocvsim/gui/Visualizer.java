@@ -25,22 +25,16 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.component.visualizer.CreateSourcePanel;
-import com.github.serivesmejia.eocvsim.gui.component.PopupX;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.gui.component.visualizer.PipelineSelector;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.PipelineSelectorPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.SourceSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
-import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer;
-import com.github.serivesmejia.eocvsim.input.InputSource;
-import com.github.serivesmejia.eocvsim.input.SourceType;
-import com.github.serivesmejia.eocvsim.pipeline.PipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.openftc.easyopencv.OpenCvPipeline;
 
 import javax.swing.*;
 import java.awt.*;
@@ -85,14 +79,9 @@ public class Visualizer {
     public JSplitPane globalSplitPane = null;
     public JSplitPane imageTunerSplitPane = null;
 
-    public PipelineSelector pipelineSelector = null;
+    public PipelineSelectorPanel pipelineSelectorPanel = null;
 
-    public JPanel sourceSelectorContainer = null;
-    public volatile JList<String> sourceSelector = null;
-    public JScrollPane sourceSelectorScroll = null;
-    public JPanel sourceSelectorButtonsContainer = null;
-    public JButton sourceSelectorCreateBtt = null;
-    public JButton sourceSelectorDeleteBtt = null;
+    public SourceSelectorPanel sourceSelectorPanel = null;
 
     public JPanel telemetryContainer = null;
     public JScrollPane telemetryScroll = null;
@@ -103,19 +92,12 @@ public class Visualizer {
     private String beforeTitle = "";
     private String beforeTitleMsg = "";
 
-    private String beforeSelectedSource = "";
-
-    private int beforeSelectedSourceIndex = 0;
-    private int beforeSelectedPipeline = -1;
-
     public ColorPicker colorPicker = null;
 
     //stuff for zooming handling
     private volatile boolean isCtrlPressed = false;
 
     private volatile boolean hasFinishedInitializing = false;
-
-    private PopupX lastCreateSourcePopup = null;
 
     public Visualizer(EOCVSim eocvSim) {
         this.eocvSim = eocvSim;
@@ -149,14 +131,9 @@ public class Visualizer {
 
         tunerMenuPanel = new JPanel();
 
-        pipelineSelector = new PipelineSelector(eocvSim);
-        
-        sourceSelectorContainer = new JPanel();
-        sourceSelector = new JList<>();
-        sourceSelectorScroll = new JScrollPane();
-        sourceSelectorButtonsContainer = new JPanel();
-        sourceSelectorCreateBtt = new JButton("Create");
-        sourceSelectorDeleteBtt = new JButton("Delete");
+        pipelineSelectorPanel = new PipelineSelectorPanel(eocvSim);
+
+        sourceSelectorPanel = new SourceSelectorPanel(eocvSim);
 
         telemetryContainer = new JPanel();
         telemetryScroll = new JScrollPane();
@@ -188,63 +165,13 @@ public class Visualizer {
          * PIPELINE SELECTOR
          */
 
-        rightContainer.add(pipelineSelector);
+        rightContainer.add(pipelineSelectorPanel);
 
         /*
          * SOURCE SELECTOR
          */
 
-        sourceSelectorContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-        //sourceSelectorContainer.setBorder(BorderFactory.createLineBorder(Color.black));
-
-        JLabel sourceSelectorLabel = new JLabel("Sources");
-
-        sourceSelectorLabel.setFont(sourceSelectorLabel.getFont().deriveFont(20.0f));
-
-        sourceSelectorLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        sourceSelectorContainer.add(sourceSelectorLabel);
-
-        JPanel sourceSelectorScrollContainer = new JPanel();
-        sourceSelectorScrollContainer.setLayout(new GridLayout());
-        sourceSelectorScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-
-        sourceSelectorScrollContainer.add(sourceSelectorScroll);
-
-        sourceSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        sourceSelectorScroll.setViewportView(sourceSelector);
-        sourceSelectorScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        sourceSelectorScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-        //different icons
-        sourceSelector.setCellRenderer(new SourcesListIconRenderer(eocvSim.inputSourceManager));
-
-        sourceSelectorCreateBtt.addActionListener(e -> {
-            if(lastCreateSourcePopup != null) {
-                lastCreateSourcePopup.hide();
-            }
-            CreateSourcePanel panel = new CreateSourcePanel(eocvSim);
-
-            int buttonHeight = sourceSelectorCreateBtt.getHeight();
-            Point location   = sourceSelectorCreateBtt.getLocationOnScreen();
-
-            PopupX popup = new PopupX(frame, panel, location.x, location.y, true);
-
-            lastCreateSourcePopup = popup;
-            popup.show();
-        });
-
-        sourceSelectorContainer.add(sourceSelectorScrollContainer);
-
-        sourceSelectorButtonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-        sourceSelectorButtonsContainer.add(sourceSelectorCreateBtt);
-        sourceSelectorButtonsContainer.add(sourceSelectorDeleteBtt);
-
-        sourceSelectorContainer.add(sourceSelectorButtonsContainer);
-
-        rightContainer.add(sourceSelectorContainer);
+        rightContainer.add(sourceSelectorPanel);
 
         /*
          * TELEMETRY
@@ -352,54 +279,12 @@ public class Visualizer {
             }
         });
 
-        //listener for changing input sources
-        sourceSelector.addListSelectionListener(evt -> {
-            try {
-                if (sourceSelector.getSelectedIndex() != -1) {
-
-                    ListModel<String> model = sourceSelector.getModel();
-                    String source = model.getElementAt(sourceSelector.getSelectedIndex());
-
-                    if (!evt.getValueIsAdjusting() && !source.equals(beforeSelectedSource)) {
-                        if (!eocvSim.pipelineManager.getPaused()) {
-                            eocvSim.inputSourceManager.requestSetInputSource(source);
-                            beforeSelectedSource = source;
-                            beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-                        } else {
-                            //check if the user requested the pause or if it was due to one shoot analysis when selecting images
-                            if (eocvSim.pipelineManager.getPauseReason() != PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS) {
-                                sourceSelector.setSelectedIndex(beforeSelectedSourceIndex);
-                            } else { //handling pausing
-                                eocvSim.pipelineManager.requestSetPaused(false);
-                                eocvSim.inputSourceManager.requestSetInputSource(source);
-                                beforeSelectedSource = source;
-                                beforeSelectedSourceIndex = sourceSelector.getSelectedIndex();
-                            }
-                        }
-                    }
-
-                } else {
-                    sourceSelector.setSelectedIndex(1);
-                }
-            } catch (ArrayIndexOutOfBoundsException ignored) { }
-
-        });
-
         //handling onViewportTapped evts
         viewport.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if(!colorPicker.isPicking())
                     eocvSim.pipelineManager.callViewportTapped();
             }
-        });
-
-        // delete selected input source
-        sourceSelectorDeleteBtt.addActionListener(e -> {
-            String source = sourceSelector.getModel().getElementAt(sourceSelector.getSelectedIndex());
-            eocvSim.onMainUpdate.doOnce(() -> {
-                eocvSim.inputSourceManager.deleteInputSource(source);
-                updateSourcesList();
-            });
         });
 
         //VIEWPORT RESIZE HANDLING
@@ -436,19 +321,14 @@ public class Visualizer {
                 double ratio = frame.getSize().getHeight() / 820;
                 int columns = (int) Math.round(8 * ratio);
 
-                pipelineSelector.getPipelineSelector().setVisibleRowCount(columns);
+                pipelineSelectorPanel.getPipelineSelector().setVisibleRowCount(columns);
 
                 //gotta revalidate and repaint
                 //for every single involved element...
                 //thanks swing, very cool
-                pipelineSelector.revalAndRepaint();
+                pipelineSelectorPanel.revalAndRepaint();
 
-                sourceSelector.setVisibleRowCount(columns);
-
-                sourceSelector.revalidate();
-                sourceSelector.repaint();
-                sourceSelectorScroll.revalidate();
-                sourceSelectorScroll.repaint();
+                sourceSelectorPanel.getSourceSelector().setVisibleRowCount(columns);
 
                 telemetryList.setVisibleRowCount(columns);
 
@@ -529,22 +409,6 @@ public class Visualizer {
         this.titleMsg = titleMsg;
         if (!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
         beforeTitleMsg = titleMsg;
-    }
-
-    public void updateSourcesList() {
-        //SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-
-            for (InputSource source : eocvSim.inputSourceManager.getSortedInputSources()) {
-                listModel.addElement(source.getName());
-            }
-
-            sourceSelector.setFixedCellWidth(240);
-
-            sourceSelector.setModel(listModel);
-            sourceSelector.revalidate();
-            sourceSelectorScroll.revalidate();
-        //});
     }
 
     public void updateTelemetry(Telemetry telemetry) {

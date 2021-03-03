@@ -34,7 +34,7 @@ import java.awt.GridLayout
 import javax.swing.*
 import javax.swing.event.ListSelectionEvent
 
-class PipelineSelector(private val eocvSim: EOCVSim) : JPanel() {
+class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
     var selectedIndex: Int
         get() = pipelineSelector.selectedIndex

@@ -286,7 +286,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
             Log.info("PipelineManager", "Make sure your pipeline implements a public constructor with no parameters or with a Telemetry parameter")
 
-            eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
+            eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
 
             Log.blank()
         } catch (ex: Exception) {
@@ -296,7 +296,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
             Log.blank()
 
-            eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
+            eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
 
             return
         }
@@ -313,7 +313,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         activePipelineContexts.add(currentPipelineContext!!)
 
-        eocvSim.visualizer.pipelineSelector.selectedIndex = currentPipelineIndex
+        eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
 
         //if pause on images option is turned on by user
         if (eocvSim.configManager.config.pauseOnImages) {
@@ -353,7 +353,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             onResume.run()
         }
 
-        eocvSim.visualizer.pipelineSelector.pipelinePauseBtt.isSelected = this.paused
+        eocvSim.visualizer.pipelineSelectorPanel.pipelinePauseBtt.isSelected = this.paused
     }
 
     fun togglePause() = setPaused(!paused)

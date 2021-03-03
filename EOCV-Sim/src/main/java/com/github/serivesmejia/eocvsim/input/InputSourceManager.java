@@ -122,6 +122,10 @@ public class InputSourceManager {
             inputSourceLoader.saveInputSourcesToFile();
         }
 
+        if(eocvSim.visualizer.sourceSelectorPanel != null) {
+            eocvSim.visualizer.sourceSelectorPanel.updateSourcesList();
+        }
+
         Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
     }
 
@@ -181,7 +185,7 @@ public class InputSourceManager {
         Log.info("InputSourceManager", "Set InputSource to " + currentInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 
         //enable or disable source delete button depending if source is default or not
-        eocvSim.visualizer.sourceSelectorDeleteBtt.setEnabled(!currentInputSource.isDefault);
+        eocvSim.visualizer.sourceSelectorPanel.getSourceSelectorDeleteBtt().setEnabled(!currentInputSource.isDefault);
 
         return true;
     }
@@ -195,7 +199,10 @@ public class InputSourceManager {
         //to execute one shot analysis on images and save resources.
         if (SourceType.fromClass(currentInputSource.getClass()) == SourceType.IMAGE) {
             eocvSim.onMainUpdate.doOnce(() ->
-                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
+                    eocvSim.pipelineManager.setPaused(
+                            true,
+                            PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS
+                    )
             );
         }
     }
@@ -214,8 +221,10 @@ public class InputSourceManager {
         Visualizer.AsyncPleaseWaitDialog apwd = null;
 
         if (getSourceType(sourceName) == SourceType.CAMERA || getSourceType(sourceName) == SourceType.VIDEO) {
-            apwd = eocvSim.visualizer.asyncPleaseWaitDialog("Opening source...", null, "Exit",
-                    new Dimension(300, 150), true);
+            apwd = eocvSim.visualizer.asyncPleaseWaitDialog(
+                    "Opening source...", null, "Exit",
+                    new Dimension(300, 150), true
+            );
 
             apwd.onCancel(() -> System.exit(0));
         }

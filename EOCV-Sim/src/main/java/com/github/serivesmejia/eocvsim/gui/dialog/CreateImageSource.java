@@ -181,10 +181,12 @@ public class CreateImageSource {
     }
 
     public void createSource(String sourceName, String imgPath, Size size) {
-        eocvSim.onMainUpdate.doOnce(() -> {
-            eocvSim.inputSourceManager.addInputSource(sourceName, new ImageSource(imgPath, size));
-            eocvSim.visualizer.updateSourcesList();
-        });
+        eocvSim.onMainUpdate.doOnce(() ->
+            eocvSim.inputSourceManager.addInputSource(
+                    sourceName,
+                    new ImageSource(imgPath, size)
+            )
+        );
     }
 
     public void updateCreateBtt() {

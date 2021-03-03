@@ -118,10 +118,10 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         visualizer.waitForFinishingInit()
 
-        visualizer.updateSourcesList() //update sources and pick first one
-        visualizer.sourceSelector.selectedIndex = 0
-        visualizer.pipelineSelector.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
-        visualizer.pipelineSelector.selectedIndex = 0
+        visualizer.sourceSelectorPanel.updateSourcesList() //update sources and pick first one
+        visualizer.sourceSelectorPanel.sourceSelector.selectedIndex = 0
+        visualizer.pipelineSelectorPanel.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
+        visualizer.pipelineSelectorPanel.selectedIndex = 0
 
         start()
     }
@@ -217,7 +217,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun stopRecordingSession() {
         currentRecordingSession?.let { itVideo ->
 
-            visualizer.pipelineSelector.pipelineRecordBtt.isEnabled = false
+            visualizer.pipelineSelectorPanel.pipelineRecordBtt.isEnabled = false
 
             itVideo.stopRecordingSession()
             pipelineManager.pipelineOutputPosters.remove(itVideo.matPoster)
@@ -257,7 +257,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                             }
 
                             currentRecordingSession = null
-                            visualizer.pipelineSelector.pipelineRecordBtt.isEnabled = true
+                            visualizer.pipelineSelectorPanel.pipelineRecordBtt.isEnabled = true
                         }
                     }
         }

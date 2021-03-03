@@ -21,15 +21,13 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.component.tuner.types
+package com.github.serivesmejia.eocvsim.gui.component.tuner.elements
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.component.SliderX
 import com.github.serivesmejia.eocvsim.tuner.TunableField
 import com.github.serivesmejia.eocvsim.util.event.KEventListener
-import com.qualcomm.robotcore.util.Range
 import javax.swing.JLabel
-import javax.swing.JSlider
 import kotlin.math.roundToInt
 
 class TunableSlider(val index: Int,
