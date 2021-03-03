@@ -30,6 +30,7 @@ import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.PipelineSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.SourceSelectorPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.TelemetryPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
@@ -80,12 +81,8 @@ public class Visualizer {
     public JSplitPane imageTunerSplitPane = null;
 
     public PipelineSelectorPanel pipelineSelectorPanel = null;
-
     public SourceSelectorPanel sourceSelectorPanel = null;
-
-    public JPanel telemetryContainer = null;
-    public JScrollPane telemetryScroll = null;
-    public volatile JList<String> telemetryList = null;
+    public TelemetryPanel telemetryPanel = null;
 
     private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
     private String titleMsg = "No pipeline";
@@ -132,12 +129,8 @@ public class Visualizer {
         tunerMenuPanel = new JPanel();
 
         pipelineSelectorPanel = new PipelineSelectorPanel(eocvSim);
-
-        sourceSelectorPanel = new SourceSelectorPanel(eocvSim);
-
-        telemetryContainer = new JPanel();
-        telemetryScroll = new JScrollPane();
-        telemetryList = new JList<>();
+        sourceSelectorPanel   = new SourceSelectorPanel(eocvSim);
+        telemetryPanel        = new TelemetryPanel();
 
         rightContainer = new JPanel();
 
@@ -177,47 +170,7 @@ public class Visualizer {
          * TELEMETRY
          */
 
-        telemetryContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        JLabel telemetryLabel = new JLabel("Telemetry");
-
-        telemetryLabel.setFont(telemetryLabel.getFont().deriveFont(20.0f));
-        telemetryLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        telemetryContainer.add(telemetryLabel);
-
-        telemetryScroll.setViewportView(telemetryList);
-        telemetryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        telemetryScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-        //tooltips for the telemetry list items (thnx stackoverflow)
-        telemetryList.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) { }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                JList l = (JList) e.getSource();
-                ListModel m = l.getModel();
-
-                int index = l.locationToIndex(e.getPoint());
-                if (index > -1) {
-                    l.setToolTipText(m.getElementAt(index).toString());
-                }
-            }
-        });
-
-        telemetryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        JPanel telemetryScrollContainer = new JPanel();
-        telemetryScrollContainer.setLayout(new GridLayout());
-        telemetryScrollContainer.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
-
-        telemetryScrollContainer.add(telemetryScroll);
-
-        telemetryContainer.add(telemetryScrollContainer);
-
-        rightContainer.add(telemetryContainer);
+        rightContainer.add(telemetryPanel);
 
         /*
          * SPLIT
@@ -322,20 +275,13 @@ public class Visualizer {
                 int columns = (int) Math.round(8 * ratio);
 
                 pipelineSelectorPanel.getPipelineSelector().setVisibleRowCount(columns);
-
-                //gotta revalidate and repaint
-                //for every single involved element...
-                //thanks swing, very cool
                 pipelineSelectorPanel.revalAndRepaint();
 
                 sourceSelectorPanel.getSourceSelector().setVisibleRowCount(columns);
+                sourceSelectorPanel.revalAndRepaint();
 
-                telemetryList.setVisibleRowCount(columns);
-
-                telemetryList.revalidate();
-                telemetryList.repaint();
-                telemetryScroll.revalidate();
-                telemetryScroll.repaint();
+                telemetryPanel.getTelemetryList().setVisibleRowCount(columns);
+                telemetryPanel.revalAndRepaint();
 
                 rightContainer.revalidate();
                 rightContainer.repaint();
@@ -409,40 +355,6 @@ public class Visualizer {
         this.titleMsg = titleMsg;
         if (!beforeTitleMsg.equals(title)) setFrameTitle(title, titleMsg);
         beforeTitleMsg = titleMsg;
-    }
-
-    public void updateTelemetry(Telemetry telemetry) {
-
-        String[] telemetryText = {null};
-
-        if (telemetry != null && telemetry.hasChanged()) {
-            telemetryText[0] = telemetry.toString();
-
-            //SwingUtilities.invokeLater(() -> {
-                DefaultListModel<String> listModel = new DefaultListModel<>();
-
-                for (String line : telemetryText[0].split("\n")) {
-                    listModel.addElement(line);
-                }
-
-                telemetryList.setFixedCellWidth(240);
-
-                telemetryList.setModel(listModel);
-                telemetryList.revalidate();
-                telemetryScroll.revalidate();
-            //});
-
-        }
-
-        if(telemetryList.getModel().getSize() <= 0 || (telemetryText[0] != null && telemetryText[0].trim().equals(""))) {
-            //SwingUtilities.invokeLater(() -> {
-                DefaultListModel<String> listModel = new DefaultListModel<>();
-                listModel.addElement("<html></html>");
-
-                telemetryList.setModel(listModel);
-            //});
-        }
-
     }
 
     public void updateTunerFields(List<TunableFieldPanel> fields) {

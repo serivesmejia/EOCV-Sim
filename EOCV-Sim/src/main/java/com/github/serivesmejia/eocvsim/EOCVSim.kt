@@ -106,6 +106,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         configManager.init() //load config
 
         visualizer.initAsync(configManager.config.simTheme) //create gui in the EDT
+
         inputSourceManager.init() //loading user created input sources
         pipelineManager.init() //init pipeline manager (scan for pipelines)
         tunerManager.init() //init tunable variables manager
@@ -135,7 +136,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         //post output mats from the pipeline to the visualizer viewport
         pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
-        while (!eocvSimThread.isInterrupted) {
+        while(!eocvSimThread.isInterrupted) {
             //run all pending requested runnables
             onMainUpdate.run()
 
@@ -161,7 +162,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             }
 
             //updating displayed telemetry
-            visualizer.updateTelemetry(pipelineManager.currentTelemetry)
+            visualizer.telemetryPanel.updateTelemetry(pipelineManager.currentTelemetry)
 
             //limit FPS
             fpsLimiter.maxFPS = configManager.config.maxFps.toDouble()

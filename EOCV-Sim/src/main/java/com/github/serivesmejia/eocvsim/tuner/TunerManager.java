@@ -25,7 +25,6 @@ package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.tuner.field.EnumField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.AnnotatedTunableFieldScanner;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.ReflectUtil;
@@ -38,7 +37,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("rawtypes")
 public class TunerManager {
@@ -83,11 +81,19 @@ public class TunerManager {
 
     public void update() {
         //update all fields
-        for (TunableField field : fields) {
+        for(TunableField field : fields.toArray(new TunableField[0])) {
             try {
                 field.update();
             } catch(Exception ex) {
                 Log.error("Error while updating field " + field.getFieldName(), ex);
+            }
+
+            //check if this field has requested to reevaluate config for all panels
+            if(field.fieldPanel.hasRequestedAllConfigReeval()) {
+                //if so, iterate through all fields to reevaluate
+                for(TunableField f : fields.toArray(new TunableField[0])) {
+                    f.fieldPanel.panelOptions.reevaluateConfig();
+                }
             }
         }
     }
@@ -124,7 +130,6 @@ public class TunerManager {
                 if(tunableFieldClass == null) continue;
             }
 
-
             //yay we have a registered TunableField which handles this
             //now, lets do some more reflection to instantiate this TunableField
             //and add it to the list...
@@ -137,7 +142,12 @@ public class TunerManager {
             }
 
         }
+    }
 
+    public void reevaluateConfigs() {
+        for(TunableField field : fields) {
+            field.fieldPanel.panelOptions.reevaluateConfig();
+        }
     }
 
     private List<TunableFieldPanel> createTunableFieldPanels() {

@@ -35,7 +35,6 @@ import org.opencv.imgproc.Imgproc
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.GridLayout
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
@@ -235,6 +234,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         eocvSim.config.globalTunableFieldsConfig = localConfig.copy()
 
         updateConfigSourceLabel()
+        fieldOptions.fieldPanel.requestAllConfigReeval()
     }
 
     //applies the config of this tunable field to this type specifically
@@ -246,10 +246,11 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         eocvSim.config.specificTunableFieldConfig[typeClass.name] = localConfig.copy()
 
         updateConfigSourceLabel()
+        fieldOptions.fieldPanel.requestAllConfigReeval()
     }
 
     //loads the config from global eocv sim config file
-    private fun applyFromEOCVSimConfig() {
+    internal fun applyFromEOCVSimConfig() {
         val specificConfigs = eocvSim.config.specificTunableFieldConfig
 
         //apply specific config if we have one, or else, apply global

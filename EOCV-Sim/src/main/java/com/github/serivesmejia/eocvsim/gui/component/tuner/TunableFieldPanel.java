@@ -49,6 +49,7 @@ public class TunableFieldPanel extends JPanel {
     private final EOCVSim eocvSim;
 
     private Mode mode;
+    private boolean reevalConfigRequested = false;
 
     private boolean hasBeenShown = false;
 
@@ -148,6 +149,10 @@ public class TunableFieldPanel extends JPanel {
         comboBoxes[index].setSelectedItem(selection.toString());
     }
 
+    protected void requestAllConfigReeval() {
+        reevalConfigRequested = true;
+    }
+
     public void setMode(Mode mode) {
         switch(mode) {
             case TEXTBOXES:
@@ -195,5 +200,12 @@ public class TunableFieldPanel extends JPanel {
     }
 
     public Mode getMode() { return this.mode; }
+
+    public boolean hasRequestedAllConfigReeval() {
+        boolean current = reevalConfigRequested;
+        reevalConfigRequested = false;
+
+        return current;
+    }
 
 }

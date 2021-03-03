@@ -145,7 +145,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
             val colorScalar = colorPicker.colorRgb.cvtColor(configPanel.localConfig.pickerColorSpace.cvtCode)
 
             //setting the scalar value in order from first to fourth field
-            for(i in 0 .. (fieldPanel.fields.size - 1).clipUpperZero()) {
+            for(i in 0..(fieldPanel.fields.size - 1).clipUpperZero()) {
                 //if we're still in range of the scalar values amount
                 if(i < colorScalar.`val`.size) {
                     val colorVal = colorScalar.`val`[i]
@@ -176,6 +176,8 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
 
         revalAndRepaint()
     }
+
+    fun reevaluateConfig() = configPanel.applyFromEOCVSimConfig()
 
     private fun revalAndRepaint() {
         textBoxSliderToggle.revalidate()
