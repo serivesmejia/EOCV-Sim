@@ -36,7 +36,7 @@ public class Log {
     /**
      * White lines
      **/
-    static public final int LEVEL_WHITE = 0;
+    static public final int LEVEL_BLANK = 0;
 
     /**
      * The level of messages that will be logged. Compiling this and the booleans below as "final" will cause the compiler to
@@ -199,14 +199,14 @@ public class Log {
         if (TRACE) logger.log(LEVEL_TRACE, category, message, null);
     }
 
-    static public void white(int lines) {
+    static public void blank(int lines) {
         for (int i = 0; i < lines; i++) {
-            logger.log(LEVEL_WHITE, null, "", null);
+            logger.log(LEVEL_BLANK, null, "", null);
         }
     }
 
-    static public void white() {
-        white(1);
+    static public void blank() {
+        blank(1);
     }
 
     /**
@@ -219,7 +219,7 @@ public class Log {
         public void log(int level, String category, String message, Throwable ex) {
             StringBuilder builder = new StringBuilder(256);
 
-            if (level != LEVEL_WHITE) {
+            if (level != LEVEL_BLANK) {
                 long time = System.currentTimeMillis() - firstLogTime;
                 long minutes = time / (1000 * 60);
                 long seconds = time / (1000) % 60;

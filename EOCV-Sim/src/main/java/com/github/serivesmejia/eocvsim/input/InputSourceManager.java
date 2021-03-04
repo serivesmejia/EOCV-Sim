@@ -70,9 +70,7 @@ public class InputSourceManager {
             addInputSource(entry.getKey(), entry.getValue());
         }
 
-        Log.white();
-
-
+        Log.blank();
     }
 
     private void createDefaultImgInputSource(String resourcePath, String fileName, String sourceName, Size imgSize) {
@@ -98,14 +96,13 @@ public class InputSourceManager {
 
         try {
             Mat m = currentInputSource.update();
-            if(m != null) m.copyTo(lastMatFromSource);;
-        } catch (Exception ex) {
+            if(m != null && !m.empty()) m.copyTo(lastMatFromSource);
+        } catch(Exception ex) {
             Log.error("InputSourceManager", "Error while processing current source", ex);
         }
     }
 
     public void addInputSource(String name, InputSource inputSource) {
-
         if (inputSource == null) {
             currentInputSource = null;
             return;
@@ -125,12 +122,14 @@ public class InputSourceManager {
             inputSourceLoader.saveInputSourcesToFile();
         }
 
-        Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
+        if(eocvSim.visualizer.sourceSelectorPanel != null) {
+            eocvSim.visualizer.sourceSelectorPanel.updateSourcesList();
+        }
 
+        Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
     }
 
     public void deleteInputSource(String sourceName) {
-
         InputSource src = sources.get(sourceName);
 
         if (src == null) return;
@@ -140,11 +139,9 @@ public class InputSourceManager {
 
         inputSourceLoader.deleteInputSource(sourceName);
         inputSourceLoader.saveInputSourcesToFile();
-
     }
 
     public boolean setInputSource(String sourceName) {
-
         InputSource src = sources.get(sourceName);
 
         if (src != null) {
@@ -153,13 +150,12 @@ public class InputSourceManager {
         }
 
         //check if source type is a camera, and if so, create a please wait dialog
-        Visualizer.AsyncPleaseWaitDialog apwdCam = checkCameraDialogPleaseWait(sourceName);
+        Visualizer.AsyncPleaseWaitDialog apwd = showApwdIfNeeded(sourceName);
 
         if (src != null) {
             if (!src.init()) {
-
-                if (apwdCam != null) {
-                    apwdCam.destroyDialog();
+                if (apwd != null) {
+                    apwd.destroyDialog();
                 }
 
                 eocvSim.visualizer.asyncPleaseWaitDialog("Error while loading requested source", "Falling back to previous source",
@@ -168,13 +164,12 @@ public class InputSourceManager {
                 Log.error("InputSourceManager", "Error while loading requested source (" + sourceName + ") reported by itself (init method returned false)");
 
                 return false;
-
             }
         }
 
         //if there's a please wait dialog for a camera source, destroy it.
-        if (apwdCam != null) {
-            apwdCam.destroyDialog();
+        if (apwd != null) {
+            apwd.destroyDialog();
         }
 
         if (currentInputSource != null) {
@@ -190,10 +185,9 @@ public class InputSourceManager {
         Log.info("InputSourceManager", "Set InputSource to " + currentInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 
         //enable or disable source delete button depending if source is default or not
-        eocvSim.visualizer.sourceSelectorDeleteBtt.setEnabled(!currentInputSource.isDefault);
+        eocvSim.visualizer.sourceSelectorPanel.getSourceSelectorDeleteBtt().setEnabled(!currentInputSource.isDefault);
 
         return true;
-
     }
 
     public boolean isNameOnUse(String name) {
@@ -205,7 +199,10 @@ public class InputSourceManager {
         //to execute one shot analysis on images and save resources.
         if (SourceType.fromClass(currentInputSource.getClass()) == SourceType.IMAGE) {
             eocvSim.onMainUpdate.doOnce(() ->
-                    eocvSim.pipelineManager.setPaused(true, PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS)
+                    eocvSim.pipelineManager.setPaused(
+                            true,
+                            PipelineManager.PauseReason.IMAGE_ONE_ANALYSIS
+                    )
             );
         }
     }
@@ -220,18 +217,19 @@ public class InputSourceManager {
         eocvSim.onMainUpdate.doOnce(() -> setInputSource(name));
     }
 
-    public Visualizer.AsyncPleaseWaitDialog checkCameraDialogPleaseWait(String sourceName) {
+    public Visualizer.AsyncPleaseWaitDialog showApwdIfNeeded(String sourceName) {
+        Visualizer.AsyncPleaseWaitDialog apwd = null;
 
-        Visualizer.AsyncPleaseWaitDialog apwdCam = null;
+        if (getSourceType(sourceName) == SourceType.CAMERA || getSourceType(sourceName) == SourceType.VIDEO) {
+            apwd = eocvSim.visualizer.asyncPleaseWaitDialog(
+                    "Opening source...", null, "Exit",
+                    new Dimension(300, 150), true
+            );
 
-        if (getSourceType(sourceName) == SourceType.CAMERA) {
-            apwdCam = eocvSim.visualizer.asyncPleaseWaitDialog("Opening camera...", null, "Exit",
-                    new Dimension(300, 150), true);
-            apwdCam.onCancel(() -> System.exit(0));
+            apwd.onCancel(() -> System.exit(0));
         }
 
-        return apwdCam;
-
+        return apwd;
     }
 
     public SourceType getSourceType(String sourceName) {

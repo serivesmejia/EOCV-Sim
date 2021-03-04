@@ -50,27 +50,27 @@ public class ImageX extends JLabel {
     }
 
     public void setImage(ImageIcon img) {
-
         if (icon != null)
             icon.getImage().flush(); //flush old image :p
 
         icon = img;
 
         setIcon(icon); //set to the new image
-
     }
 
     public synchronized void setImage(BufferedImage img) {
-
         Graphics2D g2d = (Graphics2D) getGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         setImage(new ImageIcon(img)); //set to the new image
-
     }
 
     public synchronized void setImageMat(Mat m) {
         setImage(CvUtil.matToBufferedImage(m));
+    }
+
+    public synchronized BufferedImage getImage() {
+        return (BufferedImage)icon.getImage();
     }
 
     @Override

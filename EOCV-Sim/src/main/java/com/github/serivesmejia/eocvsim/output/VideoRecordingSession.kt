@@ -43,7 +43,7 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
 
     @Volatile private var videoMat: Mat? = null
 
-    private val matPoster = MatPoster("VideoRec", videoFps.toInt())
+    val matPoster = MatPoster("VideoRec", videoFps.toInt())
 
     private val fpsCounter = FpsCounter()
 
@@ -88,7 +88,6 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
     }
 
     @Synchronized fun postMat(inputMat: Mat) {
-
         if(!videoWriter.isOpened) return
 
         if(videoMat == null)
@@ -104,7 +103,6 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
         if(inputMat.size() == videoSize) { //nice, the mat size is the exact same as the video size
             compensateFpsWrite(inputMat, fpsCounter.fps.toDouble(), videoFps)
         } else { //uh oh, this might get a bit harder here...
-
             val videoR = videoSize.aspectRatio()
             val inputR = inputMat.aspectRatio()
 
@@ -145,7 +143,6 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
             }
 
             fpsCounter.update()
-
         }
     }
 

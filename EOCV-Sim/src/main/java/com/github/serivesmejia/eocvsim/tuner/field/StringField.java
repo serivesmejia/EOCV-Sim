@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner.field;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.openftc.easyopencv.OpenCvPipeline;
@@ -47,8 +48,12 @@ public class StringField extends TunableField<String> {
     }
 
     @Override
-    public void update() {
+    public void init() {
+        setRecommendedPanelMode(TunableFieldPanel.Mode.TEXTBOXES);
+    }
 
+    @Override
+    public void update() {
         hasChanged = !value.equals(lastVal);
 
         if (hasChanged) { //update values in GUI if they changed since last check
@@ -56,7 +61,6 @@ public class StringField extends TunableField<String> {
         }
 
         lastVal = value;
-
     }
 
     @Override

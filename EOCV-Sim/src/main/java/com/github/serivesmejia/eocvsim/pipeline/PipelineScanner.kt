@@ -29,19 +29,17 @@ import io.github.classgraph.ClassGraph
 import io.github.classgraph.ScanResult
 import org.openftc.easyopencv.OpenCvPipeline
 
-@SuppressWarnings("unchecked")
+@Suppress("UNCHECKED_CAST")
 class PipelineScanner(val scanInPackage: String = "org.firstinspires") {
 
     fun lookForPipelines(callback: (Class<OpenCvPipeline>) -> Unit) {
-
         Log.info("PipelineScanner", "Scanning for pipelines...")
         val scanResult = scanClasspath(scanInPackage)
 
         //iterate over the results of the scan
         for (routeClassInfo in scanResult.allClasses) {
-            var foundClass: Class<*>
 
-            foundClass = try {
+            val foundClass: Class<*> = try {
                 Class.forName(routeClassInfo.name)
             } catch (e1: ClassNotFoundException) {
                 e1.printStackTrace()
@@ -54,7 +52,6 @@ class PipelineScanner(val scanInPackage: String = "org.firstinspires") {
             }
 
         }
-
     }
 
     fun scanClasspath(inPackage: String): ScanResult {

@@ -82,6 +82,12 @@ public class MatRecycler {
         }
     }
 
+    public int getSize() {
+        return mats.length;
+    }
+
+    public int getAvailableMats() { return availableMats.size(); }
+
     @Override
     public void finalize() {
         releaseAll();
@@ -97,10 +103,12 @@ public class MatRecycler {
         }
 
         public void returnMat() {
-            try {
-                MatRecycler.this.returnMat(this);
-            } catch(IllegalArgumentException ex) {
-                Log.warn("RecyclableMat", "Tried to return a Mat which was already returned", ex);
+            synchronized(MatRecycler.this) {
+                try {
+                    MatRecycler.this.returnMat(this);
+                } catch (IllegalArgumentException ex) {
+                    Log.warn("RecyclableMat", "Tried to return a Mat which was already returned", ex);
+                }
             }
         }
 

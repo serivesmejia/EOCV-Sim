@@ -42,9 +42,8 @@ public class IntegerField extends NumericField<Integer> {
 
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
-
         try {
-            value = Integer.parseInt(newValue);
+            value = (int) Math.round(Double.parseDouble(newValue));
         } catch (NumberFormatException ex) {
             throw new IllegalArgumentException("Parameter should be a valid numeric String");
         }
@@ -52,7 +51,6 @@ public class IntegerField extends NumericField<Integer> {
         setPipelineFieldValue(value);
 
         beforeValue = value;
-
     }
 
     @Override

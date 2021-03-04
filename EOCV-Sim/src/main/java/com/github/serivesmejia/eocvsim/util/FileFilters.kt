@@ -30,7 +30,6 @@ object FileFilters {
     @JvmField val imagesFilter = FileNameExtensionFilter("Images",
             "jpg", "jpeg", "jpe", "jp2", "bmp", "png", "tiff", "tif")
 
-
     @JvmField var videoMediaFilter = FileNameExtensionFilter("Video Media",
             "avi", "mkv", "mov", "mp4")
 

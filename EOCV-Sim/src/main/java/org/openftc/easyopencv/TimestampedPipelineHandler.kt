@@ -23,34 +23,19 @@
 
 package org.openftc.easyopencv
 
-import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
+import com.qualcomm.robotcore.util.ElapsedTime
 
 class TimestampedPipelineHandler {
 
-    private var timestampedPipeline: TimestampedOpenCvPipeline? = null
-    private var lastNanos = 0L
+    private val elapsedTime = ElapsedTime()
 
     //update called from the attached pipelineManager onUpdate event handler
-    fun update() {
-        if(lastNanos == 0L) updateLastNanos()
+    fun update(currentPipeline: OpenCvPipeline?) {
+        if(currentPipeline is TimestampedOpenCvPipeline) {
+            currentPipeline.setTimestamp(elapsedTime.nanoseconds())
+        }
 
-        timestampedPipeline?.setTimestamp(System.nanoTime() - lastNanos)
-
-        updateLastNanos()
-    }
-
-    fun pipelineChange(newPipeline: OpenCvPipeline?) {
-        timestampedPipeline = if(newPipeline is TimestampedOpenCvPipeline) newPipeline else null
-    }
-
-    //registering event listeners in the pipelineManager
-    fun attachToPipelineManager(pipelineManager: PipelineManager) {
-        pipelineManager.onPipelineChange.doPersistent { pipelineChange(pipelineManager.currentPipeline) }
-        pipelineManager.onUpdate.doPersistent { update() }
-    }
-
-    private fun updateLastNanos() {
-        lastNanos = System.nanoTime();
+        elapsedTime.reset()
     }
 
 }

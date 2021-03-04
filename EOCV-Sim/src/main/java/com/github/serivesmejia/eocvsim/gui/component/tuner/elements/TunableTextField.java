@@ -21,7 +21,7 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.tuner;
+package com.github.serivesmejia.eocvsim.gui.component.tuner.elements;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
@@ -47,12 +47,15 @@ public class TunableTextField extends JTextField {
 
     private final TunableField tunableField;
     private final int index;
-    private final Border initialBorder;
     private final EOCVSim eocvSim;
+
+    private final Border initialBorder;
+
     private volatile boolean hasValidText = true;
 
-    public TunableTextField(int index, TunableField tunableField, EOCVSim eocvSim) {
+    private boolean inControl = false;
 
+    public TunableTextField(int index, TunableField tunableField, EOCVSim eocvSim) {
         super();
 
         this.initialBorder = this.getBorder();
@@ -65,6 +68,12 @@ public class TunableTextField extends JTextField {
 
         int plusW = Math.round(getText().length() / 5f) * 10;
         this.setPreferredSize(new Dimension(40 + plusW, getPreferredSize().height));
+
+        tunableField.onValueChange.doPersistent(() -> {
+            if(!inControl) {
+                setText(tunableField.getGuiFieldValue(index).toString());
+            }
+        });
 
         if (tunableField.isOnlyNumbers()) {
 
@@ -80,7 +89,6 @@ public class TunableTextField extends JTextField {
 
                 @Override
                 public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-
                     text = text.replace(" ", "");
 
                     for (char c : text.toCharArray()) {
@@ -104,7 +112,6 @@ public class TunableTextField extends JTextField {
                     }
 
                     super.replace(fb, offset, length, text, attrs);
-
                 }
 
             });
@@ -113,63 +120,51 @@ public class TunableTextField extends JTextField {
 
         getDocument().addDocumentListener(new DocumentListener() {
 
+            Runnable changeFieldValue = () -> {
+                if ((!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals(""))) {
+                    try {
+                        tunableField.setGuiFieldValue(index, getText());
+                    } catch (Exception e) {
+                        setRedBorder();
+                    }
+                } else {
+                    setRedBorder();
+                }
+            };
+
             @Override
             public void insertUpdate(DocumentEvent e) {
                 change();
             }
-
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                change();
-            }
-
+            public void removeUpdate(DocumentEvent e) { change(); }
             @Override
-            public void changedUpdate(DocumentEvent e) {
-                change();
-            }
+            public void changedUpdate(DocumentEvent e) { change(); }
 
             public void change() {
-                eocvSim.onMainUpdate.doOnce(() -> {
-                    if (!hasValidText || !tunableField.isOnlyNumbers() || !getText().trim().equals("")) {
-                        try {
-                            tunableField.setGuiFieldValue(index, getText());
-                        } catch (Exception e) {
-                            setRedBorder();
-                        }
-                    } else {
-                        setRedBorder();
-                    }
-                });
+                eocvSim.onMainUpdate.doOnce(changeFieldValue);
             }
-
         });
 
         //unpausing when typing on any tunable text box
         addKeyListener(new KeyListener() {
-
             @Override
             public void keyTyped(KeyEvent e) {
                 execute();
             }
-
             @Override
             public void keyPressed(KeyEvent e) {
                 execute();
             }
-
             @Override
-            public void keyReleased(KeyEvent e) {
-                execute();
-            }
+            public void keyReleased(KeyEvent e) { execute(); }
 
             public void execute() {
                 if (eocvSim.pipelineManager.getPaused()) {
                     eocvSim.pipelineManager.requestSetPaused(false);
                 }
             }
-
         });
-
     }
 
     public void setNormalBorder() {
@@ -180,11 +175,17 @@ public class TunableTextField extends JTextField {
         setBorder(new LineBorder(new Color(255, 79, 79), 2));
     }
 
+    public void setInControl(boolean inControl) {
+        this.inControl = inControl;
+    }
+
     private boolean isNumberCharacter(char c) {
         for (char validC : validCharsIfNumber) {
             if (c == validC) return true;
         }
         return false;
     }
+
+    public boolean isInControl() { return inControl; }
 
 }

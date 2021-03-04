@@ -147,7 +147,6 @@ public class CreateCameraSource {
                     close();
                     if (wasCancelled) return;
                     createSource(nameTextField.getText(), camId, sizeFieldsInput.getCurrentSize());
-                    eocvSim.visualizer.updateSourcesList();
                 } else {
                     cameraIdField.setEditable(true);
                     createButton.setEnabled(true);
@@ -228,10 +227,12 @@ public class CreateCameraSource {
     }
 
     public void createSource(String sourceName, int index, Size size) {
-        eocvSim.onMainUpdate.doOnce(() -> {
-            eocvSim.inputSourceManager.addInputSource(sourceName, new CameraSource(index, size));
-            eocvSim.visualizer.updateSourcesList();
-        });
+        eocvSim.onMainUpdate.doOnce(() ->
+            eocvSim.inputSourceManager.addInputSource(
+                    sourceName,
+                    new CameraSource(index, size)
+            )
+        );
     }
 
     public void updateCreateBtt() {

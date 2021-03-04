@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner.field.cv;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import com.github.serivesmejia.eocvsim.tuner.scanner.RegisterTunableField;
 import org.opencv.core.Scalar;
@@ -43,20 +44,25 @@ public class ScalarField extends TunableField<Scalar> {
     volatile boolean hasChanged = false;
 
     public ScalarField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
-
         super(instance, reflectionField, eocvSim, AllowMode.ONLY_NUMBERS_DECIMAL);
 
-        Scalar lastScalar = (Scalar) initialFieldValue;
-
-        scalar = new Scalar(lastScalar.val);
+        scalar = (Scalar) initialFieldValue;
         scalarSize = scalar.val.length;
 
         setGuiFieldAmount(scalarSize);
-
+        setRecommendedPanelMode(TunableFieldPanel.Mode.SLIDERS);
     }
 
     @Override
+    public void init() { }
+
+    @Override
     public void update() {
+        try {
+            scalar = (Scalar) reflectionField.get(pipeline);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         hasChanged = !Arrays.equals(scalar.val, lastVal);
 
@@ -65,7 +71,6 @@ public class ScalarField extends TunableField<Scalar> {
         }
 
         lastVal = scalar.val.clone();
-
     }
 
     @Override
@@ -77,7 +82,6 @@ public class ScalarField extends TunableField<Scalar> {
 
     @Override
     public void setGuiFieldValue(int index, String newValue) throws IllegalAccessException {
-
         try {
             scalar.val[index] = Double.parseDouble(newValue);
         } catch (NumberFormatException ex) {
@@ -87,7 +91,6 @@ public class ScalarField extends TunableField<Scalar> {
         setPipelineFieldValue(scalar);
 
         lastVal = scalar.val.clone();
-
     }
 
     @Override

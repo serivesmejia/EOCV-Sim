@@ -27,49 +27,69 @@ import com.github.serivesmejia.eocvsim.util.Log
 
 class EventHandler(val name: String) : Runnable {
 
-    val listeners
-        get() = internalListeners.values.toTypedArray()
+    private val lock = Any()
+    private val onceLock = Any()
 
-    private val internalListeners: HashMap<Int, EventListener> = HashMap()
+    val listeners: Array<EventListener>
+        get()  {
+            synchronized(lock) {
+                return internalListeners.values.toTypedArray()
+            }
+        }
+
+    val onceListeners: Array<EventListener>
+        get() {
+            synchronized(onceLock) {
+                return internalOnceListeners.toTypedArray()
+            }
+        }
+
+    private val internalListeners     = HashMap<Int, EventListener>()
+    private val internalOnceListeners = ArrayList<EventListener>()
 
     companion object {
-        private var idCount = 0;
+        private var idCount = 0
     }
 
     override fun run() {
         for(listener in listeners) {
-
             try {
                 listener.run()
             } catch (ex: Exception) {
-                Log.error("${name}-EventHandler", "Error while running listener #${listener.id} (${listener.javaClass})", ex);
+                Log.error("${name}-EventHandler", "Error while running listener #${listener.id} (${listener.javaClass})", ex)
+            }
+        }
+
+        //executing "doOnce" listeners
+        for(listener in onceListeners) {
+            try {
+                listener.run()
+            } catch (ex: Exception) {
+                Log.error("${name}-EventHandler", "Error while running \"once\" listener (${listener.javaClass})", ex)
             }
 
-            if(!listener.persistent) {
-                removeListener(listener.id)
+            synchronized(onceLock) {
+                internalOnceListeners.remove(listener)
             }
-
         }
     }
 
-    fun doOnce(listener: EventListener): Int {
-        idCount++
-
-        internalListeners[idCount] = listener
-        listener.id = idCount
-
-        return listener.id
+    fun doOnce(listener: EventListener) = synchronized(onceLock) {
+        internalOnceListeners.add(listener)
+        listener.id = idCount + 1 //id doesn't matter
     }
 
     fun doOnce(runnable: Runnable) = doOnce(KEventListener { runnable.run() })
+
     fun doOnce(listener: (Int) -> Unit) = doOnce(KEventListener(listener))
 
-    fun doPersistent(listener: EventListener) {
-        doOnce(listener)
-        listener.persistent = true
+    fun doPersistent(listener: EventListener) = synchronized(lock) {
+        listener.id = idCount + 1
+        internalListeners[listener.id] = listener
     }
 
     fun doPersistent(runnable: Runnable) = doPersistent(KEventListener { runnable.run() })
+
     fun doPersistent(listener: (Int) -> Unit) = doPersistent(KEventListener(listener))
 
     fun getListener(id: Int): EventListener? = internalListeners[id]
@@ -79,6 +99,10 @@ class EventHandler(val name: String) : Runnable {
         return if(listener is KEventListener) { listener } else { null }
     }
 
-    fun removeListener(id: Int) = internalListeners.remove(id)
+    fun removeListener(id: Int) = synchronized(lock) { internalListeners.remove(id) }
+
+    fun removeAllListeners() = synchronized(lock) {
+        internalListeners.clear()
+    }
 
 }

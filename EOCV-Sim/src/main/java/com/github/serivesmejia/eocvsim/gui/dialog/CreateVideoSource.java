@@ -172,8 +172,6 @@ public class CreateVideoSource {
 
             Size newSize = CvUtil.scaleToFit(videoMat.size(), EOCVSim.DEFAULT_EOCV_SIZE);
 
-            Log.info(newSize.toString());
-
             this.sizeFieldsInput.getWidthTextField().setText(String.valueOf(Math.round(newSize.width)));
             this.sizeFieldsInput.getHeightTextField().setText(String.valueOf(Math.round(newSize.height)));
 
@@ -195,10 +193,12 @@ public class CreateVideoSource {
     }
 
     public void createSource(String sourceName, String videoPath, Size size) {
-        eocvSim.onMainUpdate.doOnce(() -> {
-            eocvSim.inputSourceManager.addInputSource(sourceName, new VideoSource(videoPath, size));
-            eocvSim.visualizer.updateSourcesList();
-        });
+        eocvSim.onMainUpdate.doOnce(() ->
+                eocvSim.inputSourceManager.addInputSource(
+                        sourceName,
+                        new VideoSource(videoPath, size)
+                )
+        );
     }
 
     public void updateCreateBtt() {

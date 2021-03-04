@@ -107,7 +107,7 @@ public class InputSourceLoader {
             sources = gson.fromJson(jsonSources, InputSourcesContainer.class);
         } catch (Exception ex) {
             Log.error("InputSourceLoader", "Error while parsing sources file, it will be replaced and fixed later on, but the user created sources will be deleted.", ex);
-            Log.white();
+            Log.blank();
             return;
         }
 

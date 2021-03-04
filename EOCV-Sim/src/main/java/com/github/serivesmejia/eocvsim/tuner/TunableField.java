@@ -24,7 +24,9 @@
 package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanelConfig;
+import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.lang.reflect.Field;
@@ -45,40 +47,56 @@ public abstract class TunableField<T> {
     private int guiFieldAmount = 1;
     private int guiComboBoxAmount = 0;
 
-    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
+    public final EventHandler onValueChange = new EventHandler("TunableField-ValueChange");
 
+    private TunableFieldPanel.Mode recommendedMode = null;
+
+    public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim, AllowMode allowMode) throws IllegalAccessException {
         this.reflectionField = reflectionField;
         this.pipeline = instance;
         this.allowMode = allowMode;
         this.eocvSim = eocvSim;
 
         initialFieldValue = reflectionField.get(instance);
-
     }
 
     public TunableField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
         this(instance, reflectionField, eocvSim, AllowMode.TEXT);
     }
 
+    public abstract void init();
+
     public abstract void update();
 
     public abstract void updateGuiFieldValues();
 
     public void setPipelineFieldValue(T newValue) throws IllegalAccessException {
-
         if (hasChanged()) { //execute if value is not the same to save resources
             reflectionField.set(pipeline, newValue);
+            onValueChange.run();
         }
-
     }
 
     public abstract void setGuiFieldValue(int index, String newValue) throws IllegalAccessException;
 
-    public void setGuiComboBoxValue(int index, String newValue) throws IllegalAccessException {
-    }
+    public void setGuiComboBoxValue(int index, String newValue) throws IllegalAccessException { }
 
     public final void setTunableFieldPanel(TunableFieldPanel fieldPanel) {
         this.fieldPanel = fieldPanel;
+    }
+
+    protected final void setRecommendedPanelMode(TunableFieldPanel.Mode mode) {
+        recommendedMode = mode;
+    }
+
+    public final void evalRecommendedPanelMode() {
+        TunableFieldPanelConfig configPanel = fieldPanel.panelOptions.getConfigPanel();
+        TunableFieldPanelConfig.ConfigSource configSource = configPanel.getLocalConfig().getSource();
+        //only apply the recommendation if user hasn't
+        //configured a global or specific field config
+        if(recommendedMode != null && fieldPanel != null && configSource == TunableFieldPanelConfig.ConfigSource.GLOBAL_DEFAULT) {
+            fieldPanel.setMode(recommendedMode);
+        }
     }
 
     public abstract T getValue();
@@ -113,21 +131,16 @@ public abstract class TunableField<T> {
         return allowMode;
     }
 
-    public final Type getType() {
-        try {
-            Type sooper = getClass().getGenericSuperclass();
-            return ((ParameterizedType)sooper).getActualTypeArguments()[0];
-        } catch(Exception ex) {
-            return null;
-        }
-    }
-
     public final boolean isOnlyNumbers() {
         return getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS ||
                 getAllowMode() == TunableField.AllowMode.ONLY_NUMBERS_DECIMAL;
     }
 
     public abstract boolean hasChanged();
+
+    public final EOCVSim getEOCVSim() {
+        return eocvSim;
+    }
 
     public enum AllowMode {ONLY_NUMBERS, ONLY_NUMBERS_DECIMAL, TEXT}
 

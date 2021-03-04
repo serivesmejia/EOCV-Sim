@@ -36,7 +36,6 @@ public class BooleanField extends TunableField<Boolean> {
     boolean value;
 
     boolean lastVal;
-
     volatile boolean hasChanged = false;
 
     public BooleanField(OpenCvPipeline instance, Field reflectionField, EOCVSim eocvSim) throws IllegalAccessException {
@@ -49,6 +48,9 @@ public class BooleanField extends TunableField<Boolean> {
         value = (boolean) initialFieldValue;
 
     }
+
+    @Override
+    public void init() {}
 
     @Override
     public void update() {

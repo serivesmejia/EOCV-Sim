@@ -49,7 +49,9 @@ class RectField(instance: OpenCvPipeline, reflectionField: Field, eocvSim: EOCVS
         
         guiFieldAmount = 4
     }
-    
+
+    override fun init() {}
+
     override fun update() {
         if(hasChanged()){
             initialRect = reflectionField.get(pipeline) as Rect

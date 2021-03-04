@@ -5,15 +5,18 @@ import java.util.ArrayList;
 public class Telemetry {
 
     private final ArrayList<ItemOrLine> telem = new ArrayList<>();
-    public Item errItem = new Item("", "");
     private ArrayList<ItemOrLine> lastTelem = new ArrayList<>();
+
+    public Item errItem = new Item("", "");
+
     private String captionValueSeparator = " : ";
+
     private volatile String lastTelemUpdate = "";
     private volatile String beforeTelemUpdate = "mai";
 
     private boolean autoClear = true;
 
-    public Item addData(String caption, String value) {
+    public synchronized Item addData(String caption, String value) {
 
         Item item = new Item(caption, value);
         item.valueSeparator = captionValueSeparator;
@@ -24,7 +27,7 @@ public class Telemetry {
 
     }
 
-    public Item addData(String caption, Func valueProducer) {
+    public synchronized Item addData(String caption, Func valueProducer) {
 
         Item item = new Item(caption, valueProducer);
         item.valueSeparator = captionValueSeparator;
@@ -35,7 +38,7 @@ public class Telemetry {
 
     }
 
-    public Item addData(String caption, Object value) {
+    public synchronized Item addData(String caption, Object value) {
 
         Item item = new Item(caption, "");
         item.valueSeparator = captionValueSeparator;
@@ -48,7 +51,7 @@ public class Telemetry {
 
     }
 
-    public Item addData(String caption, String value, Object... args) {
+    public synchronized Item addData(String caption, String value, Object... args) {
 
         Item item = new Item(caption, "");
         item.valueSeparator = captionValueSeparator;
@@ -61,7 +64,7 @@ public class Telemetry {
 
     }
 
-    public Item addData(String caption, Func valueProducer, Object... args) {
+    public synchronized Item addData(String caption, Func valueProducer, Object... args) {
 
         Item item = new Item(caption, "");
         item.valueSeparator = captionValueSeparator;
@@ -74,17 +77,17 @@ public class Telemetry {
 
     }
 
-    public Line addLine() {
+    public synchronized Line addLine() {
         return addLine("");
     }
 
-    public Line addLine(String caption) {
+    public synchronized Line addLine(String caption) {
         Line line = new Line(caption);
         telem.add(line);
         return line;
     }
 
-    public void update() {
+    public synchronized void update() {
 
         lastTelemUpdate = "";
 
@@ -96,7 +99,7 @@ public class Telemetry {
 
     }
 
-    private void evalLastTelem() {
+    private synchronized void evalLastTelem() {
 
         if (lastTelem == null) return;
 
@@ -129,7 +132,7 @@ public class Telemetry {
 
     }
 
-    public boolean removeItem(Item item) {
+    public synchronized boolean removeItem(Item item) {
 
         if (telem.contains(item)) {
             telem.remove(item);
@@ -140,7 +143,7 @@ public class Telemetry {
 
     }
 
-    public void clear() {
+    public synchronized void clear() {
 
         for (ItemOrLine i : telem.toArray(new ItemOrLine[0])) {
             if (i instanceof Item) {
@@ -152,7 +155,7 @@ public class Telemetry {
 
     }
 
-    public boolean hasChanged() {
+    public synchronized boolean hasChanged() {
 
         boolean hasChanged = !lastTelemUpdate.equals(beforeTelemUpdate);
         beforeTelemUpdate = lastTelemUpdate;
@@ -161,25 +164,22 @@ public class Telemetry {
 
     }
 
-    public String getCaptionValueSeparator() {
+    public synchronized String getCaptionValueSeparator() {
         return captionValueSeparator;
     }
 
-    public void setCaptionValueSeparator(String captionValueSeparator) {
+    public synchronized void setCaptionValueSeparator(String captionValueSeparator) {
         this.captionValueSeparator = captionValueSeparator;
     }
 
-    public void setAutoClear(boolean autoClear) {
+    public synchronized void setAutoClear(boolean autoClear) {
         this.autoClear = autoClear;
     }
 
     @Override
     public String toString() {
-
         evalLastTelem();
-
         return lastTelemUpdate;
-
     }
 
     private interface ItemOrLine {
@@ -208,39 +208,39 @@ public class Telemetry {
             this.valueProducer = valueProducer;
         }
 
-        public void setValue(String value) {
+        public synchronized void setValue(String value) {
             setValue((Func<String>) () -> value);
         }
 
-        public void setValue(Func func) {
+        public synchronized void setValue(Func func) {
             this.valueProducer = func;
         }
 
-        public void setValue(Object value) {
+        public synchronized void setValue(Object value) {
             setValue(value.toString());
         }
 
-        public void setValue(String value, Object... args) {
+        public synchronized void setValue(String value, Object... args) {
             setValue(String.format(value, args));
         }
 
-        public void setValue(Func func, Object... args) {
+        public synchronized void setValue(Func func, Object... args) {
             setValue((Func<String>) () -> String.format(func.value().toString(), args));
         }
 
-        public String getCaption() {
+        public synchronized String getCaption() {
             return caption;
         }
 
-        public void setCaption(String caption) {
+        public synchronized void setCaption(String caption) {
             this.caption = caption;
         }
 
-        public boolean isRetained() {
+        public synchronized boolean isRetained() {
             return isRetained;
         }
 
-        public void setRetained(boolean retained) {
+        public synchronized void setRetained(boolean retained) {
             this.isRetained = retained;
         }
 
@@ -259,16 +259,16 @@ public class Telemetry {
             this.caption = caption;
         }
 
-        public String getCaption() {
+        public synchronized String getCaption() {
             return caption;
         }
 
-        public void setCaption(String caption) {
+        public synchronized void setCaption(String caption) {
             this.caption = caption;
         }
 
         @Override
-        public String toString() {
+        public synchronized String toString() {
             return caption;
         }
 

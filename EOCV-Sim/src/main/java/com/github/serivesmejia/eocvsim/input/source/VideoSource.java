@@ -53,7 +53,7 @@ public class VideoSource extends InputSource {
 
     private volatile transient MatRecycler matRecycler = null;
 
-    private double lastFramePosition = 0;
+    private transient double lastFramePosition = 0;
 
     public VideoSource(String videoPath, Size size) {
         this.videoPath = videoPath;

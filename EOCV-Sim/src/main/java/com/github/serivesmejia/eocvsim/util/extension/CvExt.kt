@@ -24,10 +24,25 @@
 package com.github.serivesmejia.eocvsim.util.extension
 
 import com.qualcomm.robotcore.util.Range
+import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Scalar
 import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
 
 object CvExt {
+
+
+    @JvmStatic fun Scalar.cvtColor(code: Int): Scalar {
+        val mat = Mat(5, 5, CvType.CV_8UC3);
+        mat.setTo(this)
+        Imgproc.cvtColor(mat, mat, code);
+
+        val newScalar = Scalar(mat.get(1, 1))
+        mat.release()
+
+        return newScalar
+    }
 
     @JvmStatic fun Size.aspectRatio() = height / width
     @JvmStatic fun Mat.aspectRatio() = size().aspectRatio()

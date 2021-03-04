@@ -1,4 +1,5 @@
-<html>NPE & OpenFTC Team - EOCV Developers & Advisors</html>
+<html>NPE & the OpenFTC Team - EOCV Developers & Advisors</html>
 <html>serivesmejia - Main Dev</html>
 <html>Purav Datta - Contributor & Mac Tester </html>
+<html>Jaran - Kotlin & Coroutines Advisor</html>git add
 <html>Shaurya - Guide Contributor & Mac Tester</html>

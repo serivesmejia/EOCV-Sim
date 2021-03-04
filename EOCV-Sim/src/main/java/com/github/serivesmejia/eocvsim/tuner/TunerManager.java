@@ -24,7 +24,7 @@
 package com.github.serivesmejia.eocvsim.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.tuner.scanner.AnnotatedTunableFieldScanner;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.ReflectUtil;
@@ -38,14 +38,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@SuppressWarnings("rawtypes")
 public class TunerManager {
 
     private final EOCVSim eocvSim;
 
     private final List<TunableField> fields = new ArrayList<>();
 
-    private static HashMap<Type, Class<? extends TunableField>> tunableFieldsTypes = null;
+    private TunableFieldAcceptorManager acceptorManager = null;
 
+    private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
     private boolean firstInit = true;
 
     public TunerManager(EOCVSim eocvSim) {
@@ -53,10 +55,13 @@ public class TunerManager {
     }
 
     public void init() {
-
         if(tunableFieldsTypes == null) {
-            tunableFieldsTypes = new AnnotatedTunableFieldScanner(eocvSim.getParams().getScanForTunableFieldsIn())
-                                .lookForTunableFields();
+            AnnotatedTunableFieldScanner.ScanResult result = new AnnotatedTunableFieldScanner(
+                    eocvSim.getParams().getScanForTunableFieldsIn()
+            ).scan();
+
+            tunableFieldsTypes = result.getTunableFields();
+            acceptorManager = new TunableFieldAcceptorManager(result.getAcceptors());
         }
 
         if (firstInit) {
@@ -66,18 +71,29 @@ public class TunerManager {
 
         if (eocvSim.pipelineManager.getCurrentPipeline() != null) {
             addFieldsFrom(eocvSim.pipelineManager.getCurrentPipeline());
-            eocvSim.visualizer.updateTunerFields(getTunableFieldPanels());
-        }
+            eocvSim.visualizer.updateTunerFields(createTunableFieldPanels());
 
+            for(TunableField field : fields) {
+                field.init();
+            }
+        }
     }
 
     public void update() {
         //update all fields
-        for (TunableField field : fields) {
+        for(TunableField field : fields.toArray(new TunableField[0])) {
             try {
                 field.update();
             } catch(Exception ex) {
                 Log.error("Error while updating field " + field.getFieldName(), ex);
+            }
+
+            //check if this field has requested to reevaluate config for all panels
+            if(field.fieldPanel.hasRequestedAllConfigReeval()) {
+                //if so, iterate through all fields to reevaluate
+                for(TunableField f : fields.toArray(new TunableField[0])) {
+                    f.fieldPanel.panelOptions.reevaluateConfig();
+                }
             }
         }
     }
@@ -99,35 +115,42 @@ public class TunerManager {
             if (Modifier.isFinal(field.getModifiers())) continue;
 
             Class<?> type = field.getType();
-            if(field.getType().isPrimitive()) { //wrap to java object equivalent if field type is primitive
+            if (field.getType().isPrimitive()) { //wrap to java object equivalent if field type is primitive
                 type = ReflectUtil.wrap(type);
             }
 
-            //check if we have a registered TunableField which handles this type of field
-            //if not, continue to next iteration
-            if(!tunableFieldsTypes.containsKey(type)) continue;
+            Class<? extends TunableField> tunableFieldClass = null;
+
+            if(tunableFieldsTypes.containsKey(type)) {
+                tunableFieldClass = tunableFieldsTypes.get(type);
+            } else {
+                //if we don't have a class yet, use our acceptors
+                tunableFieldClass = acceptorManager.accept(type);
+                //still haven't got anything, give up here.
+                if(tunableFieldClass == null) continue;
+            }
 
             //yay we have a registered TunableField which handles this
             //now, lets do some more reflection to instantiate this TunableField
             //and add it to the list...
             try {
-
-                Class<? extends TunableField> tunableFieldClass = tunableFieldsTypes.get(type);
                 Constructor<? extends TunableField> constructor = tunableFieldClass.getConstructor(OpenCvPipeline.class, Field.class, EOCVSim.class);
-
                 this.fields.add(constructor.newInstance(pipeline, field, eocvSim));
-
             } catch (Exception ex) {
                 //oops rip
                 Log.error("TunerManager", "Reflection error while processing field: " + field.getName(), ex);
             }
 
         }
-
     }
 
-    public List<TunableFieldPanel> getTunableFieldPanels() {
+    public void reevaluateConfigs() {
+        for(TunableField field : fields) {
+            field.fieldPanel.panelOptions.reevaluateConfig();
+        }
+    }
 
+    private List<TunableFieldPanel> createTunableFieldPanels() {
         List<TunableFieldPanel> panels = new ArrayList<>();
 
         for (TunableField field : fields) {
@@ -135,7 +158,6 @@ public class TunerManager {
         }
 
         return panels;
-
     }
 
 }
