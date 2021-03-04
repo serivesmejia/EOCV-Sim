@@ -126,7 +126,26 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
 # Change logs
 
-  ### [v2.1.0 - Video Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.1.0)
+### [v2.2.0 - Variable Tuner Upgrade](https://github.com/serivesmejia/releases/tag/v2.2.0)
+ 
+   - This is the 7th release for EOCV-Sim
+
+      - Changelog:
+ 
+        - Pipelines now have a timeout all of the three methods so that the main loop doesn't get compromised due to a "stuck" pipeline (using kotlin coroutines)
+  	    - processFrame has a timeout of 4.2 seconds
+  	    - init is executed in the same scope as processFrame, when it has to be called, the timeout is doubled (16.4)
+  	    - When either processFrame or init methods timeout, the sim automatically falls back to the default pipeline and discards any frame that the old timeouted pipeline could return.
+  	    - onViewportTapped is still called from the U.I Thread, but it now has a timeout of 4.2 seconds too
+        - Added EnumField which handles the type Enum (accepts all classes of type enum, including the ones declared by the user)
+        - Major improvements to the variable tuner, added new features for color picking, tuning with sliders, configuration... See [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for further details.
+        - GUI improvement: Dropped some external dialogs in favor of simple "popups" for more practicality
+        - Internals:
+    		- Continued rewrite to kotlin
+    		- Splitted visualizer class components into different classes
+    		- Improved EventHandler doOnce listeners
+
+### [v2.1.0 - Video Update](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v2.1.0)
 
    - This is the 6th release for EOCV-Sim
 
