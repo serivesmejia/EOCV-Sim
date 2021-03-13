@@ -213,7 +213,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //we cancel our pipeline job so that it
                 //doesn't post the output mat from the
                 //pipeline if it ever returns.
-                pipelineJob.cancelAndJoin()
+                pipelineJob.cancel()
             }
         }
     }
