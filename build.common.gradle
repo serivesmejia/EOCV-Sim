@@ -19,8 +19,8 @@ compileKotlin {
 }
 
 ext {
-    kotlin_version = "1.4.10"
-    kotlinx_coroutines_version = "1.3.9"
+    kotlin_version = "1.4.30-M1"
+    kotlinx_coroutines_version = "1.4.3"
 }
 
 tasks.withType(Jar) {
