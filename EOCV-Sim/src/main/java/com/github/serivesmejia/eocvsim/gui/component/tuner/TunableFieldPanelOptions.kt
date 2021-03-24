@@ -149,7 +149,6 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
                 //if we're still in range of the scalar values amount
                 if(i < colorScalar.`val`.size) {
                     val colorVal = colorScalar.`val`[i]
-
                     fieldPanel.setFieldValue(i, colorVal)
                     fieldPanel.tunableField.setGuiFieldValue(i, colorVal.toString())
                 } else { break } //keep looping until we write the entire scalar value

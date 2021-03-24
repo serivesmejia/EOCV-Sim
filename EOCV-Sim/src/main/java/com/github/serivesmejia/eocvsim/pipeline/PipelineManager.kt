@@ -131,7 +131,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         //run our pipeline in the background until it finishes or gets cancelled
-        val pipelineJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {
+        val pipelineJob = GlobalScope.launch {
             try {
                 //if we have a pipeline, we run it right here, passing the input mat
                 //given to us. we'll post the frame the pipeline returns as long
@@ -213,7 +213,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //we cancel our pipeline job so that it
                 //doesn't post the output mat from the
                 //pipeline if it ever returns.
-                pipelineJob.cancel()
+                pipelineJob.cancelAndJoin()
             }
         }
     }
