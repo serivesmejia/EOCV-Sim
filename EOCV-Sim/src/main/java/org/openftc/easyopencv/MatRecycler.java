@@ -86,7 +86,7 @@ public class MatRecycler {
         return mats.length;
     }
 
-    public int getAvailableMats() { return availableMats.size(); }
+    public int getAvailableMatsAmount() { return availableMats.size(); }
 
     public final class RecyclableMat extends Mat {
 

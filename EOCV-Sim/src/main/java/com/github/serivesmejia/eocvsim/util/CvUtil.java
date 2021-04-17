@@ -46,7 +46,6 @@ public class CvUtil {
     }
 
     public static BufferedImage matToBufferedImage(Mat m) {
-
         // Fastest code
         // output can be assigned either to a BufferedImage or to an Image
         int type = BufferedImage.TYPE_BYTE_GRAY;
@@ -59,26 +58,10 @@ public class CvUtil {
         matToBufferedImage(m, buffImg);
 
         return buffImg;
-
     }
 
-    public static BufferedImage Mat2BufferedImage(Mat mat) throws IOException {
-
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
-
-        MatOfByte mob = new MatOfByte();
-        Imgcodecs.imencode(".jpg", mat, mob);
-
-        BufferedImage bi = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
-
-        mob.release();
-
-        return bi;
-
-    }
 
     public static boolean checkImageValid(String imagePath) {
-
         try {
 
             //test if image is valid
@@ -94,11 +77,9 @@ public class CvUtil {
         } catch (Throwable ex) {
             return false;
         }
-
     }
 
     public static boolean checkVideoValid(String videoPath) {
-
         try {
 
             VideoCapture capture = new VideoCapture();
@@ -120,11 +101,9 @@ public class CvUtil {
         } catch (Exception ex) {
             return false;
         }
-
     }
 
     public static Size getImageSize(String imagePath) {
-
         try {
 
             //test if image is valid
@@ -141,11 +120,9 @@ public class CvUtil {
         } catch (Exception ex) {
             return new Size(0, 0);
         }
-
     }
 
     public static Size getVideoSize(String videoPath) {
-
         try {
 
             VideoCapture capture = new VideoCapture();
@@ -164,11 +141,9 @@ public class CvUtil {
         } catch (Exception ex) {
             return new Size();
         }
-
     }
 
     public static Mat readOnceFromVideo(String videoPath) {
-
         VideoCapture capture = new VideoCapture();
 
         Mat img = new Mat();
@@ -182,15 +157,11 @@ public class CvUtil {
         } catch (Exception ex) {
             return img;
         }
-
     }
 
     public static Size scaleToFit(Size currentSize, Size targetSize) {
         double targetAspectRatio = CvExt.aspectRatio(targetSize);
         double currentAspectRatio = CvExt.aspectRatio(currentSize);
-
-        Log.info(currentSize + ", " + targetSize);
-        Log.info(currentAspectRatio + ", " + targetAspectRatio);
 
         if(currentAspectRatio == targetAspectRatio) {
             return targetSize.clone();
@@ -204,7 +175,6 @@ public class CvUtil {
             double bestRatio = Math.min(widthRatio, heightRatio);
 
             return new Size(currentW * bestRatio, currentH * bestRatio);
-
         }
     }
 

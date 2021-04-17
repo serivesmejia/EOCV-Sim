@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.util.image;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,17 +34,19 @@ public class DynamicBufferedImageRecycler {
 
     private final HashMap<Dimension, BufferedImageRecycler> recyclers = new HashMap<>();
 
-    private final ArrayList<BufferedImage> allImages = new ArrayList<>();
-
     public synchronized BufferedImage giveBufferedImage(Dimension size, int recyclerSize) {
 
         //look for existing buff image recycler with desired dimensions
         for(Map.Entry<Dimension, BufferedImageRecycler> entry : recyclers.entrySet()) {
-            if(entry.getKey().equals(size)) {
-                BufferedImage buffImg = entry.getValue().takeBufferedImage();
-                if(!allImages.contains(buffImg)) allImages.add(buffImg);
+            Dimension dimension = entry.getKey();
+            BufferedImageRecycler recycler = entry.getValue();
 
+            if(dimension.equals(size)) {
+                BufferedImage buffImg = recycler.takeBufferedImage();
                 return buffImg;
+            } else if(!recycler.isOnUse()) {
+                recycler.flushAll();
+                recyclers.remove(dimension);
             }
         }
 
@@ -52,23 +55,17 @@ public class DynamicBufferedImageRecycler {
         recyclers.put(size, recycler);
 
         BufferedImage buffImg = recycler.takeBufferedImage();
-        allImages.add(buffImg);
 
         return buffImg;
-
     }
 
     public synchronized void returnBufferedImage(BufferedImage buffImg) {
-
-        if(!allImages.contains(buffImg))
-            throw new IllegalArgumentException("Given BufferedImage does not belong here.");
-
         Dimension dimension = new Dimension(buffImg.getWidth(), buffImg.getHeight());
 
-        buffImg.flush();
+        BufferedImageRecycler recycler = recyclers.get(dimension);
 
-        recyclers.get(dimension).returnBufferedImage((BufferedImageRecycler.RecyclableBufferedImage) buffImg);
-
+        if(recycler != null)
+            recycler.returnBufferedImage((BufferedImageRecycler.RecyclableBufferedImage) buffImg);
     }
     
     public synchronized void flushAll() {

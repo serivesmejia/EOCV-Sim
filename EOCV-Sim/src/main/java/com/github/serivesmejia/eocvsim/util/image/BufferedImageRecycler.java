@@ -54,6 +54,8 @@ public class BufferedImageRecycler {
         this(num, (int)allImgSize.getWidth(), (int)allImgSize.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
     }
 
+    public boolean isOnUse() { return allBufferedImages.length != availableBufferedImages.size(); }
+
     public synchronized RecyclableBufferedImage takeBufferedImage() {
 
         if (availableBufferedImages.size() == 0) {
