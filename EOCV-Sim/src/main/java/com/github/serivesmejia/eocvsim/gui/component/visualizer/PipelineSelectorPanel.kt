@@ -91,9 +91,11 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
     private fun registerListeners() {
         //listener for changing pause state
         pipelinePauseBtt.addActionListener {
-            val selected = pipelinePauseBtt.isSelected
-            pipelinePauseBtt.text = if (selected) "Resume" else "Pause"
-            eocvSim.onMainUpdate.doOnce { eocvSim.pipelineManager.setPaused(selected) }
+            eocvSim.onMainUpdate.doOnce { eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected) }
+        }
+
+        pipelinePauseBtt.addChangeListener {
+            pipelinePauseBtt.text = if(pipelinePauseBtt.isSelected) "Resume" else "Pause"
         }
 
         pipelineRecordBtt.addActionListener {

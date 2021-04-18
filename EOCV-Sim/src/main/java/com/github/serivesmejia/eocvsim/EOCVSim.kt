@@ -271,9 +271,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
         val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
         val isPaused = if (pipelineManager.paused) " (Paused)" else ""
         val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""
-        val memoryMsg = " (${SysUtil.getMemoryUsageMB()} MB Java memory used)"
 
-        val msg = isRecording + pipelineFpsMsg + posterFpsMsg + isPaused + memoryMsg
+        val msg = isRecording + pipelineFpsMsg + posterFpsMsg + isPaused
 
         if (pipelineManager.currentPipeline == null) {
             visualizer.setTitleMessage("No pipeline$msg")
