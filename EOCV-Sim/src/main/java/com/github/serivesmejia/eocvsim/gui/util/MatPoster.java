@@ -80,7 +80,7 @@ public class MatPoster {
         }
 
         if (matRecycler != null) {
-            if(matRecycler.getAvailableMats() < 1) {
+            if(matRecycler.getAvailableMatsAmount() < 1) {
                 //evict one if we don't have any available mats in the recycler
                 evict(postQueue.poll());
             }
@@ -203,9 +203,7 @@ public class MatPoster {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;
-                    } catch (Exception ex) {
-                        continue;
-                    }
+                    } catch (Exception ex) { }
                 }
 
             }

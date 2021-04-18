@@ -49,13 +49,13 @@ public class Viewport extends JPanel {
     private final DynamicBufferedImageRecycler buffImgGiver = new DynamicBufferedImageRecycler();
 
     private volatile BufferedImage lastBuffImage;
+    private volatile Dimension lastDimension;
 
     private double scale;
 
     private final EOCVSim eocvSim;
 
     public Viewport(EOCVSim eocvSim, int maxQueueItems) {
-
         super(new GridBagLayout());
 
         this.eocvSim = eocvSim;
@@ -65,7 +65,6 @@ public class Viewport extends JPanel {
 
         matPoster = new MatPoster("Viewport", maxQueueItems);
         attachToPoster(matPoster);
-
     }
 
     public void postMatAsync(Mat mat) {
@@ -73,9 +72,6 @@ public class Viewport extends JPanel {
     }
 
     public synchronized void postMat(Mat mat) {
-
-        if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
-
         if(lastVisualizedMat == null) lastVisualizedMat = new Mat(); //create latest mat if we have null reference
         if(lastVisualizedScaledMat == null) lastVisualizedScaledMat = new Mat(); //create last scaled mat if null reference
 
@@ -92,14 +88,19 @@ public class Viewport extends JPanel {
         Size size = new Size(mat.width() * finalScale, mat.height() * finalScale);
         Imgproc.resize(mat, lastVisualizedScaledMat, size, 0.0, 0.0, Imgproc.INTER_AREA); //resize mat to lastVisualizedScaledMat
 
-        lastBuffImage = buffImgGiver.giveBufferedImage(new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height()), 2);
+        Dimension newDimension = new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height());
+
+        if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
+
+        lastBuffImage = buffImgGiver.giveBufferedImage(newDimension, 2);
+        lastDimension = newDimension;
+
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
 
         image.setImage(lastBuffImage); //set buff image to ImageX component
 
         Config config = eocvSim.configManager.getConfig();
         if (config.storeZoom) config.zoom = scale; //store latest scale if store setting turned on
-
     }
 
     public void attachToPoster(MatPoster poster) {
@@ -123,7 +124,6 @@ public class Viewport extends JPanel {
     }
 
     public synchronized void setViewportScale(double scale) {
-
         scale = Range.clip(scale, 0.1, 3);
 
         boolean scaleChanged = this.scale != scale;

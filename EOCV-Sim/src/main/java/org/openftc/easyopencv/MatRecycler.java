@@ -86,12 +86,7 @@ public class MatRecycler {
         return mats.length;
     }
 
-    public int getAvailableMats() { return availableMats.size(); }
-
-    @Override
-    public void finalize() {
-        releaseAll();
-    }
+    public int getAvailableMatsAmount() { return availableMats.size(); }
 
     public final class RecyclableMat extends Mat {
 

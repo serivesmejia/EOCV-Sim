@@ -66,7 +66,7 @@ class TelemetryPanel : JPanel(FlowLayout(FlowLayout.CENTER)) {
         telemetryScroll.repaint()
     }
 
-    fun updateTelemetry(telemetry: Telemetry?) = GlobalScope.launch(Dispatchers.Swing) {
+    fun updateTelemetry(telemetry: Telemetry?) {
         var telemetryText: String? = null
 
         if (telemetry != null && telemetry.hasChanged()) {

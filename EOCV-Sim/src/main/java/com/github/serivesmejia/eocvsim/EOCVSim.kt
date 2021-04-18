@@ -51,7 +51,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 class EOCVSim(val params: Parameters = Parameters()) {
 
     companion object {
-        const val VERSION = "2.2.0"
+        const val VERSION = "2.2.1"
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
         @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
