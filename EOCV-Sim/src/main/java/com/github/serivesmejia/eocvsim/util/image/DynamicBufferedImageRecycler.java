@@ -43,6 +43,7 @@ public class DynamicBufferedImageRecycler {
 
             if(dimension.equals(size)) {
                 BufferedImage buffImg = recycler.takeBufferedImage();
+                buffImg.flush();
                 return buffImg;
             } else if(!recycler.isOnUse()) {
                 recycler.flushAll();

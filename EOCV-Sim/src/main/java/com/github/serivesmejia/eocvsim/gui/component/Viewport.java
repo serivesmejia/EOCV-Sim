@@ -90,14 +90,10 @@ public class Viewport extends JPanel {
 
         Dimension newDimension = new Dimension(lastVisualizedScaledMat.width(), lastVisualizedScaledMat.height());
 
-        if(!newDimension.equals(lastDimension) || lastBuffImage == null) {
-            if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
+        if(lastBuffImage != null) buffImgGiver.returnBufferedImage(lastBuffImage);
 
-            lastBuffImage = buffImgGiver.giveBufferedImage(newDimension, 2);
-            lastDimension = newDimension;
-        } else {
-            System.out.println("reuse " + lastDimension.toString());
-        }
+        lastBuffImage = buffImgGiver.giveBufferedImage(newDimension, 2);
+        lastDimension = newDimension;
 
         CvUtil.matToBufferedImage(lastVisualizedScaledMat, lastBuffImage);
 
