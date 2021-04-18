@@ -98,7 +98,6 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
 
-/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/*
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/SkystoneDeterminationPipeline.java
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StageSwitchingPipeline.java
 !/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/StoneOrientationAnalysisPipeline.java
