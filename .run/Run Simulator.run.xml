@@ -13,7 +13,7 @@
           <option value="runSim" />
         </list>
       </option>
-      <option name="vmOptions" value="-Xms20m -Xmx100m -Djdk.nio.maxCachedBufferSize=262144" />
+      <option name="vmOptions" value="-Xms20m -Xmx100m" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
