@@ -27,6 +27,9 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Objects;
 
 public class TunableComboBox extends JComboBox<String> {
 
@@ -34,7 +37,6 @@ public class TunableComboBox extends JComboBox<String> {
     private final int index;
 
     private final EOCVSim eocvSim;
-
 
     public TunableComboBox(int index, TunableField tunableField, EOCVSim eocvSim) {
         super();
@@ -51,18 +53,17 @@ public class TunableComboBox extends JComboBox<String> {
             this.addItem(obj.toString());
         }
 
-        Runnable changeFieldValue = () -> {
+        addItemListener(evt -> eocvSim.onMainUpdate.doOnce(() -> {
             try {
-                tunableField.setGuiComboBoxValue(index, getSelectedItem().toString());
+                tunableField.setGuiComboBoxValue(index, Objects.requireNonNull(getSelectedItem()).toString());
             } catch (IllegalAccessException ex) {
                 ex.printStackTrace();
             }
+
             if (eocvSim.pipelineManager.getPaused()) {
                 eocvSim.pipelineManager.requestSetPaused(false);
             }
-        };
-
-        addActionListener(e -> eocvSim.onMainUpdate.doOnce(changeFieldValue));
+        }));
     }
 
 }

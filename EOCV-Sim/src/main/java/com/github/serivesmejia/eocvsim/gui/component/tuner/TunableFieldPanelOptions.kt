@@ -57,11 +57,11 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
         set(value) {
             when(value) {
                 TunableFieldPanel.Mode.SLIDERS -> {
-                    textBoxSliderToggle.icon = sliderIco
+                    textBoxSliderToggle.icon = textBoxIco
                     textBoxSliderToggle.isSelected = true
                 }
                 TunableFieldPanel.Mode.TEXTBOXES -> {
-                    textBoxSliderToggle.icon = textBoxIco
+                    textBoxSliderToggle.icon = sliderIco
                     textBoxSliderToggle.isSelected = false
                 }
             }
