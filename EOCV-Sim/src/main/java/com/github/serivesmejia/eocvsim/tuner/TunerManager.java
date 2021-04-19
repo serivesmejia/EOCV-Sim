@@ -48,6 +48,9 @@ public class TunerManager {
     private TunableFieldAcceptorManager acceptorManager = null;
 
     private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
+    private static HashMap<Class<? extends TunableField<?>>, Class<? extends TunableFieldAcceptor>> tunableFieldAcceptors = null;
+
+
     private boolean firstInit = true;
 
     public TunerManager(EOCVSim eocvSim) {
@@ -61,8 +64,14 @@ public class TunerManager {
             ).scan();
 
             tunableFieldsTypes = result.getTunableFields();
-            acceptorManager = new TunableFieldAcceptorManager(result.getAcceptors());
+            tunableFieldAcceptors = result.getAcceptors();
         }
+
+        // for some reason, acceptorManager becomes null after a certain time passes
+        // (maybe garbage collected? i don't know for sure...), but we can simply recover
+        // from this by creating a new one with the found acceptors by the scanner, no problem.
+        if(acceptorManager == null)
+            acceptorManager = new TunableFieldAcceptorManager(tunableFieldAcceptors);
 
         if (firstInit) {
             eocvSim.pipelineManager.onPipelineChange.doPersistent(this::reset);
@@ -125,7 +134,7 @@ public class TunerManager {
                 tunableFieldClass = tunableFieldsTypes.get(type);
             } else {
                 //if we don't have a class yet, use our acceptors
-                tunableFieldClass = acceptorManager.accept(type);
+                if(acceptorManager != null) tunableFieldClass = acceptorManager.accept(type);
                 //still haven't got anything, give up here.
                 if(tunableFieldClass == null) continue;
             }

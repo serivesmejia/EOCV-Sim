@@ -117,6 +117,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 "Close", Dimension(310, 150), true, true)
         }
 
+        inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
+
+        //post output mats from the pipeline to the visualizer viewport
+        pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
+
         visualizer.waitForFinishingInit()
 
         visualizer.sourceSelectorPanel.updateSourcesList() //update sources and pick first one
@@ -130,11 +135,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
     private fun start() {
         Log.info("EOCVSim", "Begin EOCVSim loop")
         Log.blank()
-
-        inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
-
-        //post output mats from the pipeline to the visualizer viewport
-        pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
         while(!eocvSimThread.isInterrupted) {
             //run all pending requested runnables
