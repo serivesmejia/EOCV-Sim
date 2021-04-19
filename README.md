@@ -126,6 +126,18 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
 # Change logs
 
+### [v2.2.1 - JVM crashing hotfix](https://github.com/serivesmejia/releases/tag/v2.2.0)
+ 
+   - This is the 8th release for EOCV-Sim
+   
+      - Changelog:
+        - Removed "Java memory" message in the title since it's practically useless for the end user
+        - Updated to Gradle 7.0 for Java 16+ support (#25)
+
+      - Bugfixes:
+        - Fixed JVM crashing error caused by releasing all mats in a MatRecycler finalization (#26)
+        - Improved memory usage by deleting unused BufferedImageRecyclers, memory is now slightly freed when allocating or recycling buffered images of different sizes (which means that the memory usage is reduced a little bit when zooming in the viewport)
+
 ### [v2.2.0 - Variable Tuner Upgrade](https://github.com/serivesmejia/releases/tag/v2.2.0)
  
    - This is the 7th release for EOCV-Sim
