@@ -119,15 +119,15 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
 
-        //post output mats from the pipeline to the visualizer viewport
-        pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
-
         visualizer.waitForFinishingInit()
 
         visualizer.sourceSelectorPanel.updateSourcesList() //update sources and pick first one
         visualizer.sourceSelectorPanel.sourceSelector.selectedIndex = 0
         visualizer.pipelineSelectorPanel.updatePipelinesList() //update pipelines and pick first one (DefaultPipeline)
         visualizer.pipelineSelectorPanel.selectedIndex = 0
+
+        //post output mats from the pipeline to the visualizer viewport
+        pipelineManager.pipelineOutputPosters.add(visualizer.viewport.matPoster)
 
         start()
     }
