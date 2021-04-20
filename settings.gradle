@@ -9,6 +9,5 @@ pluginManagement {
 rootProject.name = 'EOCV-Sim'
 
 include 'TeamCode'
-include 'core'
-include 'easyopencv'
+include 'EOCV-Sim'
 

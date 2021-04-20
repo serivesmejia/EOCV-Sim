@@ -7,9 +7,7 @@ apply from: '../build.common.gradle'
 
 dependencies {
     implementation 'org.openpnp:opencv:4.3.0-2'
-
-    implementation project(':core')
-    implementation project(':easyopencv')
+    implementation project(':EOCV-Sim')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
