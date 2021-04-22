@@ -34,7 +34,8 @@ import java.io.FileNotFoundException;
 public class ConfigLoader {
 
     public static String CONFIG_SAVEFILE_NAME = "eocvsim_config.json";
-    public static File CONFIG_SAVEFILE = new File(SysUtil.getAppData() + File.separator + CONFIG_SAVEFILE_NAME);
+    public static File CONFIG_SAVEFILE = new File(SysUtil.getEOCVSimFolder() + File.separator + CONFIG_SAVEFILE_NAME);
+
     static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public Config loadFromFile(File file) throws FileNotFoundException {

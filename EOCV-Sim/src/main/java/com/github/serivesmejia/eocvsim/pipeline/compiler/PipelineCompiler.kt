@@ -21,32 +21,74 @@
  *
  */
 
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
+
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
+import com.github.serivesmejia.eocvsim.pipeline.compiler.file.PipelineStandardFileManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.sun.tools.javac.api.JavacTool
 import java.io.File
+import java.io.PrintWriter
+import java.util.*
+import javax.tools.Diagnostic
+import javax.tools.DiagnosticListener
+import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
 
-class PipelineCompiler(private val inputPath: File, private val mode: PipelineCompileMode) {
+class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
 
     private val compiler = ToolProvider.getSystemJavaCompiler()
 
-    fun compile(outputJar: File): PipelineCompileResult {
-        val files = when(mode) {
-            PipelineCompileMode.SINGLE_FILE -> listOf(inputPath)
-            PipelineCompileMode.SINGLE_FOLDER -> SysUtil.filesIn(inputPath, ".jar")
-            PipelineCompileMode.CURRENT_AND_INNER_FOLDERS -> SysUtil.filesUnder(inputPath, ".jar")
-        }
+    private var diagnostic: Diagnostic<out JavaFileObject>? = null
 
-        return PipelineCompileResult(false, "")
+    fun compile(outputJar: File): PipelineCompileResult {
+        val files = SysUtil.filesUnder(inputPath, ".java")
+
+        val javac = JavacTool.create()
+        val args = arrayListOf(
+            "-source", "1.8",
+            "-target", "1.8",
+            "-g",
+            "-encoding", "UTF-8",
+            "-Xlint:unchecked",
+            "-Xlint:deprecation",
+            "-XDuseUnsharedTable=true"
+        )
+        
+        val fileManager = PipelineStandardFileManager(javac.getStandardFileManager(this, null, null))
+        fileManager.sourcePath = Collections.singleton(inputPath)
+
+        val javaFileObjects = fileManager.getJavaFileObjects(*files.toTypedArray())
+
+        if(javaFileObjects.iterator().hasNext()) {
+            val task = javac.getTask(
+                PrintWriter(System.out),
+                fileManager,
+                this,
+                args,
+                null,
+                javaFileObjects
+            )
+
+            if(task.call()) return PipelineCompileResult(PipelineCompileStatus.SUCCESS, "")
+
+            return PipelineCompileResult(PipelineCompileStatus.FAILED, "")
+        } else {
+            return PipelineCompileResult(PipelineCompileStatus.NO_SOURCE, "No source files")
+        }
+    }
+
+    override fun report(diagnostic: Diagnostic<out JavaFileObject>) {
+        this.diagnostic = diagnostic;
     }
 
 }
 
-data class PipelineCompileResult(val succeed: Boolean, val message: String)
-
-enum class PipelineCompileMode {
-    SINGLE_FILE,
-    SINGLE_FOLDER,
-    CURRENT_AND_INNER_FOLDERS
+enum class PipelineCompileStatus {
+    SUCCESS,
+    FAILED,
+    NO_SOURCE
 }
+
+data class PipelineCompileResult(val status: PipelineCompileStatus, val message: String)

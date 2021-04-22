@@ -210,6 +210,12 @@ public class SysUtil {
         return new File(System.getProperty("user.home") + File.separator);
     }
 
+    public static File getEOCVSimFolder() {
+        File f = new File(getAppData() + File.separator + ".eocvsim");
+        f.mkdir();
+        return f;
+    }
+
     public static Optional<String> getExtensionByStringHandling(String filename) {
         return Optional.ofNullable(filename)
                 .filter(f -> f.contains("."))
@@ -254,6 +260,17 @@ public class SysUtil {
 
     public static List<File> filesIn(File parent, String extension) {
         return filesIn(parent, (f) -> f.getName().endsWith(extension));
+    }
+
+    public static List<File> getClasspathFiles() {
+        String[] classpaths = System.getProperty("java.class.path").split(";");
+        ArrayList<File> files = new ArrayList<>();
+
+        for(String path : classpaths) {
+            files.add(new File(path));
+        }
+
+        return files;
     }
 
     public enum OperatingSystem {

@@ -24,9 +24,20 @@
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
+import com.github.serivesmejia.eocvsim.util.SysUtil
+import java.io.File
+import javax.tools.Diagnostic
+import javax.tools.DiagnosticListener
+import javax.tools.JavaFileObject
 
 class CompiledPipelineManager(val pipelineManager: PipelineManager) {
 
+    companion object {
+        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler")
 
+        val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gensrc").apply { println("hiii"); mkdir() }
+        val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "classes").apply { println("hiii2"); mkdir() }
+        val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "jars").apply { mkdir() }
+    }
 
 }
