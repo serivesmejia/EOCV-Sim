@@ -21,10 +21,11 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.pipeline.compiler.file
+package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.compiler.DelegatingStandardFileManager
 import java.io.File
 import java.util.*
 import javax.tools.StandardJavaFileManager

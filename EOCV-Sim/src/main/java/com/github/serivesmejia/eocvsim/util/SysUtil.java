@@ -129,6 +129,25 @@ public class SysUtil {
 
     }
 
+    public static void copyStream(File inFile, OutputStream out) throws IOException {
+        InputStream in = new FileInputStream(inFile);
+        try {
+            copyStream(in, out);
+        } finally { in.close(); }
+    }
+
+    public static void copyStream(InputStream in, OutputStream out) throws IOException {
+        int cbBuffer = Math.min(4096, in.available());
+        byte[] buffer = new byte[cbBuffer];
+
+        while(true) {
+            int cbRead = in.read(buffer);
+            if(cbRead <= 0) break;
+
+            out.write(buffer, 0, cbRead);
+        }
+    }
+
     public static CopyFileIsData copyFileIs(InputStream is, File toPath, boolean replaceIfExisting) throws IOException {
 
         boolean alreadyExists = true;
@@ -260,6 +279,21 @@ public class SysUtil {
 
     public static List<File> filesIn(File parent, String extension) {
         return filesIn(parent, (f) -> f.getName().endsWith(extension));
+    }
+
+    public static File getRelativePath(File root, File child) {
+        File result = new File("");
+
+        while(!root.equals(child)) {
+            File parent = child.getParentFile();
+            result = new File(new File(child.getName()), result.getPath());
+
+            if(parent == null) break;
+
+            child = parent;
+        }
+
+        return result;
     }
 
     public static List<File> getClasspathFiles() {

@@ -33,11 +33,13 @@ import javax.tools.JavaFileObject
 class CompiledPipelineManager(val pipelineManager: PipelineManager) {
 
     companion object {
-        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler")
+        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").apply { mkdir() }
 
-        val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gensrc").apply { println("hiii"); mkdir() }
-        val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "classes").apply { println("hiii2"); mkdir() }
-        val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "jars").apply { mkdir() }
+        val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gensrc").apply { mkdir() }
+        val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "outclasses").apply { mkdir() }
+        val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "outjars").apply { mkdir() }
+
+        val PIPELINES_OUTPUT_JAR  = File(JARS_OUTPUT_FOLDER, File.separator + "pipelines.jar")
     }
 
 }

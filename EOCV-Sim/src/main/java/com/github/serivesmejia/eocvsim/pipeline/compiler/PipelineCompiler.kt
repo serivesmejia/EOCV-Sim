@@ -25,16 +25,13 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
-import com.github.serivesmejia.eocvsim.pipeline.compiler.file.PipelineStandardFileManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.compiler.JarPacker
 import com.sun.tools.javac.api.JavacTool
 import java.io.File
 import java.io.PrintWriter
 import java.util.*
-import javax.tools.Diagnostic
-import javax.tools.DiagnosticListener
-import javax.tools.JavaFileObject
-import javax.tools.ToolProvider
+import javax.tools.*
 
 class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
 
@@ -71,7 +68,10 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
                 javaFileObjects
             )
 
-            if(task.call()) return PipelineCompileResult(PipelineCompileStatus.SUCCESS, "")
+            if(task.call()) {
+                JarPacker.packClassesUnder(outputJar, fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next())
+                return PipelineCompileResult(PipelineCompileStatus.SUCCESS, "")
+            }
 
             return PipelineCompileResult(PipelineCompileStatus.FAILED, "")
         } else {
