@@ -26,20 +26,25 @@ package com.github.serivesmejia.eocvsim.pipeline.compiler
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import java.io.File
-import javax.tools.Diagnostic
-import javax.tools.DiagnosticListener
-import javax.tools.JavaFileObject
 
 class CompiledPipelineManager(val pipelineManager: PipelineManager) {
 
     companion object {
-        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").apply { mkdir() }
+        val DEF_WORKING_DIR_FOLDER = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workingdir").mkdirLazy()
 
-        val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gensrc").apply { mkdir() }
-        val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "outclasses").apply { mkdir() }
-        val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "outjars").apply { mkdir() }
+        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").mkdirLazy()
+
+        val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gen_src").mkdirLazy()
+        val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "out_classes").mkdirLazy()
+        val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "out_jars").mkdirLazy()
 
         val PIPELINES_OUTPUT_JAR  = File(JARS_OUTPUT_FOLDER, File.separator + "pipelines.jar")
     }
 
+    var workingDirectory = DEF_WORKING_DIR_FOLDER
+
+
+
 }
+
+private fun File.mkdirLazy() = apply { mkdir() }

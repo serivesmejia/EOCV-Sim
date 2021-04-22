@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim;
 
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
+import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineClassLoader;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
 
 import java.io.File;
@@ -32,11 +33,14 @@ public class Main {
 
     public static final EOCVSim eocvSim = new EOCVSim();
 
-    public static void main(String[] args) {
-        PipelineCompiler compiler = new PipelineCompiler(
-                new File("C:\\Users\\d4n1_\\IdeaProjects\\EOCV-Sim\\TeamCode\\src\\main\\java")
-        );
-        compiler.compile(CompiledPipelineManager.Companion.getPIPELINES_OUTPUT_JAR());
+    public static void main(String[] args) throws ClassNotFoundException {
+        //PipelineCompiler compiler = new PipelineCompiler(
+        //        new File("C:\\Users\\d4n1_\\IdeaProjects\\EOCV-Sim\\TeamCode\\src\\main\\java")
+        //);
+       // compiler.compile(CompiledPipelineManager.Companion.getPIPELINES_OUTPUT_JAR());
+
+        Class clazz = new PipelineClassLoader().loadClass("org.firstinspires.ftc.teamcode.SimpleThresholdPipeline");
+        System.out.println(clazz);
 
         eocvSim.init();
     }
