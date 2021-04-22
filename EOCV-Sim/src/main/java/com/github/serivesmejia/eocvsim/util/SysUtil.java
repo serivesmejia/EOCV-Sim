@@ -281,6 +281,21 @@ public class SysUtil {
         return filesIn(parent, (f) -> f.getName().endsWith(extension));
     }
 
+    public static boolean migrateFile(File oldFile, File newFile) {
+        if(newFile.exists() || !oldFile.exists()) return false;
+
+        Log.info("SysUtil", "Migrating old file " + oldFile.getAbsolutePath() + "  to " + newFile.getAbsolutePath());
+
+        try {
+            Files.move(oldFile.toPath(), newFile.toPath());
+        } catch (IOException e) {
+            Log.info("SysUtil", "Failed to migrate old file " + oldFile.getAbsolutePath());
+            return false;
+        }
+
+        return true;
+    }
+
     public static File getRelativePath(File root, File child) {
         File result = new File("");
 

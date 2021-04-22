@@ -41,7 +41,9 @@ public class InputSourceLoader {
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static final String SOURCES_SAVEFILE_NAME = "eocvsim_sources.json";
+
     public static final File SOURCES_SAVEFILE = new File(SysUtil.getEOCVSimFolder() + File.separator + SOURCES_SAVEFILE_NAME);
+    public static final File SOURCES_SAVEFILE_OLD = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
 
     public static final InputSourcesContainer.SourcesFileVersion CURRENT_FILE_VERSION = InputSourcesContainer.SourcesFileVersion.SEIS;
 
@@ -91,6 +93,7 @@ public class InputSourceLoader {
     }
 
     public void loadInputSourcesFromFile() {
+        SysUtil.migrateFile(SOURCES_SAVEFILE_OLD, SOURCES_SAVEFILE);
         loadInputSourcesFromFile(SOURCES_SAVEFILE);
     }
 
