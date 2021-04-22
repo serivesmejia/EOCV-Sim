@@ -21,32 +21,17 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.pipeline.compiler
+package com.github.serivesmejia.eocvsim.pipeline.compiler.file
 
-import com.github.serivesmejia.eocvsim.util.SysUtil
 import java.io.File
-import javax.tools.ToolProvider
+import javax.tools.StandardJavaFileManager
 
-class PipelineCompiler(private val inputPath: File, private val mode: PipelineCompileMode) {
+class PipelineStandardFileManager(delegate: StandardJavaFileManager) : DelegatingStandardFileManager(delegate) {
 
-    private val compiler = ToolProvider.getSystemJavaCompiler()
+    init {
+        val classPath = arrayListOf<File>()
 
-    fun compile(outputJar: File): PipelineCompileResult {
-        val files = when(mode) {
-            PipelineCompileMode.SINGLE_FILE -> listOf(inputPath)
-            PipelineCompileMode.SINGLE_FOLDER -> SysUtil.filesIn(inputPath, ".jar")
-            PipelineCompileMode.CURRENT_AND_INNER_FOLDERS -> SysUtil.filesUnder(inputPath, ".jar")
-        }
 
-        return PipelineCompileResult(false, "")
     }
 
-}
-
-data class PipelineCompileResult(val succeed: Boolean, val message: String)
-
-enum class PipelineCompileMode {
-    SINGLE_FILE,
-    SINGLE_FOLDER,
-    CURRENT_AND_INNER_FOLDERS
 }

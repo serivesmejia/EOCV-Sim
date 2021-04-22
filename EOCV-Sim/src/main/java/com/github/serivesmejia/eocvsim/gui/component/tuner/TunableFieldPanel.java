@@ -24,9 +24,9 @@
 package com.github.serivesmejia.eocvsim.gui.component.tuner;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
-import com.github.serivesmejia.eocvsim.gui.component.tuner.elements.TunableComboBox;
-import com.github.serivesmejia.eocvsim.gui.component.tuner.elements.TunableSlider;
-import com.github.serivesmejia.eocvsim.gui.component.tuner.elements.TunableTextField;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.element.TunableComboBox;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.element.TunableSlider;
+import com.github.serivesmejia.eocvsim.gui.component.tuner.element.TunableTextField;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;

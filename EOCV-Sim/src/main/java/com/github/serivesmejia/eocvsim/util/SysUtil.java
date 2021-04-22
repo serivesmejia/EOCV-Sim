@@ -31,7 +31,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class SysUtil {
@@ -211,6 +214,46 @@ public class SysUtil {
         return Optional.ofNullable(filename)
                 .filter(f -> f.contains("."))
                 .map(f -> f.substring(filename.lastIndexOf(".") + 1));
+    }
+
+    public static List<File> filesUnder(File parent, Predicate<File> predicate) {
+        ArrayList<File> result = new ArrayList<>();
+
+        if(parent.isDirectory()) {
+            for(File child : parent.listFiles()) {
+                result.addAll(filesUnder(child, predicate));
+            }
+        } else if(parent.exists() && (predicate != null && predicate.test(parent))) {
+            result.add(parent.getAbsoluteFile());
+        }
+
+        return result;
+    }
+
+    public static List<File> filesUnder(File parent, String extension) {
+        return filesUnder(parent, (f) -> f.getName().endsWith(extension));
+    }
+
+    public static List<File> filesIn(File parent, Predicate<File> predicate) {
+        ArrayList<File> result = new ArrayList<>();
+
+        if(!parent.exists()) return result;
+
+        if(parent.isDirectory()) {
+            for(File f : parent.listFiles()) {
+                if(predicate != null && predicate.test(f))
+                    result.add(f);
+            }
+        } else {
+            if(predicate != null && predicate.test(parent))
+                result.add(parent);
+        }
+
+        return result;
+    }
+
+    public static List<File> filesIn(File parent, String extension) {
+        return filesIn(parent, (f) -> f.getName().endsWith(extension));
     }
 
     public enum OperatingSystem {

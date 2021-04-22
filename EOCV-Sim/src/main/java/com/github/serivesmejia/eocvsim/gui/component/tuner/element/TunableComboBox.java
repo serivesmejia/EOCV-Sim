@@ -21,14 +21,12 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.component.tuner.elements;
+package com.github.serivesmejia.eocvsim.gui.component.tuner.element;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.Objects;
 
 public class TunableComboBox extends JComboBox<String> {
