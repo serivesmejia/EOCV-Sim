@@ -23,33 +23,62 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
+import com.github.serivesmejia.eocvsim.util.ReflectUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import org.openftc.easyopencv.OpenCvPipeline
 import java.io.*
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class PipelineClassLoader(private val pipelinesJar: File = CompiledPipelineManager.PIPELINES_OUTPUT_JAR) : ClassLoader() {
+@Suppress("UNCHECKED_CAST")
+class PipelineClassLoader(pipelinesJar: File = CompiledPipelineManager.PIPELINES_OUTPUT_JAR) : ClassLoader() {
 
     private val zipFile = ZipFile(pipelinesJar)
+
+    var allClasses: List<Class<*>>
+        private set
+
+    var pipelineClasses: List<Class<out OpenCvPipeline>>
+        private set
+
+    init {
+        val allClasses = mutableListOf<Class<*>>()
+        val pipelineClasses = mutableListOf<Class<out OpenCvPipeline>>()
+
+        for(entry in zipFile.entries()) {
+            if(!entry.name.endsWith(".class")) continue
+
+            val clazz = loadClass(entry)
+
+            allClasses.add(clazz)
+            if(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
+                pipelineClasses.add(clazz as Class<out OpenCvPipeline>)
+            }
+        }
+
+        this.allClasses = allClasses.toList()
+        this.pipelineClasses = pipelineClasses.toList()
+    }
+
+    private fun loadClass(entry: ZipEntry): Class<*> {
+        zipFile.getInputStream(entry).use { inStream ->
+            ByteArrayOutputStream().use { outStream ->
+                SysUtil.copyStream(inStream, outStream)
+                val bytes = outStream.toByteArray()
+
+                return defineClass(name, bytes, 0, bytes.size)
+            }
+        }
+    }
 
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
         var clazz = findLoadedClass(name)
 
         if(clazz == null) {
             try {
-                getResourceAsStream(
-                    name.replace('.', '\\') + ".class"
-                ).use { inStream ->
-                    ByteArrayOutputStream().use { outStream ->
-                        SysUtil.copyStream(inStream, outStream)
-                        val bytes = outStream.toByteArray()
-
-                        clazz = defineClass(name, bytes, 0, bytes.size)
-                        if (resolve) resolveClass(clazz)
-                    }
-                }
+                clazz = loadClass(zipFile.getEntry(name.replace('.', File.pathSeparatorChar) + ".class"))
+                if(resolve) resolveClass(clazz)
             } catch(e: Exception) {
-                e.printStackTrace()
                 clazz = super.loadClass(name, resolve)
             }
         }
@@ -61,13 +90,12 @@ class PipelineClassLoader(private val pipelinesJar: File = CompiledPipelineManag
         val entry = zipFile.getEntry(name)
 
         if(entry != null) {
-            println("found entry")
             try {
                 return zipFile.getInputStream(entry)
             } catch (e: IOException) { }
         }
 
-        return null
+        return super.getResourceAsStream(name)
     }
 
 }

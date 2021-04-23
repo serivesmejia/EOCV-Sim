@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.pipeline
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
+import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineClassLoader
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
@@ -108,6 +109,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Found " + pipelines.size + " pipeline(s)")
         Log.blank()
+
+        val loader = PipelineClassLoader()
+        for (clazz in loader.pipelineClasses) {
+            addPipelineClass(clazz)
+        }
 
         requestChangePipeline(0) //change to the default pipeline
     }

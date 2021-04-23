@@ -26,6 +26,7 @@ package com.github.serivesmejia.eocvsim;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineClassLoader;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.io.File;
 
@@ -37,11 +38,7 @@ public class Main {
         //PipelineCompiler compiler = new PipelineCompiler(
         //        new File("C:\\Users\\d4n1_\\IdeaProjects\\EOCV-Sim\\TeamCode\\src\\main\\java")
         //);
-       // compiler.compile(CompiledPipelineManager.Companion.getPIPELINES_OUTPUT_JAR());
-
-        Class clazz = new PipelineClassLoader().loadClass("org.firstinspires.ftc.teamcode.SimpleThresholdPipeline");
-        System.out.println(clazz);
-
+        //compiler.compile(CompiledPipelineManager.Companion.getPIPELINES_OUTPUT_JAR());
         eocvSim.init();
     }
 
