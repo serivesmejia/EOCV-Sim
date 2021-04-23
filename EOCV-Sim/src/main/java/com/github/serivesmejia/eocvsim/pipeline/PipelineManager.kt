@@ -258,6 +258,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    fun removeAllPipelinesFrom(source: PipelineSource) {
+        for(pipeline in pipelines.toTypedArray()) {
+            if(pipeline.source == source) {
+
+            }
+        }
+    }
+
     /**
      * Changes to the requested pipeline, no matter
      * if we're currently on the same pipeline or not
