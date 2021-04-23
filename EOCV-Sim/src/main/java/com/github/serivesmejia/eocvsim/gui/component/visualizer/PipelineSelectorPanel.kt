@@ -136,8 +136,8 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
     fun updatePipelinesList() = runBlocking {
         launch(Dispatchers.Swing) {
             val listModel = DefaultListModel<String>()
-            for (pipelineClass in eocvSim.pipelineManager.pipelines) {
-                listModel.addElement(pipelineClass.simpleName)
+            for (pipeline in eocvSim.pipelineManager.pipelines) {
+                listModel.addElement(pipeline.clazz.simpleName)
             }
 
             pipelineSelector.fixedCellWidth = 240

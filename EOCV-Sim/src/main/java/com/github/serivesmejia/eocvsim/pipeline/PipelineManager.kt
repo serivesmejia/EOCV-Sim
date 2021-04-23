@@ -60,7 +60,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
     var lastPipelineAction = "processFrame"
         private set
 
-    val pipelines = ArrayList<Class<out OpenCvPipeline>>()
+    val pipelines = ArrayList<PipelineData>()
 
     @Volatile var currentPipeline: OpenCvPipeline? = null
         private set
@@ -248,9 +248,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun addPipelineClass(C: Class<*>) {
+    @JvmOverloads fun addPipelineClass(C: Class<*>, source: PipelineSource = PipelineSource.CLASSPATH) {
         try {
-            pipelines.add(C as Class<out OpenCvPipeline>)
+            pipelines.add(PipelineData(source, C as Class<out OpenCvPipeline>))
         } catch (ex: Exception) {
             Log.error("PipelineManager", "Error while adding pipeline class", ex)
             Log.error("PipelineManager", "Unable to cast " + C.name + " to OpenCvPipeline class.")
@@ -266,7 +266,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun forceChangePipeline(index: Int) {
         var nextPipeline: OpenCvPipeline? = null
         var nextTelemetry: Telemetry? = null
-        val pipelineClass = pipelines[index]
+        val pipelineClass = pipelines[index].clazz
 
         Log.info("PipelineManager", "Changing to pipeline " + pipelineClass.name)
 
@@ -285,20 +285,20 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
             Log.info("PipelineManager", "Instantiated pipeline class " + pipelineClass.name)
         } catch (ex: NoSuchMethodException) {
-            eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Check console for details",
+            eocvSim.visualizer.asyncPleaseWaitDialog("Error while instantiating requested pipeline", "Check console for details",
                     "Close", Dimension(300, 150), true, true)
 
-            Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
+            Log.error("PipelineManager", "Error while instantiating requested pipeline (" + pipelineClass.simpleName + ")", ex)
             Log.info("PipelineManager", "Make sure your pipeline implements a public constructor with no parameters or with a Telemetry parameter")
 
             eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
 
             Log.blank()
         } catch (ex: Exception) {
-            eocvSim.visualizer.asyncPleaseWaitDialog("Error while initializing requested pipeline", "Falling back to previous one",
+            eocvSim.visualizer.asyncPleaseWaitDialog("Error while instantiating requested pipeline", "Falling back to previous one",
                     "Close", Dimension(300, 150), true, true)
 
-            Log.error("PipelineManager", "Error while initializing requested pipeline (" + pipelineClass.simpleName + ")", ex)
+            Log.error("PipelineManager", "Error while instantiating requested pipeline (" + pipelineClass.simpleName + ")", ex)
             Log.blank()
 
             eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
@@ -372,4 +372,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         setPaused(paused, PauseReason.USER_REQUESTED)
     }
 
+    data class PipelineData(val source: PipelineSource, val clazz: Class<out OpenCvPipeline>)
+
 }
+
+enum class PipelineSource { CLASSPATH, COMPILED_ON_RUNTIME }

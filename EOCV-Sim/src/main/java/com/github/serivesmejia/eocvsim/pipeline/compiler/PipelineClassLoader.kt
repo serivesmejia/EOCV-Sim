@@ -35,14 +35,10 @@ class PipelineClassLoader(pipelinesJar: File = CompiledPipelineManager.PIPELINES
 
     private val zipFile = ZipFile(pipelinesJar)
 
-    var allClasses: List<Class<*>>
-        private set
-
     var pipelineClasses: List<Class<out OpenCvPipeline>>
         private set
 
     init {
-        val allClasses = mutableListOf<Class<*>>()
         val pipelineClasses = mutableListOf<Class<out OpenCvPipeline>>()
 
         for(entry in zipFile.entries()) {
@@ -50,13 +46,11 @@ class PipelineClassLoader(pipelinesJar: File = CompiledPipelineManager.PIPELINES
 
             val clazz = loadClass(entry)
 
-            allClasses.add(clazz)
             if(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
                 pipelineClasses.add(clazz as Class<out OpenCvPipeline>)
             }
         }
 
-        this.allClasses = allClasses.toList()
         this.pipelineClasses = pipelineClasses.toList()
     }
 
