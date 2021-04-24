@@ -21,6 +21,8 @@
  *
  */
 
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
+
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
@@ -28,15 +30,18 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.qualcomm.robotcore.util.ElapsedTime
+import com.sun.tools.javac.api.JavacTool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.openftc.easyopencv.OpenCvPipeline
 import java.io.File
 
 class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     companion object {
-        val DEF_WORKING_DIR_FOLDER = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workingdir").mkdirLazy()
+        val DEF_WORKSPACE_FOLDER  = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workspace").mkdirLazy()
 
         val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").mkdirLazy()
 
@@ -47,74 +52,102 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         val PIPELINES_OUTPUT_JAR  = File(JARS_OUTPUT_FOLDER, File.separator + "pipelines.jar")
 
         val IS_USABLE by lazy {
-            try {
-                // create stub compiler to see if we
-                // have the JavacTool (only available on JDKs)
-                PipelineCompiler(File(""))
+            val usable = try {
+                // try getting the JavacTool (only available on JDKs)
+                JavacTool.create()
                 true // yes! we can compile stuff on runtime!
-            } catch(e: ClassNotFoundException) {
-                false // uh oh, the class wasn't found anywhere in the current JVM...
+            } catch(ignored: Throwable) {
+                false // uh oh, the JavacTool class wasn't found anywhere in the current JVM...
             }
+
+            // Send a warning message to console
+            // will only be sent once (that's why it's done here)
+            if(!usable) {
+                Log.warn(TAG, "Unable to compile Java source code in this JVM (the class JavacTool wasn't found)")
+                Log.warn(TAG, "For the user, this probably means that the sim is running in a JRE which doesn't include the javac compiler executable")
+                Log.warn(TAG, "To be able to compile pipelines on runtime, make sure the sim is running on a JDK that includes the javac executable (any JDK probably does)")
+            }
+
+            usable
         }
+
+        val TAG = "CompiledPipelineManager"
     }
 
-    var workingDirectory = DEF_WORKING_DIR_FOLDER
+    var workspace = DEF_WORKSPACE_FOLDER
 
     var currentPipelineClassLoader: PipelineClassLoader? = null
         private set
 
-    val TAG = "CompiledPipelineManager"
-
     fun init() {
         Log.info(TAG, "Initializing...")
-        asyncCompile()
+
+        asyncCompile { succeed ->
+            // if the build failed, try to load the
+            // latest pipelines.jar file, if it exists
+            if(!succeed)
+                loadFromPipelinesJar()
+        }
     }
 
-    fun compile(mainThreadCallsWrapBlock: (() -> Unit) -> Unit = { it() } ) {
-        if(!IS_USABLE) {
-            Log.warn(TAG, "Unable to compile Java source code in this JVM (the class JavacTool wasn't found)")
-            Log.warn(TAG, "For the user, this probably means that the sim is running in a JRE which doesn't include the javac compiler executable")
-            Log.warn(TAG, "To be able to compile pipelines on runtime, make sure the sim is running on a JDK that includes the javac executable (any JDK probably does)")
-            return
-        }
+    fun compile(): Boolean {
+        if(!IS_USABLE) return false
 
-        Log.info(TAG, "Compiling java files of working directory at ${workingDirectory.absolutePath}")
+        Log.info(TAG, "Compiling java files in workspace at ${workspace.absolutePath}")
 
         val runtime = ElapsedTime()
 
-        val compiler = PipelineCompiler(workingDirectory)
+        val compiler = PipelineCompiler(workspace)
         val result = compiler.compile(PIPELINES_OUTPUT_JAR)
 
         val timeElapsed = runtime.seconds()
 
-        mainThreadCallsWrapBlock {
-            pipelineManager.removeAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME, false)
-        }
+        pipelineManager.requestRemoveAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME, false)
 
         currentPipelineClassLoader = null
 
         val messageEnd = "(took $timeElapsed seconds)\n${result.message}".trim()
 
-        if(result.status == PipelineCompileStatus.SUCCESS) {
-            Log.info(TAG, "Build successful $messageEnd")
-
-            currentPipelineClassLoader = PipelineClassLoader(PIPELINES_OUTPUT_JAR)
-
-            for(pipelineClass in currentPipelineClassLoader!!.pipelineClasses) {
-                pipelineManager.addPipelineClass(pipelineClass, PipelineSource.COMPILED_ON_RUNTIME)
-                Log.info(TAG, "Added ${pipelineClass.simpleName} from built sources ($PIPELINES_OUTPUT_JAR)")
+        when(result.status) {
+            PipelineCompileStatus.SUCCESS -> {
+                Log.info(TAG, "Build successful $messageEnd")
+                loadFromPipelinesJar()
+                return true
             }
-        } else if(result.status == PipelineCompileStatus.NO_SOURCE) {
+            PipelineCompileStatus.NO_SOURCE -> {
                 Log.warn(TAG, "Build cancelled, no source files to compile $messageEnd")
-        } else {
-            Log.warn(TAG, "Build failed $messageEnd")
+            }
+            else -> {
+                Log.warn(TAG, "Build failed $messageEnd")
+            }
         }
 
-        pipelineManager.refreshGuiPipelineList()
+        return false
     }
 
-    fun asyncCompile() = GlobalScope.launch(Dispatchers.IO) {
-        compile { pipelineManager.eocvSim.onMainUpdate.doOnce(it) }
+    fun asyncCompile(endCallback: (Boolean) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
+        endCallback(compile())
+    }
+
+    fun loadFromPipelinesJar() {
+        if(!PIPELINES_OUTPUT_JAR.exists()) return
+
+        Log.info(TAG, "Looking for pipelines in jar file $PIPELINES_OUTPUT_JAR")
+
+        try {
+            currentPipelineClassLoader = PipelineClassLoader(PIPELINES_OUTPUT_JAR)
+
+            val pipelines = mutableListOf<Class<out OpenCvPipeline>>()
+
+            for(pipelineClass in currentPipelineClassLoader!!.pipelineClasses) {
+                pipelines.add(pipelineClass)
+                Log.info(TAG, "Added ${pipelineClass.simpleName} from jar")
+            }
+
+            pipelineManager.requestAddPipelineClasses(pipelines, PipelineSource.COMPILED_ON_RUNTIME, true)
+        } catch(e: Exception) {
+            Log.error(TAG, "Uncaught exception thrown while loading jar $PIPELINES_OUTPUT_JAR", e)
+        }
     }
 
 }

@@ -247,6 +247,22 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    @JvmOverloads
+    fun requestAddPipelineClass(C: Class<*>, source: PipelineSource = PipelineSource.CLASSPATH) {
+        onUpdate.doOnce { addPipelineClass(C, source) }
+    }
+
+    fun requestAddPipelineClasses(classes: List<Class<*>>,
+                                  source: PipelineSource = PipelineSource.CLASSPATH,
+                                  refreshGui: Boolean = false) {
+        onUpdate.doOnce {
+            for(clazz in classes) {
+                addPipelineClass(clazz, source)
+            }
+            if(refreshGui) refreshGuiPipelineList()
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     @JvmOverloads fun addPipelineClass(C: Class<*>, source: PipelineSource = PipelineSource.CLASSPATH) {
         try {
@@ -270,6 +286,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
 
         if(refreshGuiPipelineList) refreshGuiPipelineList()
+    }
+
+    @JvmOverloads
+    fun requestRemoveAllPipelinesFrom(source: PipelineSource, refreshGuiPipelineList: Boolean = true) {
+        onUpdate.doOnce { removeAllPipelinesFrom(source, refreshGuiPipelineList) }
     }
 
     /**

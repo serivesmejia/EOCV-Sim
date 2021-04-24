@@ -25,6 +25,10 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.dialog.*;
+import com.github.serivesmejia.eocvsim.gui.dialog.source.CreateCameraSource;
+import com.github.serivesmejia.eocvsim.gui.dialog.source.CreateImageSource;
+import com.github.serivesmejia.eocvsim.gui.dialog.source.CreateSource;
+import com.github.serivesmejia.eocvsim.gui.dialog.source.CreateVideoSource;
 import com.github.serivesmejia.eocvsim.input.SourceType;
 
 import javax.swing.*;
