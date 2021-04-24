@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.pipeline
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
+import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineClassLoader
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
@@ -89,6 +90,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
             return field
         }
 
+    val compiledPipelineManager = CompiledPipelineManager(this)
+
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
     
@@ -109,11 +112,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         Log.info("PipelineManager", "Found " + pipelines.size + " pipeline(s)")
         Log.blank()
-
-        val loader = PipelineClassLoader()
-        for (clazz in loader.pipelineClasses) {
-            addPipelineClass(clazz)
-        }
 
         requestChangePipeline(0) //change to the default pipeline
     }
@@ -258,6 +256,20 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    @JvmOverloads fun removeAllPipelinesFrom(source: PipelineSource, refreshGuiPipelineList: Boolean = true) {
+        for(pipeline in pipelines.toTypedArray()) {
+            if(pipeline.source == source) {
+                pipelines.remove(pipeline)
+
+                if(currentPipeline != null && currentPipeline!!::class.java == pipeline.clazz) {
+                    requestChangePipeline(0) //change to default pipeline if the current pipeline was deleted
+                }
+            }
+        }
+
+        if(refreshGuiPipelineList) refreshGuiPipelineList()
+    }
+
     /**
      * Changes to the requested pipeline, no matter
      * if we're currently on the same pipeline or not
@@ -371,6 +383,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
     fun setPaused(paused: Boolean) {
         setPaused(paused, PauseReason.USER_REQUESTED)
     }
+
+    fun refreshGuiPipelineList() = eocvSim.visualizer.pipelineSelectorPanel.updatePipelinesList()
 
     data class PipelineData(val source: PipelineSource, val clazz: Class<out OpenCvPipeline>)
 

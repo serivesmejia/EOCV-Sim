@@ -24,10 +24,15 @@
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
+import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
+import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.qualcomm.robotcore.util.ElapsedTime
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 
-class CompiledPipelineManager(val pipelineManager: PipelineManager) {
+class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     companion object {
         val DEF_WORKING_DIR_FOLDER = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workingdir").mkdirLazy()
@@ -43,7 +48,50 @@ class CompiledPipelineManager(val pipelineManager: PipelineManager) {
 
     var workingDirectory = DEF_WORKING_DIR_FOLDER
 
+    var currentPipelineClassLoader: PipelineClassLoader? = null
+        private set
 
+    val TAG = "CompiledPipelineManager"
+
+    fun compile(mainThreadCallsWrapBlock: (() -> Unit) -> Unit = { it() } ) {
+        Log.info(TAG, "Compiling java files of working directory at ${workingDirectory.absolutePath}")
+
+        val runtime = ElapsedTime()
+
+        val compiler = PipelineCompiler(workingDirectory)
+        val result = compiler.compile(PIPELINES_OUTPUT_JAR)
+
+        val timeElapsed = runtime.seconds()
+
+        mainThreadCallsWrapBlock {
+            pipelineManager.removeAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME, false)
+        }
+
+        currentPipelineClassLoader = null
+
+        val messageEnd = "(took $timeElapsed seconds)\n${result.message}"
+
+        if(result.status == PipelineCompileStatus.SUCCESS) {
+            Log.info(TAG, "Compile successful $messageEnd")
+
+            currentPipelineClassLoader = PipelineClassLoader(PIPELINES_OUTPUT_JAR)
+
+            for(pipelineClass in currentPipelineClassLoader!!.pipelineClasses) {
+                pipelineManager.addPipelineClass(pipelineClass, PipelineSource.COMPILED_ON_RUNTIME)
+                Log.info(TAG, "Found and added ${pipelineClass.simpleName} from compiled sources")
+            }
+        } else if(result.status == PipelineCompileStatus.NO_SOURCE) {
+            Log.warn(TAG, "Compilation cancelled, no source files to compile $messageEnd")
+        } else {
+            Log.warn(TAG, "Compilation failed $messageEnd")
+        }
+
+        pipelineManager.refreshGuiPipelineList()
+    }
+
+    fun asyncCompile() = GlobalScope.launch {
+        compile { pipelineManager.eocvSim.onMainUpdate.doOnce(it) }
+    }
 
 }
 

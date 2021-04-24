@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.gui.component.visualizer
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
+import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -137,7 +138,8 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
         launch(Dispatchers.Swing) {
             val listModel = DefaultListModel<String>()
             for (pipeline in eocvSim.pipelineManager.pipelines) {
-                listModel.addElement(pipeline.clazz.simpleName)
+                val source = if(pipeline.source == PipelineSource.CLASSPATH) "C" else "R"
+                listModel.addElement("[$source] ${pipeline.clazz.simpleName}")
             }
 
             pipelineSelector.fixedCellWidth = 240

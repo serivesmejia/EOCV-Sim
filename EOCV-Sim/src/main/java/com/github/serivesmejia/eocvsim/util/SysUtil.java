@@ -259,6 +259,10 @@ public class SysUtil {
         return filesUnder(parent, (f) -> f.getName().endsWith(extension));
     }
 
+    public static List<File> filesUnder(File parent) {
+        return filesUnder(parent, (f) -> true);
+    }
+
     public static List<File> filesIn(File parent, Predicate<File> predicate) {
         ArrayList<File> result = new ArrayList<>();
 

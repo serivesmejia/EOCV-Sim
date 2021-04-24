@@ -35,9 +35,7 @@ import javax.tools.*
 
 class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
 
-    private val compiler = ToolProvider.getSystemJavaCompiler()
-
-    private var diagnostic: Diagnostic<out JavaFileObject>? = null
+    private var diagnosticBuilder = StringBuilder()
 
     fun compile(outputJar: File): PipelineCompileResult {
         val files = SysUtil.filesUnder(inputPath, ".java")
@@ -68,19 +66,31 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
                 javaFileObjects
             )
 
-            if(task.call()) {
+            val taskSuccess = task.call()
+            val message = diagnosticBuilder.toString()
+
+            if(taskSuccess) {
                 JarPacker.packClassesUnder(outputJar, fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next())
-                return PipelineCompileResult(PipelineCompileStatus.SUCCESS, "")
+                return PipelineCompileResult(PipelineCompileStatus.SUCCESS, message)
             }
 
-            return PipelineCompileResult(PipelineCompileStatus.FAILED, "")
+            return PipelineCompileResult(PipelineCompileStatus.FAILED, message)
         } else {
             return PipelineCompileResult(PipelineCompileStatus.NO_SOURCE, "No source files")
         }
     }
 
     override fun report(diagnostic: Diagnostic<out JavaFileObject>) {
-        this.diagnostic = diagnostic;
+        val locale = Locale.getDefault()
+        val relativeFile = SysUtil.getRelativePath(inputPath, File(diagnostic.source.name))
+
+        diagnosticBuilder.appendLine(String.format(locale, "%s(%d:%d): %s: %s",
+            relativeFile.path,
+            diagnostic.lineNumber,
+            diagnostic.columnNumber,
+            diagnostic.kind,
+            diagnostic.getMessage(locale)
+        ))
     }
 
 }

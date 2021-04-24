@@ -31,7 +31,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 @Suppress("UNCHECKED_CAST")
-class PipelineClassLoader(pipelinesJar: File = CompiledPipelineManager.PIPELINES_OUTPUT_JAR) : ClassLoader() {
+class PipelineClassLoader(pipelinesJar: File) : ClassLoader() {
 
     private val zipFile = ZipFile(pipelinesJar)
 

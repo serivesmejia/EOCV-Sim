@@ -74,11 +74,16 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
         mFileMenu.addSeparator()
 
+        val fileCompile = JMenuItem("Compile")
+
+        fileCompile.addActionListener { eocvSim.pipelineManager.compiledPipelineManager.asyncCompile() }
+        mFileMenu.add(fileCompile)
+
         val fileRestart = JMenuItem("Restart")
 
         fileRestart.addActionListener { eocvSim.onMainUpdate.doOnce(Runnable { eocvSim.restart() }) }
-
         mFileMenu.add(fileRestart)
+
         add(mFileMenu)
 
         val editSettings = JMenuItem("Settings")

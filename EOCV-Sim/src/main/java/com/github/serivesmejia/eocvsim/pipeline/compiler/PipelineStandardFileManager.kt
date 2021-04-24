@@ -23,11 +23,13 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.compiler.DelegatingStandardFileManager
 import java.io.File
 import java.util.*
+import java.util.function.Predicate
 import javax.tools.StandardJavaFileManager
 import javax.tools.StandardLocation
 
@@ -41,7 +43,13 @@ class PipelineStandardFileManager(delegate: StandardJavaFileManager) : Delegatin
         val classpath = arrayListOf<File>()
 
         for(file in SysUtil.getClasspathFiles()) {
-            classpath.addAll(SysUtil.filesUnder(file, ".jar"))
+            classpath.addAll(
+                SysUtil.filesUnder(file, ".jar")
+            )
+        }
+
+        for(file in classpath) {
+            println(file)
         }
 
         delegate.setLocation(StandardLocation.CLASS_PATH, classpath)
