@@ -23,13 +23,10 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
-import com.github.serivesmejia.eocvsim.EOCVSim
-import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.compiler.DelegatingStandardFileManager
 import java.io.File
 import java.util.*
-import java.util.function.Predicate
 import javax.tools.StandardJavaFileManager
 import javax.tools.StandardLocation
 
@@ -39,19 +36,19 @@ class PipelineStandardFileManager(delegate: StandardJavaFileManager) : Delegatin
         set(value) = delegate.setLocation(StandardLocation.SOURCE_PATH, value)
         get() = delegate.getLocation(StandardLocation.SOURCE_PATH)
 
+    companion object {
+        val classpath by lazy {
+            val classpathList = arrayListOf<File>()
+
+            for(file in SysUtil.getClasspathFiles()) {
+                classpathList.addAll(SysUtil.filesUnder(file, ".jar"))
+            }
+
+            classpathList.toList()
+        }
+    }
+
     init {
-        val classpath = arrayListOf<File>()
-
-        for(file in SysUtil.getClasspathFiles()) {
-            classpath.addAll(
-                SysUtil.filesUnder(file, ".jar")
-            )
-        }
-
-        for(file in classpath) {
-            println(file)
-        }
-
         delegate.setLocation(StandardLocation.CLASS_PATH, classpath)
         delegate.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(CompiledPipelineManager.CLASSES_OUTPUT_FOLDER))
         delegate.setLocation(StandardLocation.SOURCE_OUTPUT, Collections.singletonList(CompiledPipelineManager.SOURCES_OUTPUT_FOLDER))

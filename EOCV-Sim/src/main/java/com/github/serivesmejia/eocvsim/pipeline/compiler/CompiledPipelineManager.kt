@@ -28,6 +28,7 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.qualcomm.robotcore.util.ElapsedTime
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -44,6 +45,17 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         val JARS_OUTPUT_FOLDER    = File(COMPILER_FOLDER, File.separator + "out_jars").mkdirLazy()
 
         val PIPELINES_OUTPUT_JAR  = File(JARS_OUTPUT_FOLDER, File.separator + "pipelines.jar")
+
+        val IS_USABLE by lazy {
+            try {
+                // create stub compiler to see if we
+                // have the JavacTool (only available on JDKs)
+                PipelineCompiler(File(""))
+                true // yes! we can compile stuff on runtime!
+            } catch(e: ClassNotFoundException) {
+                false // uh oh, the class wasn't found anywhere in the current JVM...
+            }
+        }
     }
 
     var workingDirectory = DEF_WORKING_DIR_FOLDER
@@ -53,7 +65,19 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     val TAG = "CompiledPipelineManager"
 
+    fun init() {
+        Log.info(TAG, "Initializing...")
+        asyncCompile()
+    }
+
     fun compile(mainThreadCallsWrapBlock: (() -> Unit) -> Unit = { it() } ) {
+        if(!IS_USABLE) {
+            Log.warn(TAG, "Unable to compile Java source code in this JVM (the class JavacTool wasn't found)")
+            Log.warn(TAG, "For the user, this probably means that the sim is running in a JRE which doesn't include the javac compiler executable")
+            Log.warn(TAG, "To be able to compile pipelines on runtime, make sure the sim is running on a JDK that includes the javac executable (any JDK probably does)")
+            return
+        }
+
         Log.info(TAG, "Compiling java files of working directory at ${workingDirectory.absolutePath}")
 
         val runtime = ElapsedTime()
@@ -69,27 +93,27 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         currentPipelineClassLoader = null
 
-        val messageEnd = "(took $timeElapsed seconds)\n${result.message}"
+        val messageEnd = "(took $timeElapsed seconds)\n${result.message}".trim()
 
         if(result.status == PipelineCompileStatus.SUCCESS) {
-            Log.info(TAG, "Compile successful $messageEnd")
+            Log.info(TAG, "Build successful $messageEnd")
 
             currentPipelineClassLoader = PipelineClassLoader(PIPELINES_OUTPUT_JAR)
 
             for(pipelineClass in currentPipelineClassLoader!!.pipelineClasses) {
                 pipelineManager.addPipelineClass(pipelineClass, PipelineSource.COMPILED_ON_RUNTIME)
-                Log.info(TAG, "Found and added ${pipelineClass.simpleName} from compiled sources")
+                Log.info(TAG, "Added ${pipelineClass.simpleName} from built sources ($PIPELINES_OUTPUT_JAR)")
             }
         } else if(result.status == PipelineCompileStatus.NO_SOURCE) {
-            Log.warn(TAG, "Compilation cancelled, no source files to compile $messageEnd")
+                Log.warn(TAG, "Build cancelled, no source files to compile $messageEnd")
         } else {
-            Log.warn(TAG, "Compilation failed $messageEnd")
+            Log.warn(TAG, "Build failed $messageEnd")
         }
 
         pipelineManager.refreshGuiPipelineList()
     }
 
-    fun asyncCompile() = GlobalScope.launch {
+    fun asyncCompile() = GlobalScope.launch(Dispatchers.IO) {
         compile { pipelineManager.eocvSim.onMainUpdate.doOnce(it) }
     }
 

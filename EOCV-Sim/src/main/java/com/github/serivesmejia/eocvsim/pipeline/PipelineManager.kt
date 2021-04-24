@@ -114,6 +114,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.blank()
 
         requestChangePipeline(0) //change to the default pipeline
+
+        compiledPipelineManager.init()
     }
 
     fun update(inputMat: Mat) {
