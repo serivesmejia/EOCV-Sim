@@ -57,6 +57,9 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
         val javaFileObjects = fileManager.getJavaFileObjects(*files.toTypedArray())
 
         if(javaFileObjects.iterator().hasNext()) {
+
+            SysUtil.deleteFilesUnder(CompiledPipelineManager.CLASSES_OUTPUT_FOLDER)
+
             val task = javac.getTask(
                 PrintWriter(System.out),
                 fileManager,

@@ -267,7 +267,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-        val workspaceMsg = "${config.workspacePath} - "
+        val workspaceMsg = " - ${config.workspacePath}"
 
         val pipelineFpsMsg = " (${pipelineManager.pipelineFpsCounter.fps} Pipeline FPS)"
         val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
@@ -277,9 +277,9 @@ class EOCVSim(val params: Parameters = Parameters()) {
         val msg = isRecording + pipelineFpsMsg + posterFpsMsg + isPaused
 
         if (pipelineManager.currentPipeline == null) {
-            visualizer.setTitleMessage("${workspaceMsg}No pipeline$msg")
+            visualizer.setTitleMessage("No pipeline$msg${workspaceMsg}")
         } else {
-            visualizer.setTitleMessage("${workspaceMsg}${pipelineManager.currentPipelineName}$msg")
+            visualizer.setTitleMessage("${pipelineManager.currentPipelineName}$msg${workspaceMsg}")
         }
     }
 

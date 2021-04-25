@@ -285,6 +285,23 @@ public class SysUtil {
         return filesIn(parent, (f) -> f.getName().endsWith(extension));
     }
 
+    public static void deleteFilesUnder(File parent, Predicate<File> predicate) {
+        for(File file : parent.listFiles()) {
+            if(file.isDirectory())
+                deleteFilesUnder(file, predicate);
+
+            if(predicate != null) {
+                if(predicate.test(file)) file.delete();
+            } else {
+                file.delete();
+            }
+        }
+    }
+
+    public static void deleteFilesUnder(File parent) {
+        deleteFilesUnder(parent, null);
+    }
+
     public static boolean migrateFile(File oldFile, File newFile) {
         if(newFile.exists() || !oldFile.exists()) return false;
 

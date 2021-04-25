@@ -84,16 +84,19 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     fun init() {
         Log.info(TAG, "Initializing...")
 
-        asyncCompile { succeed ->
+        asyncCompile { result ->
             // if the build failed, try to load the
             // latest pipelines.jar file, if it exists
-            if(!succeed)
+            if(result.status == PipelineCompileStatus.FAILED)
                 loadFromPipelinesJar()
         }
     }
 
-    fun compile(): Boolean {
-        if(!IS_USABLE) return false
+    fun compile(): PipelineCompileResult {
+        if(!IS_USABLE) return PipelineCompileResult(
+            PipelineCompileStatus.FAILED,
+            "Current JVM does not have a javac executable (a JDK is needed)"
+        )
 
         Log.info(TAG, "Building java files in workspace at ${workspace.absolutePath}")
 
@@ -114,20 +117,21 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             PipelineCompileStatus.SUCCESS -> {
                 Log.info(TAG, "Build successful $messageEnd")
                 loadFromPipelinesJar()
-                return true
             }
             PipelineCompileStatus.NO_SOURCE -> {
                 Log.warn(TAG, "Build cancelled, no source files to compile $messageEnd")
+                //delete jar if we had no sources, the most logical outcome in this case
+                if(PIPELINES_OUTPUT_JAR.exists()) PIPELINES_OUTPUT_JAR.delete()
             }
             else -> {
                 Log.warn(TAG, "Build failed $messageEnd")
             }
         }
 
-        return false
+        return result
     }
 
-    fun asyncCompile(endCallback: (Boolean) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
+    fun asyncCompile(endCallback: (PipelineCompileResult) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
         endCallback(compile())
     }
 
