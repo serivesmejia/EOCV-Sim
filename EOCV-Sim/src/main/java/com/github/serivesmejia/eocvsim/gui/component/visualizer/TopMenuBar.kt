@@ -29,7 +29,10 @@ import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
 import com.github.serivesmejia.eocvsim.input.SourceType
+import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
+import java.awt.Dimension
 import java.awt.event.ActionEvent
+import javax.swing.JFileChooser
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
@@ -60,6 +63,38 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
             fileNewInputSourceSubmenu.add(fileNewInputSourceItem)
         }
 
+
+        val fileSetWorkspace = JMenuItem("Select workspace")
+
+        fileSetWorkspace.addActionListener {
+            DialogFactory.createFileChooser(
+                visualizer.frame,
+                DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
+            ).addCloseListener { OPTION, selectedFile, _ ->
+                if(OPTION == JFileChooser.APPROVE_OPTION) {
+                    eocvSim.config.workspacePath = selectedFile.absolutePath
+                }
+            }
+        }
+        mFileMenu.add(fileSetWorkspace)
+
+        val fileCompile = JMenuItem("Compile")
+
+        fileCompile.addActionListener {
+            if(CompiledPipelineManager.IS_USABLE) {
+                eocvSim.pipelineManager.compiledPipelineManager.asyncCompile()
+            } else {
+                visualizer.asyncPleaseWaitDialog(
+                    "Runtime compilation is not supported on this JVM",
+                    "For further info, check the EOCV-Sim GitHub repo",
+                    "Close",
+                    Dimension(320, 160),
+                    true, true
+                )
+            }
+        }
+        mFileMenu.add(fileCompile)
+
         val fileSaveMatItem = JMenuItem("Save Mat to disk")
 
         fileSaveMatItem.addActionListener {
@@ -73,11 +108,6 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
         mFileMenu.add(fileSaveMatItem)
 
         mFileMenu.addSeparator()
-
-        val fileCompile = JMenuItem("Compile")
-
-        fileCompile.addActionListener { eocvSim.pipelineManager.compiledPipelineManager.asyncCompile() }
-        mFileMenu.add(fileCompile)
 
         val fileRestart = JMenuItem("Restart")
 

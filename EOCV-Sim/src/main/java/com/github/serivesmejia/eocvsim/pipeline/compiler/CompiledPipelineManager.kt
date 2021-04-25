@@ -74,7 +74,9 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         val TAG = "CompiledPipelineManager"
     }
 
-    var workspace = DEF_WORKSPACE_FOLDER
+    var workspace: File
+        set(value) { pipelineManager.eocvSim.config.workspacePath = value.absolutePath }
+        get() = File(pipelineManager.eocvSim.config.workspacePath)
 
     var currentPipelineClassLoader: PipelineClassLoader? = null
         private set
@@ -93,7 +95,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     fun compile(): Boolean {
         if(!IS_USABLE) return false
 
-        Log.info(TAG, "Compiling java files in workspace at ${workspace.absolutePath}")
+        Log.info(TAG, "Building java files in workspace at ${workspace.absolutePath}")
 
         val runtime = ElapsedTime()
 

@@ -26,9 +26,11 @@ package com.github.serivesmejia.eocvsim.config;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanelConfig;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
+import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.tuner.TunableField;
 import org.opencv.core.Size;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class Config {
@@ -41,6 +43,8 @@ public class Config {
     public volatile boolean pauseOnImages = true;
 
     public volatile Size videoRecordingSize = new Size(640, 480);
+
+    public volatile String workspacePath  = CompiledPipelineManager.Companion.getDEF_WORKSPACE_FOLDER().getAbsolutePath();
 
     public volatile TunableFieldPanelConfig.Config globalTunableFieldsConfig =
             new TunableFieldPanelConfig.Config(
