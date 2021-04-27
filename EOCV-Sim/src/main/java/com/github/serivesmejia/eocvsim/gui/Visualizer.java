@@ -34,7 +34,9 @@ import com.github.serivesmejia.eocvsim.gui.component.visualizer.TelemetryPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
+import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
+import kotlin.Unit;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import javax.swing.*;
@@ -367,6 +369,34 @@ public class Visualizer {
 
         tunerMenuPanel.updateUI();
         imageTunerSplitPane.updateUI();
+    }
+
+    public void asyncCompilePipelines() {
+        if(CompiledPipelineManager.Companion.getIS_USABLE()) {
+            menuBar.fileWorkspCompile.setEnabled(false);
+            eocvSim.pipelineManager.getCompiledPipelineManager().asyncCompile((result) -> {
+                menuBar.fileWorkspCompile.setEnabled(true);
+                return Unit.INSTANCE;
+            });
+        } else {
+            asyncPleaseWaitDialog(
+                    "Runtime compilation is not supported on this JVM",
+                    "For further info, check the EOCV-Sim GitHub repo",
+                    "Close",
+                    new Dimension(320, 160),
+                    true, true
+            );
+        }
+    }
+
+    public void selectPipelinesWorkspace() {
+        DialogFactory.createFileChooser(
+                frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
+        ).addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
+            if (OPTION == JFileChooser.APPROVE_OPTION) { 
+                eocvSim.getConfig().workspacePath = selectedFile.getAbsolutePath();
+            }
+        });
     }
 
     // PLEASE WAIT DIALOGS

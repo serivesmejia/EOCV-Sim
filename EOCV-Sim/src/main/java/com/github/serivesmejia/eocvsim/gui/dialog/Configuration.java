@@ -132,7 +132,6 @@ public class Configuration {
         configuration.setResizable(false);
         configuration.setLocationRelativeTo(null);
         configuration.setVisible(true);
-
     }
 
     private void applyChanges() {

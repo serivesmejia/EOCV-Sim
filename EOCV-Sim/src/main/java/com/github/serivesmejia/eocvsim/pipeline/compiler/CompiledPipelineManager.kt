@@ -25,6 +25,7 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
+import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
@@ -34,7 +35,6 @@ import com.sun.tools.javac.api.JavacTool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.openftc.easyopencv.OpenCvPipeline
 import java.io.File
 
@@ -71,7 +71,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             usable
         }
 
-        val TAG = "CompiledPipelineManager"
+        const val TAG = "CompiledPipelineManager"
     }
 
     var workspace: File
@@ -81,15 +81,13 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     var currentPipelineClassLoader: PipelineClassLoader? = null
         private set
 
+    var lastCompileOutputMessage = ""
+        private set
+
     fun init() {
         Log.info(TAG, "Initializing...")
 
-        asyncCompile { result ->
-            // if the build failed, try to load the
-            // latest pipelines.jar file, if it exists
-            if(result.status == PipelineCompileStatus.FAILED)
-                loadFromPipelinesJar()
-        }
+        asyncCompile()
     }
 
     fun compile(): PipelineCompileResult {
@@ -105,27 +103,36 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         val compiler = PipelineCompiler(workspace)
         val result = compiler.compile(PIPELINES_OUTPUT_JAR)
 
-        val timeElapsed = runtime.seconds()
+        val timeElapsed = String.format("%.2f", runtime.seconds())
 
         pipelineManager.requestRemoveAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME, false)
 
         currentPipelineClassLoader = null
 
-        val messageEnd = "(took $timeElapsed seconds)\n${result.message}".trim()
+        val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
 
-        when(result.status) {
+        val lastCompileOutputMessage = when(result.status) {
             PipelineCompileStatus.SUCCESS -> {
-                Log.info(TAG, "Build successful $messageEnd")
                 loadFromPipelinesJar()
+                "Build successful $messageEnd"
             }
             PipelineCompileStatus.NO_SOURCE -> {
-                Log.warn(TAG, "Build cancelled, no source files to compile $messageEnd")
-                //delete jar if we had no sources, the most logical outcome in this case
-                if(PIPELINES_OUTPUT_JAR.exists()) PIPELINES_OUTPUT_JAR.delete()
+                deleteJarFile()
+                "Build cancelled, no source files to compile $messageEnd"
             }
             else -> {
-                Log.warn(TAG, "Build failed $messageEnd")
+                deleteJarFile()
+                "Build failed $messageEnd"
             }
+        }
+
+        if(result.status == PipelineCompileStatus.SUCCESS) {
+            Log.info(TAG, "$lastCompileOutputMessage\n")
+        } else {
+            Log.warn(TAG, "$lastCompileOutputMessage\n")
+
+            if(result.status == PipelineCompileStatus.FAILED)
+                DialogFactory.createBuildOutput(pipelineManager.eocvSim, lastCompileOutputMessage)
         }
 
         return result
@@ -133,6 +140,12 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     fun asyncCompile(endCallback: (PipelineCompileResult) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
         endCallback(compile())
+    }
+
+    private fun deleteJarFile() {
+        //delete jar if we had no sources, the most logical outcome in this case
+        if(PIPELINES_OUTPUT_JAR.exists()) PIPELINES_OUTPUT_JAR.delete()
+        currentPipelineClassLoader = null
     }
 
     fun loadFromPipelinesJar() {

@@ -29,10 +29,6 @@ import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
 import com.github.serivesmejia.eocvsim.input.SourceType
-import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
-import java.awt.Dimension
-import java.awt.event.ActionEvent
-import javax.swing.JFileChooser
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
@@ -42,6 +38,8 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
     @JvmField val mFileMenu = JMenu("File")
     @JvmField val mEditMenu = JMenu("Edit")
     @JvmField val mHelpMenu = JMenu("Help")
+
+    @JvmField val fileWorkspCompile = JMenuItem("Build java files")
 
     init {
         val fileNewSubmenu = JMenu("New")
@@ -63,49 +61,28 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
             fileNewInputSourceSubmenu.add(fileNewInputSourceItem)
         }
 
+        val fileWorkspace = JMenu("Workspace")
 
-        val fileSetWorkspace = JMenuItem("Select workspace")
+        val fileWorkspSetWorkspace = JMenuItem("Select workspace")
 
-        fileSetWorkspace.addActionListener {
-            DialogFactory.createFileChooser(
-                visualizer.frame,
-                DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
-            ).addCloseListener { OPTION, selectedFile, _ ->
-                if(OPTION == JFileChooser.APPROVE_OPTION) {
-                    eocvSim.config.workspacePath = selectedFile.absolutePath
-                }
-            }
-        }
-        mFileMenu.add(fileSetWorkspace)
+        fileWorkspSetWorkspace.addActionListener { visualizer.selectPipelinesWorkspace() }
+        fileWorkspace.add(fileWorkspSetWorkspace)
 
-        val fileCompile = JMenuItem("Compile")
+        fileWorkspCompile.addActionListener { visualizer.asyncCompilePipelines() }
+        fileWorkspace.add(fileWorkspCompile)
 
-        fileCompile.addActionListener {
-            if(CompiledPipelineManager.IS_USABLE) {
-                eocvSim.pipelineManager.compiledPipelineManager.asyncCompile()
-            } else {
-                visualizer.asyncPleaseWaitDialog(
-                    "Runtime compilation is not supported on this JVM",
-                    "For further info, check the EOCV-Sim GitHub repo",
-                    "Close",
-                    Dimension(320, 160),
-                    true, true
-                )
-            }
-        }
-        mFileMenu.add(fileCompile)
+        mFileMenu.add(fileWorkspace)
 
-        val fileSaveMatItem = JMenuItem("Save Mat to disk")
+        val fileSaveMat = JMenuItem("Save current image")
 
-        fileSaveMatItem.addActionListener {
+        fileSaveMat.addActionListener {
             GuiUtil.saveMatFileChooser(
                 visualizer.frame,
                 visualizer.viewport.lastVisualizedMat,
                 eocvSim
             )
         }
-
-        mFileMenu.add(fileSaveMatItem)
+        mFileMenu.add(fileSaveMat)
 
         mFileMenu.addSeparator()
 
