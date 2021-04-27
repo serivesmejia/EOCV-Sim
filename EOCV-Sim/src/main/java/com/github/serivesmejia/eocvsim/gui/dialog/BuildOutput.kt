@@ -15,7 +15,7 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         buildOutput.title = "Build output"
         buildOutput.setSize(500, 350)
 
-        buildOutput.contentPane.layout = BoxLayout(buildOutput.contentPane, BoxLayout.PAGE_AXIS)
+        buildOutput.contentPane.layout = BoxLayout(buildOutput.contentPane, BoxLayout.Y_AXIS)
 
         val buildOutputArea = JTextArea(buildOutputMessage)
         buildOutputArea.isEditable = false
@@ -30,14 +30,20 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         }
 
         buildOutput.contentPane.add(buildOutputScrollPanel)
-        
+
+        val bottomButtonsPanel = JPanel(GridLayout(1, 2))
+
         val clearButton = JButton("Clear")
 
         clearButton.addActionListener {
             buildOutputArea.text = ""
         }
+        bottomButtonsPanel.add(clearButton)
 
-        buildOutput.contentPane.add(clearButton)
+        val compileButton = JButton("Compile")
+        bottomButtonsPanel.add(compileButton)
+
+        buildOutput.contentPane.add(bottomButtonsPanel)
 
         buildOutput.setLocationRelativeTo(null)
         buildOutput.isVisible = true
