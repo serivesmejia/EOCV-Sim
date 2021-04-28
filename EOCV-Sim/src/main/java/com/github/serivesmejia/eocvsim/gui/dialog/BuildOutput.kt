@@ -8,6 +8,8 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
 
     private val buildOutput = JDialog(parent)
 
+    private val bottomButtonsPanel = JPanel()
+
     init {
         eocvSim.visualizer.childDialogs.add(buildOutput)
 
@@ -15,7 +17,7 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         buildOutput.title = "Build output"
         buildOutput.setSize(500, 350)
 
-        buildOutput.contentPane.layout = BoxLayout(buildOutput.contentPane, BoxLayout.Y_AXIS)
+        buildOutput.contentPane.layout = GridBagLayout()
 
         val buildOutputArea = JTextArea(buildOutputMessage)
         buildOutputArea.isEditable = false
@@ -25,13 +27,20 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         buildOutputScroll.verticalScrollBarPolicy   = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         buildOutputScroll.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
 
-        val buildOutputScrollPanel = JPanel(GridLayout(1, 1)).apply {
-            add(buildOutputScroll)
-        }
+        buildOutput.contentPane.add(buildOutputScroll, GridBagConstraints().apply {
+            fill = GridBagConstraints.BOTH
+            weightx = 0.5
+            weighty = 1.0
+        })
 
-        buildOutput.contentPane.add(buildOutputScrollPanel)
+        bottomButtonsPanel.layout = BoxLayout(bottomButtonsPanel, BoxLayout.LINE_AXIS)
 
-        val bottomButtonsPanel = JPanel(GridLayout(1, 2))
+        bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
+
+        val compileButton = JButton("Compile")
+        bottomButtonsPanel.add(compileButton)
+
+        bottomButtonsPanel.add(Box.createHorizontalGlue())
 
         val clearButton = JButton("Clear")
 
@@ -40,10 +49,25 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         }
         bottomButtonsPanel.add(clearButton)
 
-        val compileButton = JButton("Compile")
-        bottomButtonsPanel.add(compileButton)
+        bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
 
-        buildOutput.contentPane.add(bottomButtonsPanel)
+        val closeButton = JButton("Close")
+
+        closeButton.addActionListener {
+            buildOutput.isVisible = false
+        }
+        bottomButtonsPanel.add(closeButton)
+
+        bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
+
+        buildOutput.contentPane.add(bottomButtonsPanel, GridBagConstraints().apply {
+            fill = GridBagConstraints.HORIZONTAL
+            gridy = 1
+
+            weightx = 1.0
+            ipadx   = 10
+            ipady   = 10
+        })
 
         buildOutput.setLocationRelativeTo(null)
         buildOutput.isVisible = true
