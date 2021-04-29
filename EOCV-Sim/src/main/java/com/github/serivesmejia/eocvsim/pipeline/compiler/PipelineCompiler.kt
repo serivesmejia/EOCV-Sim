@@ -35,7 +35,18 @@ import javax.tools.*
 
 class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
 
-    private var diagnosticBuilder = StringBuilder()
+    private var diagnosticBuilders = mutableMapOf<String, StringBuilder>()
+
+    val latestDiagnostic: String
+        get() {
+            val diagnostic = StringBuilder()
+            for((_, builder) in diagnosticBuilders) {
+                diagnostic.appendLine(builder)
+                diagnostic.appendLine("")
+            }
+
+            return diagnostic.toString().trim()
+        }
 
     fun compile(outputJar: File): PipelineCompileResult {
         val files = SysUtil.filesUnder(inputPath, ".java")
@@ -70,7 +81,7 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
             )
 
             val taskSuccess = task.call()
-            val message = diagnosticBuilder.toString()
+            val message = latestDiagnostic
 
             if(taskSuccess) {
                 JarPacker.packClassesUnder(outputJar, fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next())
@@ -87,13 +98,21 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
         val locale = Locale.getDefault()
         val relativeFile = SysUtil.getRelativePath(inputPath, File(diagnostic.source.name))
 
-        diagnosticBuilder.appendLine(String.format(locale, "%s(%d:%d): %s: %s",
-            relativeFile.path,
+        val builder = diagnosticBuilders[relativeFile.path] ?: StringBuilder()
+
+        if(!diagnosticBuilders.containsKey(relativeFile.path)) {
+            builder.appendLine("> ${relativeFile.path}")
+            diagnosticBuilders[relativeFile.path] = builder
+        }
+
+        builder.appendLine(String.format(locale, "  (%d:%d): %s: %s",
             diagnostic.lineNumber,
             diagnostic.columnNumber,
             diagnostic.kind,
             diagnostic.getMessage(locale)
         ))
+
+
     }
 
 }

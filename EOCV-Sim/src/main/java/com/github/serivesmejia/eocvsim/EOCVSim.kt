@@ -218,7 +218,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun stopRecordingSession() {
         currentRecordingSession?.let { itVideo ->
 
-            visualizer.pipelineSelectorPanel.pipelineRecordBtt.isEnabled = false
+            visualizer.pipelineSelectorPanel.buttonsPanel.pipelineRecordBtt.isEnabled = false
 
             itVideo.stopRecordingSession()
             pipelineManager.pipelineOutputPosters.remove(itVideo.matPoster)
@@ -258,7 +258,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                             }
 
                             currentRecordingSession = null
-                            visualizer.pipelineSelectorPanel.pipelineRecordBtt.isEnabled = true
+                            visualizer.pipelineSelectorPanel.buttonsPanel.pipelineRecordBtt.isEnabled = true
                         }
                     }
         }

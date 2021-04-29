@@ -28,7 +28,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
-import com.github.serivesmejia.eocvsim.gui.component.visualizer.PipelineSelectorPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline.PipelineSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.SourceSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TelemetryPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
@@ -37,7 +37,6 @@ import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.util.Log;
 import kotlin.Unit;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import javax.swing.*;
 import java.awt.*;

@@ -26,10 +26,12 @@
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
+import com.github.serivesmejia.eocvsim.gui.dialog.BuildOutput
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.qualcomm.robotcore.util.ElapsedTime
 import com.sun.tools.javac.api.JavacTool
 import kotlinx.coroutines.Dispatchers
@@ -81,20 +83,38 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     var currentPipelineClassLoader: PipelineClassLoader? = null
         private set
 
-    var lastCompileOutputMessage = ""
+    val onBuildStart = EventHandler("CompiledPipelineManager-OnBuildStart")
+    val onBuildEnd   = EventHandler("CompiledPipelineManager-OnBuildEnd")
+
+    var lastBuildResult: PipelineCompileResult? = null
+        private set
+    var lastBuildOutputMessage: String? = null
+        private set
+
+    var isBuildRunning = false
         private set
 
     fun init() {
         Log.info(TAG, "Initializing...")
-
         asyncCompile()
     }
 
     fun compile(): PipelineCompileResult {
-        if(!IS_USABLE) return PipelineCompileResult(
-            PipelineCompileStatus.FAILED,
-            "Current JVM does not have a javac executable (a JDK is needed)"
-        )
+        isBuildRunning = true
+        onBuildStart.run()
+
+        if(!IS_USABLE) {
+            lastBuildResult = PipelineCompileResult(
+                PipelineCompileStatus.FAILED,
+                "Current JVM does not have a javac executable (a JDK is needed)"
+            )
+            lastBuildOutputMessage = null
+
+            onBuildEnd.run()
+            isBuildRunning = false
+
+            return lastBuildResult!!
+        }
 
         Log.info(TAG, "Building java files in workspace at ${workspace.absolutePath}")
 
@@ -102,6 +122,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         val compiler = PipelineCompiler(workspace)
         val result = compiler.compile(PIPELINES_OUTPUT_JAR)
+        lastBuildResult = result
 
         val timeElapsed = String.format("%.2f", runtime.seconds())
 
@@ -111,7 +132,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
 
-        val lastCompileOutputMessage = when(result.status) {
+        lastBuildOutputMessage = when(result.status) {
             PipelineCompileStatus.SUCCESS -> {
                 loadFromPipelinesJar()
                 "Build successful $messageEnd"
@@ -127,13 +148,16 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         }
 
         if(result.status == PipelineCompileStatus.SUCCESS) {
-            Log.info(TAG, "$lastCompileOutputMessage\n")
+            Log.info(TAG, "$lastBuildOutputMessage\n")
         } else {
-            Log.warn(TAG, "$lastCompileOutputMessage\n")
+            Log.warn(TAG, "$lastBuildOutputMessage\n")
 
-            if(result.status == PipelineCompileStatus.FAILED)
-                DialogFactory.createBuildOutput(pipelineManager.eocvSim, lastCompileOutputMessage)
+            if(result.status == PipelineCompileStatus.FAILED && !BuildOutput.isAlreadyOpened)
+                DialogFactory.createBuildOutput(pipelineManager.eocvSim)
         }
+
+        onBuildEnd.run()
+        isBuildRunning = false
 
         return result
     }

@@ -2,13 +2,25 @@ package com.github.serivesmejia.eocvsim.gui.dialog
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import java.awt.*
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
 
-class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) {
+class BuildOutput(parent: JFrame, private val eocvSim: EOCVSim) {
+
+    companion object {
+        var isAlreadyOpened = false
+            private set
+    }
 
     private val buildOutput = JDialog(parent)
 
+    private val buildOutputArea = JTextArea("")
+
     private val bottomButtonsPanel = JPanel()
+    private val compileButton = JButton("Build again")
+
+    private val compiledPipelineManager = eocvSim.pipelineManager.compiledPipelineManager
 
     init {
         eocvSim.visualizer.childDialogs.add(buildOutput)
@@ -19,7 +31,6 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
 
         buildOutput.contentPane.layout = GridBagLayout()
 
-        val buildOutputArea = JTextArea(buildOutputMessage)
         buildOutputArea.isEditable = false
         buildOutputArea.lineWrap   = true
 
@@ -37,27 +48,26 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
 
         bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
 
-        val compileButton = JButton("Compile")
-        bottomButtonsPanel.add(compileButton)
+        compileButton.addActionListener {
+            eocvSim.visualizer.asyncCompilePipelines()
+        }
 
+        bottomButtonsPanel.add(compileButton)
         bottomButtonsPanel.add(Box.createHorizontalGlue())
 
         val clearButton = JButton("Clear")
+        clearButton.addActionListener { buildOutputArea.text = "" }
 
-        clearButton.addActionListener {
-            buildOutputArea.text = ""
-        }
         bottomButtonsPanel.add(clearButton)
-
         bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
 
         val closeButton = JButton("Close")
-
         closeButton.addActionListener {
             buildOutput.isVisible = false
+            isAlreadyOpened = false
         }
-        bottomButtonsPanel.add(closeButton)
 
+        bottomButtonsPanel.add(closeButton)
         bottomButtonsPanel.add(Box.createRigidArea(Dimension(4, 0)))
 
         buildOutput.contentPane.add(bottomButtonsPanel, GridBagConstraints().apply {
@@ -70,7 +80,55 @@ class BuildOutput(parent: JFrame, buildOutputMessage: String, eocvSim: EOCVSim) 
         })
 
         buildOutput.setLocationRelativeTo(null)
+        registerListeners()
+
+        isAlreadyOpened = true
+
+        buildEnded()
+        if(compiledPipelineManager.isBuildRunning) {
+            buildRunning()
+        }
+
         buildOutput.isVisible = true
+    }
+
+    private fun registerListeners() {
+        buildOutput.addWindowListener(object: WindowAdapter() {
+            override fun windowClosing(e: WindowEvent) {
+                isAlreadyOpened = false
+            }
+        })
+        compiledPipelineManager.onBuildStart.doPersistent {
+            if(!buildOutput.isVisible) {
+                compiledPipelineManager.onBuildStart.removePersistentListener(it)
+            } else {
+                buildRunning()
+            }
+        }
+
+        compiledPipelineManager.onBuildEnd.doPersistent {
+            if(!buildOutput.isVisible) {
+                compiledPipelineManager.onBuildEnd.removePersistentListener(it)
+            } else {
+                buildEnded()
+            }
+        }
+    }
+
+    private fun buildRunning() {
+        compileButton.isEnabled = false
+        buildOutputArea.text = "Build running..."
+    }
+
+    private fun buildEnded() {
+        compiledPipelineManager.run {
+            buildOutputArea.text = when {
+                lastBuildOutputMessage != null -> lastBuildOutputMessage!!
+                lastBuildResult != null -> lastBuildResult!!.message
+                else -> "No output"
+            }
+        }
+        compileButton.isEnabled = true
     }
 
 }

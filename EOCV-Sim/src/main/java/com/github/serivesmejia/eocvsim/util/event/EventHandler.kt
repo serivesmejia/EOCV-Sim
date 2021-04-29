@@ -99,7 +99,11 @@ class EventHandler(val name: String) : Runnable {
         return if(listener is KEventListener) { listener } else { null }
     }
 
-    fun removeListener(id: Int) = synchronized(lock) { internalListeners.remove(id) }
+    fun removePersistentListener(id: Int) {
+        if(internalListeners.contains(id)) {
+            synchronized(lock) { internalListeners.remove(id) }
+        }
+    }
 
     fun removeAllListeners() = synchronized(lock) {
         internalListeners.clear()

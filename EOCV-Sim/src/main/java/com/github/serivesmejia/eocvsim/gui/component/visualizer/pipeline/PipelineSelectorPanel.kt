@@ -21,7 +21,7 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.component.visualizer
+package com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
@@ -49,9 +49,8 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
     val pipelineSelector         = JList<String>()
     val pipelineSelectorScroll   = JScrollPane()
-    var pipelineButtonsContainer = JPanel()
-    val pipelinePauseBtt         = JToggleButton("Pause")
-    val pipelineRecordBtt        = JToggleButton("Record")
+
+    val buttonsPanel = PipelineSelectorButtonsPanel(eocvSim)
 
     private var beforeSelectedPipeline = -1
 
@@ -79,35 +78,12 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
         add(pipelineSelectorScrollContainer)
 
-        pipelineButtonsContainer = JPanel(FlowLayout(FlowLayout.CENTER))
-
-        pipelineButtonsContainer.add(pipelinePauseBtt)
-        pipelineButtonsContainer.add(pipelineRecordBtt)
-
-        add(pipelineButtonsContainer)
+        add(buttonsPanel)
 
         registerListeners()
     }
 
     private fun registerListeners() {
-        //listener for changing pause state
-        pipelinePauseBtt.addActionListener {
-            eocvSim.onMainUpdate.doOnce { eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected) }
-        }
-
-        pipelinePauseBtt.addChangeListener {
-            pipelinePauseBtt.text = if(pipelinePauseBtt.isSelected) "Resume" else "Pause"
-        }
-
-        pipelineRecordBtt.addActionListener {
-            eocvSim.onMainUpdate.doOnce {
-                if (pipelineRecordBtt.isSelected) {
-                    if (!eocvSim.isCurrentlyRecording()) eocvSim.startRecordingSession()
-                } else {
-                    if (eocvSim.isCurrentlyRecording()) eocvSim.stopRecordingSession()
-                }
-            }
-        }
 
         //listener for changing pipeline
         pipelineSelector.addListSelectionListener { evt: ListSelectionEvent ->

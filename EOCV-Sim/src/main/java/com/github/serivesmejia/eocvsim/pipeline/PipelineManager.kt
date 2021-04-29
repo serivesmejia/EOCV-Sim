@@ -45,7 +45,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
         const val PIPELINE_TIMEOUT_MS = 4100L
-        const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 4
+        const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 8
     }
 
     @JvmField val onUpdate          = EventHandler("OnPipelineUpdate")
@@ -393,7 +393,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             onResume.run()
         }
 
-        eocvSim.visualizer.pipelineSelectorPanel.pipelinePauseBtt.isSelected = this.paused
+        eocvSim.visualizer.pipelineSelectorPanel.buttonsPanel.pipelinePauseBtt.isSelected = paused
     }
 
     fun togglePause() = setPaused(!paused)

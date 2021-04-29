@@ -87,8 +87,8 @@ public class DialogFactory {
         invokeLater(() -> new About(eocvSim.visualizer.frame, eocvSim));
     }
 
-    public static void createBuildOutput(EOCVSim eocvSim, String buildOutput) {
-        invokeLater(() -> new BuildOutput(eocvSim.visualizer.frame, buildOutput, eocvSim));
+    public static void createBuildOutput(EOCVSim eocvSim) {
+        invokeLater(() -> new BuildOutput(eocvSim.visualizer.frame, eocvSim));
     }
 
     public static FileAlreadyExists.UserChoice createFileAlreadyExistsDialog(EOCVSim eocvSim) {

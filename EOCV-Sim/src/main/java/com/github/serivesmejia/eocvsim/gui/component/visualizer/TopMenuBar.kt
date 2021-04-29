@@ -27,8 +27,11 @@ package com.github.serivesmejia.eocvsim.gui.component.visualizer
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.gui.Visualizer
+import com.github.serivesmejia.eocvsim.gui.dialog.BuildOutput
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
 import com.github.serivesmejia.eocvsim.input.SourceType
+import java.awt.Desktop
+import java.net.URI
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
@@ -71,6 +74,14 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
         fileWorkspCompile.addActionListener { visualizer.asyncCompilePipelines() }
         fileWorkspace.add(fileWorkspCompile)
 
+        val fileWorkspBuildOutput = JMenuItem("Output")
+
+        fileWorkspBuildOutput.addActionListener {
+            if(!BuildOutput.isAlreadyOpened)
+                DialogFactory.createBuildOutput(eocvSim)
+        }
+        fileWorkspace.add(fileWorkspBuildOutput)
+
         mFileMenu.add(fileWorkspace)
 
         val fileSaveMat = JMenuItem("Save current image")
@@ -88,7 +99,7 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
         val fileRestart = JMenuItem("Restart")
 
-        fileRestart.addActionListener { eocvSim.onMainUpdate.doOnce(Runnable { eocvSim.restart() }) }
+        fileRestart.addActionListener { eocvSim.onMainUpdate.doOnce { eocvSim.restart() } }
         mFileMenu.add(fileRestart)
 
         add(mFileMenu)
@@ -98,6 +109,14 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
         mEditMenu.add(editSettings)
         add(mEditMenu)
+
+        val helpUsage = JMenuItem("Usage")
+        helpUsage.addActionListener {
+            Desktop.getDesktop().browse(URI("https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md"))
+        }
+
+        helpUsage.isEnabled = Desktop.isDesktopSupported()
+        mHelpMenu.add(helpUsage)
 
         val helpAbout = JMenuItem("About")
         helpAbout.addActionListener { DialogFactory.createAboutDialog(eocvSim) }
