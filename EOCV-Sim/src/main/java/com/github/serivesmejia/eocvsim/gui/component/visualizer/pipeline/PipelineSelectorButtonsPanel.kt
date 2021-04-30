@@ -26,6 +26,7 @@ package com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline
 import com.github.serivesmejia.eocvsim.EOCVSim
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JToggleButton
@@ -46,7 +47,9 @@ class PipelineSelectorButtonsPanel(eocvSim: EOCVSim) : JPanel(GridBagLayout()) {
         pipelinePauseBtt.addChangeListener {
             pipelinePauseBtt.text = if(pipelinePauseBtt.isSelected) "Resume" else "Pause"
         }
-        add(pipelinePauseBtt, GridBagConstraints())
+        add(pipelinePauseBtt, GridBagConstraints().apply {
+            insets = Insets(0, 0, 0, 5)
+        })
 
         pipelineRecordBtt.addActionListener {
             eocvSim.onMainUpdate.doOnce {
@@ -60,9 +63,14 @@ class PipelineSelectorButtonsPanel(eocvSim: EOCVSim) : JPanel(GridBagLayout()) {
         add(pipelineRecordBtt, GridBagConstraints().apply { gridx = 1 })
 
         add(pipelineWorkspaceBtt, GridBagConstraints().apply {
+            gridwidth = 2
             gridy = 1
-            weighty = 0.5
+
+            insets = Insets(5, 0, 0, 0)
+            weightx = 1.0
+
             fill = GridBagConstraints.HORIZONTAL
+            anchor = GridBagConstraints.CENTER
         })
     }
 
