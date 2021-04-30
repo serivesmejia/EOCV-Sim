@@ -21,13 +21,10 @@
  *
  */
 
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
-
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.compiler.JarPacker
-import com.sun.tools.javac.api.JavacTool
 import java.io.File
 import java.io.PrintWriter
 import java.util.*
@@ -48,19 +45,20 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
             return diagnostic.toString().trim()
         }
 
+    val args = arrayListOf(
+        "-source", "1.8",
+        "-target", "1.8",
+        "-g",
+        "-encoding", "UTF-8",
+        "-Xlint:unchecked",
+        "-Xlint:deprecation",
+        "-XDuseUnsharedTable=true"
+    )
+
     fun compile(outputJar: File): PipelineCompileResult {
         val files = SysUtil.filesUnder(inputPath, ".java")
 
-        val javac = JavacTool.create()
-        val args = arrayListOf(
-            "-source", "1.8",
-            "-target", "1.8",
-            "-g",
-            "-encoding", "UTF-8",
-            "-Xlint:unchecked",
-            "-Xlint:deprecation",
-            "-XDuseUnsharedTable=true"
-        )
+        val javac = ToolProvider.getSystemJavaCompiler()
         
         val fileManager = PipelineStandardFileManager(javac.getStandardFileManager(this, null, null))
         fileManager.sourcePath = Collections.singleton(inputPath)
