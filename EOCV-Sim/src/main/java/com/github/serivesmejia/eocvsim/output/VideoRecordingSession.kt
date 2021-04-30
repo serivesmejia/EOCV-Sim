@@ -25,8 +25,8 @@ package com.github.serivesmejia.eocvsim.output
 
 import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.util.StrUtil
-import com.github.serivesmejia.eocvsim.util.extension.CvExt.aspectRatio
-import com.github.serivesmejia.eocvsim.util.extension.CvExt.clipTo
+import com.github.serivesmejia.eocvsim.util.extension.aspectRatio
+import com.github.serivesmejia.eocvsim.util.extension.clipTo
 import com.github.serivesmejia.eocvsim.util.fps.FpsCounter
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc

@@ -26,8 +26,8 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
-import com.github.serivesmejia.eocvsim.util.extension.CvExt.cvtColor
-import com.github.serivesmejia.eocvsim.util.extension.NumberExt.clipUpperZero
+import com.github.serivesmejia.eocvsim.util.extension.cvtColor
+import com.github.serivesmejia.eocvsim.util.extension.clipUpperZero
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter

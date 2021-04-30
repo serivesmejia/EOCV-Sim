@@ -54,22 +54,6 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         val PIPELINES_OUTPUT_JAR  = File(JARS_OUTPUT_FOLDER, File.separator + "pipelines.jar")
 
-        val IS_USABLE by lazy {
-            val usable = COMPILER != null
-
-            // Send a warning message to console
-            // will only be sent once (that's why it's done here)
-            if(!usable) {
-                Log.warn(TAG, "Unable to compile Java source code in this JVM (the ToolProvider wasn't able to provide a compiler)")
-                Log.warn(TAG, "For the user, this probably means that the sim is running in a JRE which doesn't include the javac compiler executable")
-                Log.warn(TAG, "To be able to compile pipelines on runtime, make sure the sim is running on a JDK that includes the javac executable (any JDK probably does)")
-            }
-
-            usable
-        }
-
-        val COMPILER = ToolProvider.getSystemJavaCompiler()
-
         const val TAG = "CompiledPipelineManager"
     }
 
@@ -100,7 +84,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         isBuildRunning = true
         onBuildStart.run()
 
-        if(!IS_USABLE) {
+        if(!PipelineCompiler.IS_USABLE) {
             lastBuildResult = PipelineCompileResult(
                 PipelineCompileStatus.FAILED,
                 "Current JVM does not have a javac executable (a JDK is needed)"
@@ -136,6 +120,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             }
             PipelineCompileStatus.NO_SOURCE -> {
                 deleteJarFile()
+                pipelineManager.refreshGuiPipelineList()
                 "Build cancelled, no source files to compile $messageEnd"
             }
             else -> {

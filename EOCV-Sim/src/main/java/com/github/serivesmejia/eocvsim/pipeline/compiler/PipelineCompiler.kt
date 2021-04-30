@@ -23,6 +23,7 @@
 
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
+import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.compiler.JarPacker
 import java.io.File
@@ -31,6 +32,27 @@ import java.util.*
 import javax.tools.*
 
 class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
+
+    companion object {
+        val IS_USABLE by lazy {
+            val usable = COMPILER != null
+
+            // Send a warning message to console
+            // will only be sent once (that's why it's done here)
+            if(!usable) {
+                Log.warn(TAG, "Unable to compile Java source code in this JVM (the ToolProvider wasn't able to provide a compiler)")
+                Log.warn(TAG, "For the user, this probably means that the sim is running in a JRE which doesn't include the javac compiler executable")
+                Log.warn(TAG, "To be able to compile pipelines on runtime, make sure the sim is running on a JDK that includes the javac executable (any JDK probably does)")
+            }
+
+            usable
+        }
+
+        val COMPILER = ToolProvider.getSystemJavaCompiler()
+
+        val INDENT = "      "
+        val TAG = "PipelineCompiler"
+    }
 
     private var diagnosticBuilders = mutableMapOf<String, StringBuilder>()
 
@@ -58,7 +80,7 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
     fun compile(outputJar: File): PipelineCompileResult {
         val files = SysUtil.filesUnder(inputPath, ".java")
 
-        val javac = ToolProvider.getSystemJavaCompiler()
+        val javac = COMPILER
         
         val fileManager = PipelineStandardFileManager(javac.getStandardFileManager(this, null, null))
         fileManager.sourcePath = Collections.singleton(inputPath)
@@ -66,7 +88,6 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
         val javaFileObjects = fileManager.getJavaFileObjects(*files.toTypedArray())
 
         if(javaFileObjects.iterator().hasNext()) {
-
             SysUtil.deleteFilesUnder(CompiledPipelineManager.CLASSES_OUTPUT_FOLDER)
 
             val task = javac.getTask(
@@ -78,15 +99,12 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
                 javaFileObjects
             )
 
-            val taskSuccess = task.call()
-            val message = latestDiagnostic
-
-            if(taskSuccess) {
+            if(task.call()) {
                 JarPacker.packClassesUnder(outputJar, fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next())
-                return PipelineCompileResult(PipelineCompileStatus.SUCCESS, message)
+                return PipelineCompileResult(PipelineCompileStatus.SUCCESS, latestDiagnostic)
             }
 
-            return PipelineCompileResult(PipelineCompileStatus.FAILED, message)
+            return PipelineCompileResult(PipelineCompileStatus.FAILED, latestDiagnostic)
         } else {
             return PipelineCompileResult(PipelineCompileStatus.NO_SOURCE, "No source files")
         }
@@ -103,14 +121,11 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
             diagnosticBuilders[relativeFile.path] = builder
         }
 
-        builder.appendLine(String.format(locale, "  (%d:%d): %s: %s",
-            diagnostic.lineNumber,
-            diagnostic.columnNumber,
-            diagnostic.kind,
-            diagnostic.getMessage(locale)
+        val formattedMessage = diagnostic.getMessage(locale).replace("\n", "\n$INDENT")
+
+        builder.appendLine(String.format(locale, "$INDENT(%d:%d): %s: %s",
+            diagnostic.lineNumber, diagnostic.columnNumber, diagnostic.kind, formattedMessage
         ))
-
-
     }
 
 }

@@ -27,7 +27,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
+import com.github.serivesmejia.eocvsim.util.extension.plus
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -48,7 +48,6 @@ class CrashReport(val causedByException: Throwable) {
     private val sb = StringBuilder()
 
     init {
-
         sb.appendLine("/--------------------------------\\").appendLine()
         sb.appendLine("  EOCV-Sim v${EOCVSim.VERSION} crash report").appendLine()
         sb.appendLine("\\--------------------------------/").appendLine()
@@ -86,7 +85,6 @@ class CrashReport(val causedByException: Throwable) {
         sb.appendLine(Log.fullLogs.toString()).appendLine()
 
         sb.appendLine(";")
-
     }
 
     fun saveCrashReport(f: File) {
@@ -95,14 +93,12 @@ class CrashReport(val causedByException: Throwable) {
     }
 
     fun saveCrashReport() {
-
         val workingDir = File(System.getProperty("user.dir"))
         val dateTimeStr = dtFormatter.format(LocalDateTime.now())
 
         val crashLogFile = workingDir + "/crashreport-eocvsim-$dateTimeStr.log"
 
         saveCrashReport(crashLogFile)
-
     }
 
     override fun toString() = sb.toString()

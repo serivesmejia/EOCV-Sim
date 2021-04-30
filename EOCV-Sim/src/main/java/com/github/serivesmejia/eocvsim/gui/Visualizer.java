@@ -35,6 +35,7 @@ import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
+import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
 import com.github.serivesmejia.eocvsim.util.Log;
 import kotlin.Unit;
 
@@ -371,7 +372,7 @@ public class Visualizer {
     }
 
     public void asyncCompilePipelines() {
-        if(CompiledPipelineManager.Companion.getIS_USABLE()) {
+        if(PipelineCompiler.Companion.getIS_USABLE()) {
             menuBar.fileWorkspCompile.setEnabled(false);
             eocvSim.pipelineManager.getCompiledPipelineManager().asyncCompile((result) -> {
                 menuBar.fileWorkspCompile.setEnabled(true);

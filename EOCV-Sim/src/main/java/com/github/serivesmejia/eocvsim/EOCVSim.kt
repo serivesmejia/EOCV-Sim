@@ -38,7 +38,7 @@ import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
 import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
-import com.github.serivesmejia.eocvsim.util.extension.FileExt.plus
+import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
 import nu.pattern.OpenCV
 import org.opencv.core.Size

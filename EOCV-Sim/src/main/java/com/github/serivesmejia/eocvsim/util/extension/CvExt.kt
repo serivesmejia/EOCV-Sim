@@ -20,6 +20,7 @@
  * SOFTWARE.
  *
  */
+@file:JvmName("CvExt")
 
 package com.github.serivesmejia.eocvsim.util.extension
 
@@ -30,27 +31,22 @@ import org.opencv.core.Scalar
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
-object CvExt {
+fun Scalar.cvtColor(code: Int): Scalar {
+    val mat = Mat(5, 5, CvType.CV_8UC3);
+    mat.setTo(this)
+    Imgproc.cvtColor(mat, mat, code);
 
+    val newScalar = Scalar(mat.get(1, 1))
+    mat.release()
 
-    @JvmStatic fun Scalar.cvtColor(code: Int): Scalar {
-        val mat = Mat(5, 5, CvType.CV_8UC3);
-        mat.setTo(this)
-        Imgproc.cvtColor(mat, mat, code);
+    return newScalar
+}
 
-        val newScalar = Scalar(mat.get(1, 1))
-        mat.release()
+fun Size.aspectRatio() = height / width
+fun Mat.aspectRatio() = size().aspectRatio()
 
-        return newScalar
-    }
-
-    @JvmStatic fun Size.aspectRatio() = height / width
-    @JvmStatic fun Mat.aspectRatio() = size().aspectRatio()
-
-    @JvmStatic fun Size.clipTo(size: Size): Size {
-        width = Range.clip(width, 0.0, size.width)
-        height = Range.clip(height, 0.0, size.height)
-        return this
-    }
-
+fun Size.clipTo(size: Size): Size {
+    width = Range.clip(width, 0.0, size.width)
+    height = Range.clip(height, 0.0, size.height)
+    return this
 }
