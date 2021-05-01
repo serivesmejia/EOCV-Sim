@@ -180,7 +180,7 @@ class TunableFieldPanelOptions(val fieldPanel: TunableFieldPanel,
     fun reevaluateConfig() {
         //only reevaluate if our config is not local
         if(configPanel.localConfig.source != TunableFieldPanelConfig.ConfigSource.LOCAL) {
-            configPanel.applyFromEOCVSimConfig() 
+            configPanel.applyFromEOCVSimConfig()
         }
     }
 

@@ -374,8 +374,12 @@ public class Visualizer {
     public void asyncCompilePipelines() {
         if(PipelineCompiler.Companion.getIS_USABLE()) {
             menuBar.fileWorkspCompile.setEnabled(false);
+            pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(false);
+
             eocvSim.pipelineManager.getCompiledPipelineManager().asyncCompile((result) -> {
                 menuBar.fileWorkspCompile.setEnabled(true);
+                pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(true);
+
                 return Unit.INSTANCE;
             });
         } else {
