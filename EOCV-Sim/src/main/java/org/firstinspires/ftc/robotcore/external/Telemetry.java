@@ -7,6 +7,7 @@ public class Telemetry {
     private final ArrayList<ItemOrLine> telem = new ArrayList<>();
     private ArrayList<ItemOrLine> lastTelem = new ArrayList<>();
 
+    public Item infoItem = new Item( "", "");
     public Item errItem = new Item("", "");
 
     private String captionValueSeparator = " : ";
@@ -27,19 +28,16 @@ public class Telemetry {
 
     }
 
-    public synchronized Item addData(String caption, Func valueProducer) {
-
+    public synchronized Item addData(String caption, Func<?> valueProducer) {
         Item item = new Item(caption, valueProducer);
         item.valueSeparator = captionValueSeparator;
 
         telem.add(item);
 
         return item;
-
     }
 
     public synchronized Item addData(String caption, Object value) {
-
         Item item = new Item(caption, "");
         item.valueSeparator = captionValueSeparator;
 
@@ -48,11 +46,9 @@ public class Telemetry {
         telem.add(item);
 
         return item;
-
     }
 
     public synchronized Item addData(String caption, String value, Object... args) {
-
         Item item = new Item(caption, "");
         item.valueSeparator = captionValueSeparator;
 
@@ -61,7 +57,6 @@ public class Telemetry {
         telem.add(item);
 
         return item;
-
     }
 
     public synchronized Item addData(String caption, Func valueProducer, Object... args) {
@@ -87,60 +82,56 @@ public class Telemetry {
         return line;
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized void update() {
-
         lastTelemUpdate = "";
-
         lastTelem = (ArrayList<ItemOrLine>) telem.clone();
 
         evalLastTelem();
 
-        if (autoClear) clear();
-
+        if(autoClear) clear();
     }
 
     private synchronized void evalLastTelem() {
-
-        if (lastTelem == null) return;
-
         StringBuilder inTelemUpdate = new StringBuilder();
 
-        int i = 0;
-
-        for (ItemOrLine iol : lastTelem) {
-
-            if (iol instanceof Item) {
-                Item item = (Item) iol;
-                item.valueSeparator = captionValueSeparator;
-                inTelemUpdate.append(item.toString()); //to avoid volatile issues we write into a stringbuilder
-            } else if (iol instanceof Line) {
-                Line line = (Line) iol;
-                inTelemUpdate.append(line.toString()); //to avoid volatile issues we write into a stringbuilder
-            }
-
-            if (i < lastTelem.size() - 1) inTelemUpdate.append("\n"); //append new line if this is not the lastest item
-
-            i++;
+        if (infoItem != null && !infoItem.caption.trim().equals("")) {
+            inTelemUpdate.append(infoItem.toString()).append("\n");
         }
 
-        if (!errItem.caption.trim().equals("")) {
-            inTelemUpdate.append("\n");
-            inTelemUpdate.append(errItem.toString());
+        if(lastTelem != null) {
+            int i = 0;
+            for (ItemOrLine iol : lastTelem) {
+                if (iol instanceof Item) {
+                    Item item = (Item) iol;
+                    item.valueSeparator = captionValueSeparator;
+                    inTelemUpdate.append(item.toString()); //to avoid volatile issues we write into a stringbuilder
+                } else if (iol instanceof Line) {
+                    Line line = (Line) iol;
+                    inTelemUpdate.append(line.toString()); //to avoid volatile issues we write into a stringbuilder
+                }
+
+                if (i < lastTelem.size() - 1)
+                    inTelemUpdate.append("\n"); //append new line if this is not the lastest item
+
+                i++;
+            }
+        }
+
+        if(errItem != null && !errItem.caption.trim().equals("")) {
+            inTelemUpdate.append("\n").append(errItem.toString());
         }
 
         lastTelemUpdate = inTelemUpdate.toString(); //and then we write to the volatile, public one
-
     }
 
     public synchronized boolean removeItem(Item item) {
-
         if (telem.contains(item)) {
             telem.remove(item);
             return true;
         }
 
         return false;
-
     }
 
     public synchronized void clear() {
@@ -156,12 +147,10 @@ public class Telemetry {
     }
 
     public synchronized boolean hasChanged() {
-
         boolean hasChanged = !lastTelemUpdate.equals(beforeTelemUpdate);
         beforeTelemUpdate = lastTelemUpdate;
 
         return hasChanged;
-
     }
 
     public synchronized String getCaptionValueSeparator() {
@@ -253,7 +242,7 @@ public class Telemetry {
 
     public static class Line implements ItemOrLine {
 
-        protected String caption = "";
+        protected String caption;
 
         public Line(String caption) {
             this.caption = caption;

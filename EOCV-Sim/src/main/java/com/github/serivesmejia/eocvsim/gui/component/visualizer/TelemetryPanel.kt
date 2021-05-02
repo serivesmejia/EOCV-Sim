@@ -1,13 +1,6 @@
 package com.github.serivesmejia.eocvsim.gui.component.visualizer
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.swing.Swing
-
 import org.firstinspires.ftc.robotcore.external.Telemetry
-
 import java.awt.FlowLayout
 import java.awt.GridLayout
 import java.awt.event.MouseEvent
@@ -67,14 +60,16 @@ class TelemetryPanel : JPanel(FlowLayout(FlowLayout.CENTER)) {
     }
 
     fun updateTelemetry(telemetry: Telemetry?) {
+        val cacheTelemetryText = telemetry.toString()
+
         var telemetryText: String? = null
 
         if (telemetry != null && telemetry.hasChanged()) {
-            telemetryText = telemetry.toString()
+            telemetryText = cacheTelemetryText
 
             val listModel = DefaultListModel<String>()
             for (line in telemetryText.split("\n").toTypedArray()) {
-                    listModel.addElement(line)
+                listModel.addElement(line)
             }
 
             telemetryList.fixedCellWidth = 240

@@ -125,6 +125,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
             throw MaxActiveContextsException("Current amount of active pipeline coroutine contexts (${activePipelineContexts.size}) is more than the maximum allowed. This generally means that there are multiple pipelines stuck in processFrame() running in the background, check for any lengthy operations in your pipelines.")
         }
 
+        if(compiledPipelineManager.isBuildRunning) {
+            currentTelemetry?.infoItem?.caption = "[>]"
+            currentTelemetry?.infoItem?.setValue("Building java files in workspace...")
+        } else {
+            currentTelemetry?.infoItem?.caption = ""
+            currentTelemetry?.infoItem?.setValue("")
+        }
+
         if(paused) return
 
         timestampedPipelineHandler.update(currentPipeline)
@@ -221,6 +229,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 pipelineJob.cancel()
             }
         }
+    }
+
+    private fun Telemetry.updateWithoutClearing() {
+        currentTelemetry?.setAutoClear(false)
+        currentTelemetry?.update()
+        currentTelemetry?.setAutoClear(true)
     }
 
     fun callViewportTapped() = currentPipeline?.let { pipeline -> //run only if our pipeline is not null
