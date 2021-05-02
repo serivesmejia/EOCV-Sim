@@ -29,7 +29,6 @@ class TimestampedPipelineHandler {
 
     private val elapsedTime = ElapsedTime()
 
-    //update called from the attached pipelineManager onUpdate event handler
     fun update(currentPipeline: OpenCvPipeline?) {
         if(currentPipeline is TimestampedOpenCvPipeline) {
             currentPipeline.setTimestamp(elapsedTime.nanoseconds())

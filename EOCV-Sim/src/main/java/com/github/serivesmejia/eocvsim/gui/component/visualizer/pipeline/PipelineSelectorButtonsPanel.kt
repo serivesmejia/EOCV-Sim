@@ -27,7 +27,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.GridLayout
 import java.awt.Insets
 import javax.swing.JButton
 import javax.swing.JPanel
@@ -36,8 +35,8 @@ import javax.swing.SwingUtilities
 
 class PipelineSelectorButtonsPanel(eocvSim: EOCVSim) : JPanel(GridBagLayout()) {
 
-    val pipelinePauseBtt         = JToggleButton("Pause")
-    val pipelineRecordBtt        = JToggleButton("Record")
+    val pipelinePauseBtt  = JToggleButton("Pause")
+    val pipelineRecordBtt = JToggleButton("Record")
 
     val pipelineWorkspaceBtt = JButton("Workspace")
 
@@ -51,10 +50,10 @@ class PipelineSelectorButtonsPanel(eocvSim: EOCVSim) : JPanel(GridBagLayout()) {
         pipelinePauseBtt.addActionListener {
             eocvSim.onMainUpdate.doOnce { eocvSim.pipelineManager.setPaused(pipelinePauseBtt.isSelected) }
         }
-
         pipelinePauseBtt.addChangeListener {
             pipelinePauseBtt.text = if(pipelinePauseBtt.isSelected) "Resume" else "Pause"
         }
+
         add(pipelinePauseBtt, GridBagConstraints().apply {
             insets = Insets(0, 0, 0, 5)
         })
