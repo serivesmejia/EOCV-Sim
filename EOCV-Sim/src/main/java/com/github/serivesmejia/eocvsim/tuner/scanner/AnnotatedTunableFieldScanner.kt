@@ -39,6 +39,7 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
 
     fun scan(): ScanResult {
         val tunableFields = HashMap<Type, Class<out TunableField<*>>>()
+        val acceptors = HashMap<Class<out TunableField<*>>, Class<out TunableFieldAcceptor>>()
 
         Log.info("AnnotatedTunableFieldScanner", "Scanning in $lookInPackage...")
         Log.blank()
@@ -69,44 +70,24 @@ class AnnotatedTunableFieldScanner(private val lookInPackage: String) {
                 )
 
                 tunableFields[type] = foundClassTunableField
+
+                for(innerClass in foundClass.declaredClasses) {
+                    if (!ReflectUtil.hasSuperclass(innerClass, TunableFieldAcceptor::class.java)) continue
+
+                    acceptors[foundClass] = innerClass as Class<out TunableFieldAcceptor>
+                    Log.info(
+                        "AnnotatedTunableFieldScanner",
+                        "Found TunableFieldAcceptor for ${foundClass.typeName} (${innerClass.name})"
+                    )
+                }
             } catch (ex: Exception) {
                 Log.warn("AnnotatedTunableFieldScanner", "Error while processing " + classInfo.name, ex)
             }
         }
 
         Log.info("AnnotatedTunableFieldScanner", "Found " + tunableFields.size + " TunableField(s)")
+        Log.info("AnnotatedTunableFieldScanner", "Found " + acceptors.size + " TunableFieldAcceptors(s)")
         Log.blank()
-
-        //SCANNING FOR TUNABLE FIELD ACCEPTORS
-
-        val acceptors = HashMap<Class<out TunableField<*>>, Class<out TunableFieldAcceptor>>()
-
-        for (classInfo in result.getClassesWithAnnotation(RegisterTunableFieldAcceptor::class.java.name)) {
-            val foundClass: Class<*> = try {
-                Class.forName(classInfo.name)
-            } catch (ex: ClassNotFoundException) {
-                Log.error("AnnotatedTunableFieldScanner", "Unable to find class ${classInfo.name}", ex)
-                continue  //continue because we couldn't get the class...
-            }
-
-            if (!ReflectUtil.hasSuperclass(foundClass, TunableFieldAcceptor::class.java)) continue
-
-            val foundClassAcceptor = foundClass as Class<out TunableFieldAcceptor>
-
-            for(annotation in foundClassAcceptor.annotations) {
-                if(annotation.annotationClass == RegisterTunableFieldAcceptor::class) {
-                    val acceptorAnnotation = annotation as RegisterTunableFieldAcceptor
-                    val type = acceptorAnnotation.tunableFieldType.java
-
-                    acceptors[type] = foundClassAcceptor
-
-                    Log.info("AnnotatedTunableFieldScanner", "Found TunableFieldAcceptor for ${type.typeName} (${foundClassAcceptor.name})")
-                }
-            }
-
-            Log.info("AnnotatedTunableFieldScanner", "Found " + acceptors.size + " TunableFieldAcceptors(s)")
-            Log.blank()
-        }
 
         return ScanResult(tunableFields, acceptors)
     }

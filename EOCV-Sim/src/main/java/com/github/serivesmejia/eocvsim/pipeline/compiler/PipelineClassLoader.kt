@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.util.ReflectUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import org.openftc.easyopencv.OpenCvPipeline
 import java.io.*
 import java.util.zip.ZipEntry
@@ -55,6 +56,8 @@ class PipelineClassLoader(pipelinesJar: File) : ClassLoader() {
     }
 
     private fun loadClass(entry: ZipEntry): Class<*> {
+        val name = entry.name.removeFromEnd(".class").replace(File.pathSeparatorChar, '.')
+
         zipFile.getInputStream(entry).use { inStream ->
             ByteArrayOutputStream().use { outStream ->
                 SysUtil.copyStream(inStream, outStream)

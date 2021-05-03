@@ -231,12 +231,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
-    private fun Telemetry.updateWithoutClearing() {
-        currentTelemetry?.setAutoClear(false)
-        currentTelemetry?.update()
-        currentTelemetry?.setAutoClear(true)
-    }
-
     fun callViewportTapped() = currentPipeline?.let { pipeline -> //run only if our pipeline is not null
         //similar to pipeline processFrame, call the user function in the background
         //and wait for some X timeout for the user to finisih doing what it has to do.
