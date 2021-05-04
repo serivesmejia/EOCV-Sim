@@ -12,12 +12,12 @@ class TelemetryPanel : JPanel(FlowLayout(FlowLayout.CENTER)) {
     val telemetryScroll = JScrollPane()
     val telemetryList  = JList<String>()
 
+    val telemetryLabel = JLabel("Telemetry")
+
     init {
         /*
          * TELEMETRY
          */
-
-        val telemetryLabel = JLabel("Telemetry")
 
         telemetryLabel.font = telemetryLabel.font.deriveFont(20.0f)
         telemetryLabel.horizontalAlignment = JLabel.CENTER

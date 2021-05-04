@@ -22,6 +22,8 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
     val sourceSelectorCreateBtt        = JButton("Create")
     val sourceSelectorDeleteBtt        = JButton("Delete")
 
+    val sourceSelectorLabel = JLabel("Sources")
+
     private var beforeSelectedSource = ""
     private var beforeSelectedSourceIndex = 0
 
@@ -29,8 +31,6 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
     init {
         layout = FlowLayout(FlowLayout.CENTER)
-
-        val sourceSelectorLabel = JLabel("Sources")
 
         sourceSelectorLabel.font = sourceSelectorLabel.font.deriveFont(20.0f)
         sourceSelectorLabel.horizontalAlignment = JLabel.CENTER

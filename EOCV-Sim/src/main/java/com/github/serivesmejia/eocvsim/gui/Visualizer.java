@@ -275,15 +275,25 @@ public class Visualizer {
             @Override
             public void componentResized(ComponentEvent evt) {
                 double ratio = frame.getSize().getHeight() / 820;
-                int columns = (int) Math.round(8 * ratio);
+
+                double fontSize = 22 * ratio;
+                int columns = (int) Math.round(7 * ratio);
+
+                Font font = pipelineSelectorPanel.getPipelineSelectorLabel()
+                        .getFont().deriveFont((float)fontSize);
 
                 pipelineSelectorPanel.getPipelineSelector().setVisibleRowCount(columns);
+                pipelineSelectorPanel.getPipelineSelectorLabel().setFont(font);
                 pipelineSelectorPanel.revalAndRepaint();
 
+                columns = (int) Math.round(6.5 * ratio);
+
                 sourceSelectorPanel.getSourceSelector().setVisibleRowCount(columns);
+                sourceSelectorPanel.getSourceSelectorLabel().setFont(font);
                 sourceSelectorPanel.revalAndRepaint();
 
                 telemetryPanel.getTelemetryList().setVisibleRowCount(columns);
+                telemetryPanel.getTelemetryLabel().setFont(font);
                 telemetryPanel.revalAndRepaint();
 
                 rightContainer.revalidate();
@@ -293,8 +303,9 @@ public class Visualizer {
 
         //stop color-picking mode when changing pipeline
         //eocvSim.pipelineManager.onPipelineChange.doPersistent(() -> colorPicker.stopPicking());
-
     }
+
+    public boolean hasFinishedInit() { return hasFinishedInitializing; }
 
     public void waitForFinishingInit() {
         while (!hasFinishedInitializing) {

@@ -50,14 +50,14 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
     val pipelineSelector         = JList<String>()
     val pipelineSelectorScroll   = JScrollPane()
 
+    val pipelineSelectorLabel = JLabel("Pipelines")
+
     val buttonsPanel = PipelineSelectorButtonsPanel(eocvSim)
 
     private var beforeSelectedPipeline = -1
 
     init {
         layout = FlowLayout(FlowLayout.CENTER)
-
-        val pipelineSelectorLabel = JLabel("Pipelines")
 
         pipelineSelectorLabel.font = pipelineSelectorLabel.font.deriveFont(20.0f)
 

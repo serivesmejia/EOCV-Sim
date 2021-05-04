@@ -13,7 +13,7 @@
           <option value="runSim" />
         </list>
       </option>
-      <option name="vmOptions" value="-Xms20m -Xmx100m" />
+      <option name="vmOptions" value="" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>

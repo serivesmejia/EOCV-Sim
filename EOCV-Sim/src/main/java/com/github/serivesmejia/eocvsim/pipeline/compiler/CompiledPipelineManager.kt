@@ -33,13 +33,11 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.qualcomm.robotcore.util.ElapsedTime
-import com.sun.tools.javac.api.JavacTool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.openftc.easyopencv.OpenCvPipeline
 import java.io.File
-import javax.tools.ToolProvider
 
 class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
@@ -120,7 +118,9 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             }
             PipelineCompileStatus.NO_SOURCE -> {
                 deleteJarFile()
-                pipelineManager.refreshGuiPipelineList()
+                if(pipelineManager.eocvSim.visualizer.hasFinishedInit())
+                    pipelineManager.refreshGuiPipelineList()
+
                 "Build cancelled, no source files to compile $messageEnd"
             }
             else -> {
