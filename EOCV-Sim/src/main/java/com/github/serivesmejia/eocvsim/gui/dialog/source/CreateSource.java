@@ -71,7 +71,7 @@ public class CreateSource {
             sourceTypesStr[i] = sourceTypes[i].coolName;
         }
 
-        JComboBox dropDown = new JComboBox(sourceTypesStr);
+        JComboBox<String> dropDown = new JComboBox<>(sourceTypesStr);
         dropDownPanel.add(dropDown);
         contentsPane.add(dropDownPanel);
 

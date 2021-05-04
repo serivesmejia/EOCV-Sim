@@ -47,6 +47,7 @@ import java.io.File
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileFilter
 import javax.swing.filechooser.FileNameExtensionFilter
+import kotlin.system.exitProcess
 
 class EOCVSim(val params: Parameters = Parameters()) {
 
@@ -56,7 +57,25 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val DEFAULT_EOCV_HEIGHT = 240
         @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
 
-        private var alreadyInitializedOnce = false
+        private var isNativeLibLoaded = false
+
+        fun loadOpenCvLib() {
+            if(isNativeLibLoaded) return
+
+            Log.info("EOCVSim", "Loading native lib...")
+
+            try {
+                OpenCV.loadLocally()
+                Log.info("EOCVSim", "Successfully loaded native lib")
+            } catch (ex: Throwable) {
+                Log.error("EOCVSim", "Failure loading native lib", ex)
+                Log.info("EOCVSim", "Retrying with old method...")
+
+                if(!SysUtil.loadCvNativeLib()) exitProcess(-1)
+            }
+
+            isNativeLibLoaded = false
+        }
     }
 
     @JvmField val onMainUpdate = EventHandler("OnMainUpdate")
@@ -88,20 +107,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
         EOCVSimUncaughtExceptionHandler.register()
 
         //loading native lib only once in the app runtime
-        if (!alreadyInitializedOnce) {
-            Log.info("EOCVSim", "Loading native lib...")
-            try {
-                OpenCV.loadLocally()
-                Log.info("EOCVSim", "Successfully loaded native lib")
-            } catch (ex: Throwable) {
-                Log.error("EOCVSim", "Failure loading native lib", ex)
-                Log.info("EOCVSim", "Retrying with old method...")
-                SysUtil.loadCvNativeLib()
-            }
-            Log.blank()
-        }
-
-        alreadyInitializedOnce = true
+        loadOpenCvLib()
+        Log.blank()
 
         configManager.init() //load config
 

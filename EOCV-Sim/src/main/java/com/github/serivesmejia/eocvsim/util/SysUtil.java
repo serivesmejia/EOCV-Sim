@@ -44,7 +44,6 @@ public class SysUtil {
     public static String GH_NATIVE_LIBS_URL = "https://github.com/serivesmejia/OpenCVNativeLibs/raw/master/";
 
     public static OperatingSystem getOS() {
-
         String osName = System.getProperty("os.name").toLowerCase();
 
         if (osName.contains("win")) {
@@ -56,11 +55,9 @@ public class SysUtil {
         }
 
         return OperatingSystem.UNKNOWN;
-
     }
 
-    public static void loadCvNativeLib() {
-
+    public static boolean loadCvNativeLib() {
         String os = null;
         String fileExt = null;
 
@@ -81,12 +78,10 @@ public class SysUtil {
 
         boolean is64bit = System.getProperty("sun.arch.data.model").contains("64"); //Checking if JVM is 64 bits or not
 
-        loadLib(os, fileExt, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
-
+        return loadLib(os, fileExt, is64bit, Core.NATIVE_LIBRARY_NAME, 0);
     }
 
-    public static void loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) {
-
+    public static boolean loadLib(String os, String fileExt, boolean is64bit, String name, int attempts) {
         String arch = is64bit ? "64" : "32"; //getting os arch
 
         String libName = os + arch + "_" + name; //resultant lib name from those two
@@ -112,7 +107,6 @@ public class SysUtil {
             Log.info("SysUtil", "Successfully loaded native lib \"" + libName + "\"");
 
         } catch (UnsatisfiedLinkError ex) {
-
             ex.printStackTrace();
 
             if (attempts < 4) {
@@ -121,12 +115,12 @@ public class SysUtil {
                 loadLib(os, fileExt, !is64bit, Core.NATIVE_LIBRARY_NAME, attempts + 1);
             } else {
                 ex.printStackTrace();
-                Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, the application will exit now.");
-                System.exit(1);
+                Log.error("SysUtil", "Failure loading lib \"" + libName + "\" 4 times, giving up.");
+                return false;
             }
-
         }
 
+        return true;
     }
 
     public static void copyStream(File inFile, OutputStream out) throws IOException {
