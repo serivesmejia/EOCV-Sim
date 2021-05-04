@@ -274,10 +274,10 @@ public class Visualizer {
         frame.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent evt) {
-                double ratio = frame.getSize().getHeight() / 820;
+                double ratio = frame.getSize().getHeight() / 645;
 
-                double fontSize = 22 * ratio;
-                int columns = (int) Math.round(7 * ratio);
+                double fontSize = 16 * ratio;
+                int columns = (int) Math.round(5 * ratio);
 
                 Font font = pipelineSelectorPanel.getPipelineSelectorLabel()
                         .getFont().deriveFont((float)fontSize);
@@ -286,7 +286,7 @@ public class Visualizer {
                 pipelineSelectorPanel.getPipelineSelectorLabel().setFont(font);
                 pipelineSelectorPanel.revalAndRepaint();
 
-                columns = (int) Math.round(6.5 * ratio);
+                columns = (int) Math.round(6 * ratio);
 
                 sourceSelectorPanel.getSourceSelector().setVisibleRowCount(columns);
                 sourceSelectorPanel.getSourceSelectorLabel().setFont(font);
