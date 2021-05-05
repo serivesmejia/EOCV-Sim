@@ -23,14 +23,16 @@
 
 package com.github.serivesmejia.eocvsim.workspace
 
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfig
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfigLoader
 import java.io.File
+import java.nio.file.Paths
 
-class WorkspaceManager {
+class WorkspaceManager(val eocvSim: EOCVSim) {
 
     companion object {
         private val TAG = "WorkspaceManager"
@@ -42,6 +44,7 @@ class WorkspaceManager {
         set(value) {
             if(value != workspaceFile) {
                 workspaceConfigLoader.workspaceFile = value
+                eocvSim.config.workspacePath = value.absolutePath
                 field = value
 
                 Log.info(TAG, "Set current workspace to ${value.absolutePath}")
@@ -64,6 +67,7 @@ class WorkspaceManager {
         }
 
     private var cachedWorkspConfig: WorkspaceConfig? = null
+
     var workspaceConfig: WorkspaceConfig
         set(value) {
             Log.info(TAG, "Saving workspace config file of ${workspaceFile.absolutePath}")
@@ -77,14 +81,26 @@ class WorkspaceManager {
             return cachedWorkspConfig!!
         }
 
+    val sourcesRelativePath get() = workspaceConfig.sourcesPath
+
+    val sourcesAbsolutePath get() = Paths.get(workspaceFile.absolutePath, sourcesRelativePath).normalize()
+
     // TODO: Excluding ignored paths
     val sourceFiles get() =
-        SysUtil.filesUnder(workspaceFile + workspaceConfig.sourcesPath, ".java")
+        SysUtil.filesUnder(sourcesAbsolutePath.toFile(), ".java")
+
+    fun init() {
+        workspaceFile = File(eocvSim.config.workspacePath)
+        Log.blank()
+    }
 
     fun saveCurrentConfig() {
         ::workspaceConfig.set(workspaceConfig)
     }
 
-    fun reloadConfig() = workspaceConfig
+    fun reloadConfig(): WorkspaceConfig {
+        cachedWorkspConfig = null
+        return workspaceConfig
+    }
 
 }

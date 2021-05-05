@@ -28,8 +28,8 @@ import java.util.ArrayList;
 public class WorkspaceConfig {
 
     public String sourcesPath = ".";
+    public String resourcesPath = ".";
+
     public ArrayList<String> excludedPaths = new ArrayList<>();
-
-
 
 }

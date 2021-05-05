@@ -55,10 +55,6 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         const val TAG = "CompiledPipelineManager"
     }
 
-    var workspace: File
-        set(value) { pipelineManager.eocvSim.config.workspacePath = value.absolutePath }
-        get() = File(pipelineManager.eocvSim.config.workspacePath)
-
     var currentPipelineClassLoader: PipelineClassLoader? = null
         private set
 
@@ -72,6 +68,8 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     var isBuildRunning = false
         private set
+
+    val workspaceManager get() = pipelineManager.eocvSim.workspaceManager
 
     fun init() {
         Log.info(TAG, "Initializing...")
@@ -95,11 +93,16 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             return lastBuildResult!!
         }
 
-        Log.info(TAG, "Building java files in workspace at ${workspace.absolutePath}")
+        workspaceManager.reloadConfig()
+
+        val absoluteSourcesPath = workspaceManager.sourcesAbsolutePath.toFile()
+        
+        Log.info(TAG, "Building java files in workspace, at ${absoluteSourcesPath.absolutePath}")
 
         val runtime = ElapsedTime()
 
-        val compiler = PipelineCompiler(workspace)
+        val compiler = PipelineCompiler(workspaceManager.sourceFiles, absoluteSourcesPath)
+        
         val result = compiler.compile(PIPELINES_OUTPUT_JAR)
         lastBuildResult = result
 

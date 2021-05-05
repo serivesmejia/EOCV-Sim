@@ -408,8 +408,10 @@ public class Visualizer {
         DialogFactory.createFileChooser(
                 frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
         ).addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
-            if (OPTION == JFileChooser.APPROVE_OPTION) { 
-                eocvSim.getConfig().workspacePath = selectedFile.getAbsolutePath();
+            if (OPTION == JFileChooser.APPROVE_OPTION) {
+                eocvSim.onMainUpdate.doOnce(() ->
+                    eocvSim.workspaceManager.setWorkspaceFile(selectedFile)
+                );
             }
         });
     }

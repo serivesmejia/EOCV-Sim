@@ -111,7 +111,6 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
                 Imgproc.resize(inputMat, videoMat, videoSize, 0.0, 0.0, Imgproc.INTER_AREA)
                 compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), videoFps)
             } else { //hmm, not the same aspect ratio, we'll need to do some fancy stuff here...
-
                 val inputW = inputMat.size().width
                 val inputH = inputMat.size().height
 
@@ -139,7 +138,6 @@ class VideoRecordingSession(val videoFps: Double = 30.0, val videoSize: Size = S
                 inputMat.copyTo(submat);
 
                 compensateFpsWrite(videoMat!!, fpsCounter.fps.toDouble(), videoFps)
-
             }
 
             fpsCounter.update()

@@ -31,7 +31,7 @@ import java.io.PrintWriter
 import java.util.*
 import javax.tools.*
 
-class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFileObject> {
+class PipelineCompiler(private val files: List<File>, private val inputPath: File): DiagnosticListener<JavaFileObject> {
 
     companion object {
         val IS_USABLE by lazy {
@@ -77,9 +77,9 @@ class PipelineCompiler(private val inputPath: File): DiagnosticListener<JavaFile
         "-XDuseUnsharedTable=true"
     )
 
-    fun compile(outputJar: File): PipelineCompileResult {
-        val files = SysUtil.filesUnder(inputPath, ".java")
+    constructor(inputPath: File) : this(SysUtil.filesUnder(inputPath, ".java"), inputPath)
 
+    fun compile(outputJar: File): PipelineCompileResult {
         val javac = COMPILER
         
         val fileManager = PipelineStandardFileManager(javac.getStandardFileManager(this, null, null))

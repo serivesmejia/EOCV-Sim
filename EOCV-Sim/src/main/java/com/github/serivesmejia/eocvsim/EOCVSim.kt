@@ -40,6 +40,7 @@ import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
 import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
+import com.github.serivesmejia.eocvsim.workspace.WorkspaceManager
 import nu.pattern.OpenCV
 import org.opencv.core.Size
 import java.awt.Dimension
@@ -57,24 +58,26 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val DEFAULT_EOCV_HEIGHT = 240
         @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
 
+        private const val TAG = "EOCVSim"
+
         private var isNativeLibLoaded = false
 
         fun loadOpenCvLib() {
             if(isNativeLibLoaded) return
 
-            Log.info("EOCVSim", "Loading native lib...")
+            Log.info(TAG, "Loading native lib...")
 
             try {
                 OpenCV.loadLocally()
-                Log.info("EOCVSim", "Successfully loaded native lib")
+                Log.info(TAG, "Successfully loaded native lib")
             } catch (ex: Throwable) {
-                Log.error("EOCVSim", "Failure loading native lib", ex)
-                Log.info("EOCVSim", "Retrying with old method...")
+                Log.error(TAG, "Failure loading native lib", ex)
+                Log.info(TAG, "Retrying with old method...")
 
                 if(!SysUtil.loadCvNativeLib()) exitProcess(-1)
             }
 
-            isNativeLibLoaded = false
+            isNativeLibLoaded = true
         }
     }
 
@@ -87,6 +90,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
     @JvmField val pipelineManager    = PipelineManager(this)
     @JvmField val tunerManager       = TunerManager(this)
 
+    @JvmField val workspaceManager   = WorkspaceManager(this)
+
     val config: Config
         get() = configManager.config
 
@@ -94,14 +99,17 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     val fpsLimiter = FpsLimiter(30.0)
 
-    val eocvSimThread = Thread.currentThread()
+    lateinit var eocvSimThread: Thread
+        private set
 
     enum class DestroyReason {
         USER_REQUESTED, THEME_CHANGING, RESTART, CRASH
     }
 
     fun init() {
-        Log.info("EOCVSim", "Initializing EasyOpenCV Simulator v$VERSION")
+        eocvSimThread = Thread.currentThread()
+
+        Log.info(TAG, "Initializing EasyOpenCV Simulator v$VERSION")
         Log.blank()
 
         EOCVSimUncaughtExceptionHandler.register()
@@ -111,6 +119,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.blank()
 
         configManager.init() //load config
+        workspaceManager.init()
 
         visualizer.initAsync(configManager.config.simTheme) //create gui in the EDT
 
@@ -140,7 +149,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     }
 
     private fun start() {
-        Log.info("EOCVSim", "Begin EOCVSim loop")
+        Log.info(TAG, "Begin EOCVSim loop")
         Log.blank()
 
         while(!eocvSimThread.isInterrupted) {
@@ -162,7 +171,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 }
 
                 //print exception
-                Log.error("EOCVSim","Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
+                Log.error(TAG,"Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
 
                 while(eocvSimThread.isInterrupted); //block until user closes the async dialog
                 break
@@ -176,19 +185,19 @@ class EOCVSim(val params: Parameters = Parameters()) {
             fpsLimiter.sync()
         }
 
-        Log.warn("EOCVSim", "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
+        Log.warn(TAG, "Main thread interrupted (" + Integer.toHexString(hashCode()) + ")")
     }
 
     fun destroy(reason: DestroyReason) {
         val hexCode = Integer.toHexString(this.hashCode())
 
-        Log.warn("EOCVSim", "Destroying current EOCVSim ($hexCode) due to $reason")
+        Log.warn(TAG, "Destroying current EOCVSim ($hexCode) due to $reason")
 
         //stop recording session if there's currently an ongoing one
         currentRecordingSession?.stopRecordingSession()
         currentRecordingSession?.discardVideo()
 
-        Log.info("EOCVSim", "Trying to save config file...")
+        Log.info(TAG, "Trying to save config file...")
 
         configManager.saveToFile() //
         visualizer.close()
@@ -201,7 +210,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     }
 
     fun restart() {
-        Log.info("EOCVSim", "Restarting...")
+        Log.info(TAG, "Restarting...")
 
         Log.blank()
         destroy(DestroyReason.RESTART)
@@ -215,7 +224,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             currentRecordingSession = VideoRecordingSession(fpsLimiter.maxFPS, configManager.config.videoRecordingSize)
             currentRecordingSession!!.startRecordingSession()
 
-            Log.info("EOCVSim", "Recording session started")
+            Log.info(TAG, "Recording session started")
 
             pipelineManager.pipelineOutputPosters.add(currentRecordingSession!!.matPoster)
         }
@@ -230,7 +239,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
             itVideo.stopRecordingSession()
             pipelineManager.pipelineOutputPosters.remove(itVideo.matPoster)
 
-            Log.info("EOCVSim", "Recording session stopped")
+            Log.info(TAG, "Recording session stopped")
 
             DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, FileFilters.recordedVideoFilter)
                     .addCloseListener { _: Int, file: File?, selectedFileFilter: FileFilter? ->

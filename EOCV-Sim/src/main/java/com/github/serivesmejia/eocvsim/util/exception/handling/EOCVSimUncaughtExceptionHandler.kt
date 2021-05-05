@@ -3,7 +3,7 @@ package com.github.serivesmejia.eocvsim.util.exception.handling
 import com.github.serivesmejia.eocvsim.util.Log
 import kotlin.system.exitProcess
 
-class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
+class EOCVSimUncaughtExceptionHandler private constructor() : Thread.UncaughtExceptionHandler {
 
     companion object {
         const val MAX_UNCAUGHT_EXCEPTIONS_BEFORE_CRASH = 3
@@ -12,7 +12,7 @@ class EOCVSimUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
             Thread.setDefaultUncaughtExceptionHandler(EOCVSimUncaughtExceptionHandler())
         }
 
-        val TAG = "EOCVSimUncaughtExceptionHandler"
+        private const val TAG = "EOCVSimUncaughtExceptionHandler"
     }
 
     private var uncaughtExceptionsCount = 0

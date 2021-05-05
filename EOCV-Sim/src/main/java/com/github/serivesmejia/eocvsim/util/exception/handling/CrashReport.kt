@@ -32,9 +32,9 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class CrashReport(val causedByException: Throwable) {
+class CrashReport(causedByException: Throwable) {
 
-    companion object {
+    private companion object {
         val OS_ARCH = System.getProperty("os.arch")
         val OS_VERSION = System.getProperty("os.version")
         val OS_NAME = System.getProperty("os.name")
