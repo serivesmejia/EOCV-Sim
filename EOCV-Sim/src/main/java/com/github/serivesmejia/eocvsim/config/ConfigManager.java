@@ -31,7 +31,6 @@ public class ConfigManager {
     private Config config;
 
     public void init() {
-
         Log.info("ConfigManager", "Initializing...");
 
         try {
@@ -49,7 +48,6 @@ public class ConfigManager {
         }
 
         Log.blank();
-
     }
 
     public void saveToFile() {

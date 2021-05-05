@@ -279,8 +279,7 @@ public class Visualizer {
                 double fontSize = 16 * ratio;
                 int columns = (int) Math.round(5 * ratio);
 
-                Font font = pipelineSelectorPanel.getPipelineSelectorLabel()
-                        .getFont().deriveFont((float)fontSize);
+                Font font = pipelineSelectorPanel.getPipelineSelectorLabel().getFont().deriveFont((float)fontSize);
 
                 pipelineSelectorPanel.getPipelineSelector().setVisibleRowCount(columns);
                 pipelineSelectorPanel.getPipelineSelectorLabel().setFont(font);

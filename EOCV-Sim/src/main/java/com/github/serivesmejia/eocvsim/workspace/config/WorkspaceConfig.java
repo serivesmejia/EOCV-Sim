@@ -21,7 +21,15 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.workspace;
+package com.github.serivesmejia.eocvsim.workspace.config;
+
+import java.util.ArrayList;
 
 public class WorkspaceConfig {
+
+    public String sourcesPath = ".";
+    public ArrayList<String> excludedPaths = new ArrayList<>();
+
+
+
 }

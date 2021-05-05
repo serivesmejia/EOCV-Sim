@@ -23,5 +23,68 @@
 
 package com.github.serivesmejia.eocvsim.workspace
 
+import com.github.serivesmejia.eocvsim.util.Log
+import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.extension.plus
+import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfig
+import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfigLoader
+import java.io.File
+
 class WorkspaceManager {
+
+    companion object {
+        private val TAG = "WorkspaceManager"
+    }
+
+    val workspaceConfigLoader by lazy { WorkspaceConfigLoader(workspaceFile) }
+
+    var workspaceFile = File(".")
+        set(value) {
+            if(value != workspaceFile) {
+                workspaceConfigLoader.workspaceFile = value
+                field = value
+
+                Log.info(TAG, "Set current workspace to ${value.absolutePath}")
+            }
+
+            cachedWorkspConfig = workspaceConfigLoader.loadWorkspaceConfig()
+
+            if(cachedWorkspConfig == null) {
+                cachedWorkspConfig = WorkspaceConfig()
+
+                if(value.exists())
+                    Log.warn(TAG, "Recreating workspace config file, old one failed to parse")
+                else
+                    Log.info(TAG, "Creating workspace config file")
+
+                workspaceConfigLoader.saveWorkspaceConfig(workspaceConfig)
+            } else {
+                Log.info(TAG, "Loaded workspace config successfully")
+            }
+        }
+
+    private var cachedWorkspConfig: WorkspaceConfig? = null
+    var workspaceConfig: WorkspaceConfig
+        set(value) {
+            Log.info(TAG, "Saving workspace config file of ${workspaceFile.absolutePath}")
+            workspaceConfigLoader.saveWorkspaceConfig(value)
+            cachedWorkspConfig = value
+        }
+        get() {
+            if(cachedWorkspConfig == null)
+                ::workspaceFile.set(workspaceFile)
+
+            return cachedWorkspConfig!!
+        }
+
+    // TODO: Excluding ignored paths
+    val sourceFiles get() =
+        SysUtil.filesUnder(workspaceFile + workspaceConfig.sourcesPath, ".java")
+
+    fun saveCurrentConfig() {
+        ::workspaceConfig.set(workspaceConfig)
+    }
+
+    fun reloadConfig() = workspaceConfig
+
 }

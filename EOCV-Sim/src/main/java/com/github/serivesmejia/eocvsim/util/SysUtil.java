@@ -304,7 +304,7 @@ public class SysUtil {
         try {
             Files.move(oldFile.toPath(), newFile.toPath());
         } catch (IOException e) {
-            Log.info("SysUtil", "Failed to migrate old file " + oldFile.getAbsolutePath());
+            Log.warn("SysUtil", "Failed to migrate old file " + oldFile.getAbsolutePath());
             return false;
         }
 
