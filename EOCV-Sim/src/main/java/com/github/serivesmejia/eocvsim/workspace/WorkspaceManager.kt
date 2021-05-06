@@ -54,10 +54,10 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
             if(cachedWorkspConfig == null) {
                 cachedWorkspConfig = WorkspaceConfig()
 
-                if(value.exists())
+                if(workspaceConfigLoader.workspaceConfigFile.exists())
                     Log.warn(TAG, "Recreating workspace config file, old one failed to parse")
                 else
-                    Log.info(TAG, "Creating workspace config file")
+                    Log.info(TAG, "Creating workspace config file...")
 
                 workspaceConfigLoader.saveWorkspaceConfig(workspaceConfig)
             } else {
@@ -91,6 +91,8 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
         Paths.get(workspaceFile.absolutePath, it).normalize()!!
     }
 
+    val excludedFileExtensions get() = workspaceConfig.excludedFileExtensions
+
     // TODO: Excluding ignored paths
     val sourceFiles get() = SysUtil.filesUnder(sourcesAbsolutePath.toFile()) { file ->
         file.name.endsWith(".java") && excludedAbsolutePaths.stream().noneMatch {
@@ -101,7 +103,11 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
     val resourceFiles get() = SysUtil.filesUnder(resourcesAbsolutePath.toFile()) { file ->
         file.name.run {
             !endsWith(".java") && !endsWith(".class") && this != "eocvsim_workspace.json"
-        } && excludedAbsolutePaths.stream().noneMatch { file.startsWith(it.toFile().absolutePath) }
+        } && excludedAbsolutePaths.stream().noneMatch {
+            file.startsWith(it.toFile().absolutePath)
+        } && excludedFileExtensions.stream().noneMatch {
+            file.name.endsWith(".$it")
+        }
     }
 
     fun init() {

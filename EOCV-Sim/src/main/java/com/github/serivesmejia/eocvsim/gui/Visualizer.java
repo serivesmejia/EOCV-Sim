@@ -276,7 +276,7 @@ public class Visualizer {
             public void componentResized(ComponentEvent evt) {
                 double ratio = frame.getSize().getHeight() / 645;
 
-                double fontSize = 16 * ratio;
+                double fontSize = 18 * ratio;
                 int columns = (int) Math.round(5 * ratio);
 
                 Font font = pipelineSelectorPanel.getPipelineSelectorLabel().getFont().deriveFont((float)fontSize);

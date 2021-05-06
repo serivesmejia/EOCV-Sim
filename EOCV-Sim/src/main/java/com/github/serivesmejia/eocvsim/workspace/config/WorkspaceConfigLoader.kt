@@ -9,7 +9,8 @@ class WorkspaceConfigLoader(var workspaceFile: File) {
     companion object {
         private val gson = GsonBuilder().setPrettyPrinting().create()
     }
-    private val workspaceConfigFile get() = File(workspaceFile, File.separator + "eocvsim_workspace.json")
+
+    val workspaceConfigFile get() = File(workspaceFile, File.separator + "eocvsim_workspace.json")
 
     fun loadWorkspaceConfig(): WorkspaceConfig? {
         if(!workspaceConfigFile.exists()) return null

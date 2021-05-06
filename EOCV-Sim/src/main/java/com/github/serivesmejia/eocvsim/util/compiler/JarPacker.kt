@@ -42,6 +42,8 @@ object JarPacker {
         pack(outputJar, inputClasses, resourceFilesRoot, resourceFiles, manifest)
 
     private fun putFileInJar(jar: JarOutputStream, rootFile: File, file: File) {
+        if(!file.exists()) return
+
         val ze = ZipEntry(SysUtil.getRelativePath(rootFile, file).path)
         ze.time = file.lastModified()
 
