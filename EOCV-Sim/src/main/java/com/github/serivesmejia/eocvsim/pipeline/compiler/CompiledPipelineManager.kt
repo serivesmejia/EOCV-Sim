@@ -30,6 +30,7 @@ import com.github.serivesmejia.eocvsim.gui.dialog.BuildOutput
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
+import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -76,7 +77,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         asyncCompile()
     }
 
-    fun compile(): PipelineCompileResult {
+    fun uncheckedCompile(): PipelineCompileResult {
         isBuildRunning = true
         onBuildStart.run()
 
@@ -101,7 +102,10 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         val runtime = ElapsedTime()
 
-        val compiler = PipelineCompiler(workspaceManager.sourceFiles, absoluteSourcesPath)
+        val compiler = PipelineCompiler(
+            absoluteSourcesPath, workspaceManager.sourceFiles,
+            workspaceManager.resourcesAbsolutePath.toFile(), workspaceManager.resourceFiles
+        )
         
         val result = compiler.compile(PIPELINES_OUTPUT_JAR)
         lastBuildResult = result
@@ -120,6 +124,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 "Build successful $messageEnd"
             }
             PipelineCompileStatus.NO_SOURCE -> {
+                //delete jar if we had no sources, the most logical outcome in this case
                 deleteJarFile()
                 if(pipelineManager.eocvSim.visualizer.hasFinishedInit())
                     pipelineManager.refreshGuiPipelineList()
@@ -147,12 +152,36 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         return result
     }
 
+    fun compile() = try {
+        uncheckedCompile()
+    } catch(e: Exception) {
+        isBuildRunning = false
+        onBuildEnd.run()
+
+        val stacktrace = StrUtil.fromException(e)
+        lastBuildOutputMessage = """
+            |Unexpected exception thrown while the build was running
+            |
+            |$stacktrace
+            |
+            |If this seems like a bug, please open an issue in the EOCV-Sim github repo
+        """.trimMargin()
+
+        Log.error(TAG, lastBuildOutputMessage)
+
+        lastBuildResult = PipelineCompileResult(PipelineCompileStatus.FAILED, lastBuildOutputMessage!!)
+
+        if(!BuildOutput.isAlreadyOpened)
+            DialogFactory.createBuildOutput(pipelineManager.eocvSim)
+
+        lastBuildResult!!
+    }
+
     fun asyncCompile(endCallback: (PipelineCompileResult) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
         endCallback(compile())
     }
 
     private fun deleteJarFile() {
-        //delete jar if we had no sources, the most logical outcome in this case
         if(PIPELINES_OUTPUT_JAR.exists()) PIPELINES_OUTPUT_JAR.delete()
         currentPipelineClassLoader = null
     }

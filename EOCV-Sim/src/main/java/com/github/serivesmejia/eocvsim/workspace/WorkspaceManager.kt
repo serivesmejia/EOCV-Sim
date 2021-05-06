@@ -26,7 +26,6 @@ package com.github.serivesmejia.eocvsim.workspace
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfig
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfigLoader
 import java.io.File
@@ -81,13 +80,29 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
             return cachedWorkspConfig!!
         }
 
-    val sourcesRelativePath get() = workspaceConfig.sourcesPath
+    val sourcesRelativePath get() = workspaceConfig.sourcesPath!!
+    val sourcesAbsolutePath get() = Paths.get(workspaceFile.absolutePath, sourcesRelativePath).normalize()!!
 
-    val sourcesAbsolutePath get() = Paths.get(workspaceFile.absolutePath, sourcesRelativePath).normalize()
+    val resourcesRelativePath get() = workspaceConfig.resourcesPath!!
+    val resourcesAbsolutePath get() = Paths.get(workspaceFile.absolutePath, resourcesRelativePath).normalize()!!
+
+    val excludedRelativePaths get() = workspaceConfig.excludedPaths
+    val excludedAbsolutePaths get() = excludedRelativePaths.map {
+        Paths.get(workspaceFile.absolutePath, it).normalize()!!
+    }
 
     // TODO: Excluding ignored paths
-    val sourceFiles get() =
-        SysUtil.filesUnder(sourcesAbsolutePath.toFile(), ".java")
+    val sourceFiles get() = SysUtil.filesUnder(sourcesAbsolutePath.toFile()) { file ->
+        file.name.endsWith(".java") && excludedAbsolutePaths.stream().noneMatch {
+            file.startsWith(it.toFile().absolutePath)
+        }
+    }
+
+    val resourceFiles get() = SysUtil.filesUnder(resourcesAbsolutePath.toFile()) { file ->
+        file.name.run {
+            !endsWith(".java") && !endsWith(".class") && this != "eocvsim_workspace.json"
+        } && excludedAbsolutePaths.stream().noneMatch { file.startsWith(it.toFile().absolutePath) }
+    }
 
     fun init() {
         workspaceFile = File(eocvSim.config.workspacePath)

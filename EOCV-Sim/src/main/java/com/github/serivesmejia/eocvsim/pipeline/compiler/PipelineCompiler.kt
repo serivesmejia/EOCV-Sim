@@ -31,7 +31,10 @@ import java.io.PrintWriter
 import java.util.*
 import javax.tools.*
 
-class PipelineCompiler(private val files: List<File>, private val inputPath: File): DiagnosticListener<JavaFileObject> {
+class PipelineCompiler(
+    private val sourcesInputPath: File, private val sourceFiles: List<File>,
+    private val resInputPath: File? = null, private val resFiles: List<File>? = null
+): DiagnosticListener<JavaFileObject> {
 
     companion object {
         val IS_USABLE by lazy {
@@ -77,15 +80,15 @@ class PipelineCompiler(private val files: List<File>, private val inputPath: Fil
         "-XDuseUnsharedTable=true"
     )
 
-    constructor(inputPath: File) : this(SysUtil.filesUnder(inputPath, ".java"), inputPath)
+    constructor(inputPath: File) : this(inputPath, SysUtil.filesUnder(inputPath, ".java"))
 
     fun compile(outputJar: File): PipelineCompileResult {
         val javac = COMPILER
         
         val fileManager = PipelineStandardFileManager(javac.getStandardFileManager(this, null, null))
-        fileManager.sourcePath = Collections.singleton(inputPath)
+        fileManager.sourcePath = Collections.singleton(sourcesInputPath)
 
-        val javaFileObjects = fileManager.getJavaFileObjects(*files.toTypedArray())
+        val javaFileObjects = fileManager.getJavaFileObjects(*sourceFiles.toTypedArray())
 
         if(javaFileObjects.iterator().hasNext()) {
             SysUtil.deleteFilesUnder(CompiledPipelineManager.CLASSES_OUTPUT_FOLDER)
@@ -100,7 +103,14 @@ class PipelineCompiler(private val files: List<File>, private val inputPath: Fil
             )
 
             if(task.call()) {
-                JarPacker.packClassesUnder(outputJar, fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next())
+                val outputClasses = fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next()
+
+                if(resInputPath == null || resFiles == null) {
+                    JarPacker.packClassesUnder(outputJar, outputClasses)
+                } else {
+                    JarPacker.packResAndClassesUnder(outputJar, outputClasses, resInputPath, resFiles)
+                }
+
                 return PipelineCompileResult(PipelineCompileStatus.SUCCESS, latestDiagnostic)
             }
 
@@ -112,7 +122,7 @@ class PipelineCompiler(private val files: List<File>, private val inputPath: Fil
 
     override fun report(diagnostic: Diagnostic<out JavaFileObject>) {
         val locale = Locale.getDefault()
-        val relativeFile = SysUtil.getRelativePath(inputPath, File(diagnostic.source.name))
+        val relativeFile = SysUtil.getRelativePath(sourcesInputPath, File(diagnostic.source.name))
 
         val builder = diagnosticBuilders[relativeFile.path] ?: StringBuilder()
 
