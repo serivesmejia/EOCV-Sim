@@ -90,7 +90,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             return field
         }
 
-    val compiledPipelineManager = CompiledPipelineManager(this)
+    @JvmField val compiledPipelineManager = CompiledPipelineManager(this)
 
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()

@@ -387,7 +387,7 @@ public class Visualizer {
             menuBar.fileWorkspCompile.setEnabled(false);
             pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(false);
 
-            eocvSim.pipelineManager.getCompiledPipelineManager().asyncCompile((result) -> {
+            eocvSim.pipelineManager.compiledPipelineManager.asyncCompile((result) -> {
                 menuBar.fileWorkspCompile.setEnabled(true);
                 pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(true);
 
@@ -409,9 +409,10 @@ public class Visualizer {
                 frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
         ).addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
             if (OPTION == JFileChooser.APPROVE_OPTION) {
-                eocvSim.onMainUpdate.doOnce(() ->
-                    eocvSim.workspaceManager.setWorkspaceFile(selectedFile)
-                );
+                eocvSim.onMainUpdate.doOnce(() -> {
+                    eocvSim.workspaceManager.setWorkspaceFile(selectedFile);
+                    eocvSim.pipelineManager.compiledPipelineManager.asyncCompile();
+                });
             }
         });
     }

@@ -337,6 +337,32 @@ public class SysUtil {
         return files;
     }
 
+    public static String runShellCommand(String command) {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (OS == OperatingSystem.WINDOWS) {
+            processBuilder.command("cmd.exe", "/c", command);
+        } else {
+            processBuilder.command("bash", "-c", command);
+        }
+
+        try {
+            Process process = processBuilder.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line = "";
+            StringBuilder message = new StringBuilder();
+
+            while((line = reader.readLine()) != null) {
+                message.append(line);
+            }
+            process.waitFor();
+
+            return message.toString();
+        } catch (IOException | InterruptedException e) {
+            return StrUtil.fromException(e);
+        }
+    }
+
     public enum OperatingSystem {
         WINDOWS,
         LINUX,

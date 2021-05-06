@@ -177,6 +177,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         lastBuildResult!!
     }
 
+    @JvmOverloads
     fun asyncCompile(endCallback: (PipelineCompileResult) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
         endCallback(compile())
     }
