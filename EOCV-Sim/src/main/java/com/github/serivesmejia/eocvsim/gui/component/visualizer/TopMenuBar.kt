@@ -88,7 +88,7 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
         val fileWorkspVSCodeOpen = JMenuItem("Open in the current workspace")
 
         fileWorkspVSCodeOpen.addActionListener {
-            VSCodeLauncher.launchAsync(eocvSim.workspaceManager.workspaceFile)
+            VSCodeLauncher.asyncLaunch(eocvSim.workspaceManager.workspaceFile)
         }
         fileWorkspVSCode.add(fileWorkspVSCodeOpen)
 

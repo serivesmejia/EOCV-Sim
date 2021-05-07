@@ -103,6 +103,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
     lateinit var eocvSimThread: Thread
         private set
 
+    private val hexCode = Integer.toHexString(hashCode())
+
     enum class DestroyReason {
         USER_REQUESTED, THEME_CHANGING, RESTART, CRASH
     }
@@ -110,7 +112,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
     fun init() {
         eocvSimThread = Thread.currentThread()
 
-        Log.info(TAG, "Initializing EasyOpenCV Simulator v$VERSION")
+        Log.info(TAG, "Initializing EasyOpenCV Simulator v$VERSION ($hexCode)")
         Log.blank()
 
         EOCVSimUncaughtExceptionHandler.register()
@@ -130,8 +132,11 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         //shows a warning when a pipeline gets "stuck"
         pipelineManager.onPipelineTimeout.doPersistent {
-            visualizer.asyncPleaseWaitDialog("Current pipeline took too long to ${pipelineManager.lastPipelineAction}", "Falling back to DefaultPipeline",
-                "Close", Dimension(310, 150), true, true)
+            visualizer.asyncPleaseWaitDialog(
+                "Current pipeline took too long to ${pipelineManager.lastPipelineAction}",
+                "Falling back to DefaultPipeline",
+                "Close", Dimension(310, 150), true, true
+            )
         }
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
@@ -174,8 +179,16 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 //print exception
                 Log.error(TAG,"Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
 
-                while(eocvSimThread.isInterrupted); //block until user closes the async dialog
-                break
+                //block the current thread until the user closes the dialog
+                try {
+                    //using sleep for avoiding burning cpu cycles
+                    Thread.sleep(Long.MAX_VALUE)
+                } catch(ignored: InterruptedException) {
+                    //reinterrupt once user closes the dialog
+                    Thread.currentThread().interrupt()
+                }
+
+                break //bye bye
             }
 
             //updating displayed telemetry
@@ -190,8 +203,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
     }
 
     fun destroy(reason: DestroyReason) {
-        val hexCode = Integer.toHexString(this.hashCode())
-
         Log.warn(TAG, "Destroying current EOCVSim ($hexCode) due to $reason")
 
         //stop recording session if there's currently an ongoing one
@@ -200,7 +211,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         Log.info(TAG, "Trying to save config file...")
 
-        configManager.saveToFile() //
+        inputSourceManager.currentInputSource?.close()
+        configManager.saveToFile()
         visualizer.close()
 
         eocvSimThread.interrupt()

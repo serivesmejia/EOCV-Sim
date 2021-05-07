@@ -50,14 +50,20 @@ object GradleWorkspaceTemplate : WorkspaceTemplate() {
             ZipFile(templateZipFile).extractAll(folder.absolutePath)
 
             Log.info(TAG, "Successfully extracted template")
+            reformatTemplate(folder) //format necessary template files in the folder
 
-
-            VSCodeLauncher.launch(folder)
+            VSCodeLauncher.asyncLaunch(folder) // launch vs code
             true
         } catch(ex: IOException) {
             Log.warn(TAG, "Failed to extract workspace template to ${folder.absolutePath}", ex)
             false
         }
+    }
+
+    private fun reformatTemplate(folder: File) {
+        val settingsGradleFile = File(folder, File.separator + "settings.gradle")
+        //replace the root project name variable in the file to the root folder name
+        SysUtil.replaceStrInFile(settingsGradleFile, "\$workspace_name", folder.name)
     }
 
 }

@@ -38,12 +38,16 @@ object VSCodeLauncher {
     fun launch(workspace: File) {
         Log.info(TAG, "Opening VS Code...")
 
-        val commandOutput = SysUtil.runShellCommand("code \"${workspace.absolutePath}\"")
-        if(commandOutput.size != 0) Log.info(TAG, commandOutput)
-        
-        Log.info(TAG, "VS Code opened")
+        val result = SysUtil.runShellCommand("code \"${workspace.absolutePath}\"")
+
+        if(result.output.isNotEmpty()) Log.info(TAG, result.output)
+
+        if(result.exitCode == 0)
+            Log.info(TAG, "VS Code opened")
+        else
+            Log.info(TAG, "VS Code failed to open")
     }
 
-    fun launchAsync(workspace: File) = GlobalScope.launch(Dispatchers.IO) { launch(workspace) }
+    fun asyncLaunch(workspace: File) = GlobalScope.launch(Dispatchers.IO) { launch(workspace) }
 
 }

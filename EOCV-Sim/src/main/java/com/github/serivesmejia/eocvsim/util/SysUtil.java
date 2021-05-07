@@ -183,7 +183,6 @@ public class SysUtil {
     }
 
     public static String loadFileStr(File f) {
-
         String content = "";
 
         try {
@@ -193,11 +192,14 @@ public class SysUtil {
         }
 
         return content;
+    }
 
+    public static void replaceStrInFile(File f, String target, String replacement) {
+        String fileContents = loadFileStr(f);
+        saveFileStr(f, fileContents.replace(target, replacement));
     }
 
     public static boolean saveFileStr(File f, String contents) {
-
         try {
             FileWriter fw = new FileWriter(f);
             fw.append(contents);
@@ -207,7 +209,6 @@ public class SysUtil {
             e.printStackTrace();
             return false;
         }
-
     }
 
     public static void download(String url, String fileName) throws Exception {
@@ -334,7 +335,9 @@ public class SysUtil {
         return files;
     }
 
-    public static String runShellCommand(String command) {
+    public static CommandResult runShellCommand(String command) {
+        CommandResult result = new CommandResult();
+
         ProcessBuilder processBuilder = new ProcessBuilder();
         if (OS == OperatingSystem.WINDOWS) {
             processBuilder.command("cmd.exe", "/c", command);
@@ -346,18 +349,21 @@ public class SysUtil {
             Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
+            result.exitCode = process.waitFor();
+
             String line = "";
             StringBuilder message = new StringBuilder();
 
             while((line = reader.readLine()) != null) {
                 message.append(line);
             }
-            process.waitFor();
 
-            return message.toString();
+            result.output = message.toString();
         } catch (IOException | InterruptedException e) {
-            return StrUtil.fromException(e);
+            result.output = StrUtil.fromException(e);
         }
+
+        return result;
     }
 
     public enum OperatingSystem {
@@ -368,10 +374,13 @@ public class SysUtil {
     }
 
     public static class CopyFileIsData {
-
         public File file = null;
         public boolean alreadyExists = false;
+    }
 
+    public static class CommandResult {
+        public String output = "";
+        public int exitCode = 0;
     }
 
 }
