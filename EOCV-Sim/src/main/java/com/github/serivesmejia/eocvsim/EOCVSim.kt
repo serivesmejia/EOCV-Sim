@@ -153,8 +153,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.info(TAG, "Begin EOCVSim loop")
         Log.blank()
 
-        VSCodeLauncher.launch(workspaceManager.workspaceFile)
-
         while(!eocvSimThread.isInterrupted) {
             //run all pending requested runnables
             onMainUpdate.run()

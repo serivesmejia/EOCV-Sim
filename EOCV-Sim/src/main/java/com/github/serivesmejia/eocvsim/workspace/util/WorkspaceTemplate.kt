@@ -23,5 +23,18 @@
 
 package com.github.serivesmejia.eocvsim.workspace.util
 
-class GradleWorkspaceTemplate {
+import java.io.File
+
+abstract class WorkspaceTemplate {
+
+    fun extractToIfEmpty(folder: File): Boolean {
+        if(folder.isDirectory && folder.listFiles()!!.isEmpty()) {
+            return extractTo(folder)
+        }
+
+        return false
+    }
+
+    abstract fun extractTo(folder: File): Boolean
+
 }

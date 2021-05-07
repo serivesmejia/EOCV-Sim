@@ -167,13 +167,10 @@ public class SysUtil {
     }
 
     public static CopyFileIsData copyFileIsTemp(InputStream is, String fileName, boolean replaceIfExisting) throws IOException {
-
         String tmpDir = System.getProperty("java.io.tmpdir");
-
         File tempFile = new File(tmpDir + File.separator + fileName);
 
         return copyFileIs(is, tempFile, replaceIfExisting);
-
     }
 
     public static long getMemoryUsageMB() {

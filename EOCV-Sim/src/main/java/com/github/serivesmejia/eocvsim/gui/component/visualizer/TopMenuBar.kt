@@ -30,6 +30,7 @@ import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.gui.dialog.BuildOutput
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
 import com.github.serivesmejia.eocvsim.input.SourceType
+import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.JMenu
@@ -81,6 +82,22 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
                 DialogFactory.createBuildOutput(eocvSim)
         }
         fileWorkspace.add(fileWorkspBuildOutput)
+
+        val fileWorkspVSCode = JMenu("VS Code")
+
+        val fileWorkspVSCodeOpen = JMenuItem("Open in the current workspace")
+
+        fileWorkspVSCodeOpen.addActionListener {
+            VSCodeLauncher.launchAsync(eocvSim.workspaceManager.workspaceFile)
+        }
+        fileWorkspVSCode.add(fileWorkspVSCodeOpen)
+
+        val fileWorkspVSCodeCreate = JMenuItem("Create VS Code workspace")
+
+        fileWorkspVSCodeCreate.addActionListener { visualizer.createVSCodeWorkspace() }
+        fileWorkspVSCode.add(fileWorkspVSCodeCreate)
+
+        fileWorkspace.add(fileWorkspVSCode)
 
         mFileMenu.add(fileWorkspace)
 

@@ -28,6 +28,10 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfig
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfigLoader
+import com.github.serivesmejia.eocvsim.workspace.util.WorkspaceTemplate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.file.Paths
 
@@ -107,6 +111,23 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
             file.startsWith(it.toFile().absolutePath)
         } && excludedFileExtensions.stream().noneMatch {
             file.name.endsWith(".$it")
+        }
+    }
+
+    fun createWorkspaceWithTemplate(folder: File, template: WorkspaceTemplate): Boolean {
+        if(!folder.isDirectory) return false
+        if(!template.extractToIfEmpty(folder)) return false
+
+        workspaceFile = folder
+        return true
+    }
+
+    fun createWorkspaceWithTemplateAsync(folder: File, template: WorkspaceTemplate) = GlobalScope.launch(Dispatchers.IO) {
+        if(!folder.isDirectory) return@launch
+        if(!template.extractToIfEmpty(folder)) return@launch
+
+        eocvSim.onMainUpdate.doOnce {
+            workspaceFile = folder
         }
     }
 

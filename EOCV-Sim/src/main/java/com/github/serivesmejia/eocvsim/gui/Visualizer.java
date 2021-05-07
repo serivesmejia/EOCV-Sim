@@ -38,6 +38,8 @@ import com.github.serivesmejia.eocvsim.gui.util.ReflectTaskbar;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher;
+import com.github.serivesmejia.eocvsim.workspace.util.template.GradleWorkspaceTemplate;
 import kotlin.Unit;
 
 import javax.swing.*;
@@ -413,6 +415,22 @@ public class Visualizer {
                     eocvSim.workspaceManager.setWorkspaceFile(selectedFile);
                     eocvSim.pipelineManager.compiledPipelineManager.asyncCompile();
                 });
+            }
+        });
+    }
+
+    public void createVSCodeWorkspace() {
+        DialogFactory.createFileChooser(frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT)
+        .addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
+            if(OPTION == JFileChooser.APPROVE_OPTION) {
+                if(selectedFile.isDirectory() && Objects.requireNonNull(selectedFile.listFiles()).length == 0) {
+                    eocvSim.workspaceManager.createWorkspaceWithTemplateAsync(selectedFile, GradleWorkspaceTemplate.INSTANCE);
+                } else {
+                    asyncPleaseWaitDialog(
+                            "The selected directory must be empty", "Select an empty directory or create a new one",
+                            "Retry", new Dimension(320, 160), true, true
+                    ).onCancel(this::createVSCodeWorkspace);
+                }
             }
         });
     }

@@ -21,29 +21,43 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.workspace.util
+package com.github.serivesmejia.eocvsim.workspace.util.template
 
 import com.github.serivesmejia.eocvsim.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher
+import com.github.serivesmejia.eocvsim.workspace.util.WorkspaceTemplate
+import net.lingala.zip4j.ZipFile
 import java.io.File
+import java.io.IOException
 
-object VSCodeLauncher {
+object GradleWorkspaceTemplate : WorkspaceTemplate() {
 
-    private val TAG = "VSCodeLauncher"
+    private val TAG = "GradleWorkspaceTemplate"
 
-    fun launch(workspace: File) {
-        Log.info(TAG, "Opening VS Code...")
+    val templateZipResource = javaClass.getResourceAsStream("/templates/gradle_workspace.zip")
 
-        val commandOutput = SysUtil.runShellCommand("code \"${workspace.absolutePath}\"")
-        if(commandOutput.size != 0) Log.info(TAG, commandOutput)
-        
-        Log.info(TAG, "VS Code opened")
+    override fun extractTo(folder: File): Boolean {
+        if(!folder.isDirectory) return false
+
+        val templateZipFile = SysUtil.copyFileIsTemp(
+            templateZipResource, "gradle_workspace.zip", false
+        ).file
+
+        return try {
+            Log.info(TAG, "Extracting template to ${folder.absolutePath}")
+
+            ZipFile(templateZipFile).extractAll(folder.absolutePath)
+
+            Log.info(TAG, "Successfully extracted template")
+
+
+            VSCodeLauncher.launch(folder)
+            true
+        } catch(ex: IOException) {
+            Log.warn(TAG, "Failed to extract workspace template to ${folder.absolutePath}", ex)
+            false
+        }
     }
-
-    fun launchAsync(workspace: File) = GlobalScope.launch(Dispatchers.IO) { launch(workspace) }
 
 }
