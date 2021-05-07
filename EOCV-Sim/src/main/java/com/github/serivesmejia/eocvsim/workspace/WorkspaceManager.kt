@@ -128,6 +128,7 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
 
         eocvSim.onMainUpdate.doOnce {
             workspaceFile = folder
+            eocvSim.visualizer.asyncCompilePipelines()
         }
     }
 

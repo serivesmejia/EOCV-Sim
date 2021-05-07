@@ -325,7 +325,7 @@ public class SysUtil {
     }
 
     public static List<File> getClasspathFiles() {
-        String[] classpaths = System.getProperty("java.class.path").split(";");
+        String[] classpaths = System.getProperty("java.class.path").split(File.pathSeparator);
         ArrayList<File> files = new ArrayList<>();
 
         for(String path : classpaths) {

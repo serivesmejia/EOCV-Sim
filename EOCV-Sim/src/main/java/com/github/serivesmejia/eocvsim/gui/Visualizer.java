@@ -278,8 +278,8 @@ public class Visualizer {
             public void componentResized(ComponentEvent evt) {
                 double ratio = frame.getSize().getHeight() / 645;
 
-                double fontSize = 18 * ratio;
-                int columns = (int) Math.round(5 * ratio);
+                double fontSize = 15.5 * ratio;
+                int columns = (int) Math.round(4 * ratio);
 
                 Font font = pipelineSelectorPanel.getPipelineSelectorLabel().getFont().deriveFont((float)fontSize);
 
@@ -287,8 +287,8 @@ public class Visualizer {
                 pipelineSelectorPanel.getPipelineSelectorLabel().setFont(font);
                 pipelineSelectorPanel.revalAndRepaint();
 
-                columns = (int) Math.round(6 * ratio);
-
+                columns = (int) Math.round(5 * ratio);
+                
                 sourceSelectorPanel.getSourceSelector().setVisibleRowCount(columns);
                 sourceSelectorPanel.getSourceSelectorLabel().setFont(font);
                 sourceSelectorPanel.revalAndRepaint();
@@ -413,8 +413,8 @@ public class Visualizer {
             if (OPTION == JFileChooser.APPROVE_OPTION) {
                 eocvSim.onMainUpdate.doOnce(() -> {
                     eocvSim.workspaceManager.setWorkspaceFile(selectedFile);
-                    eocvSim.pipelineManager.compiledPipelineManager.asyncCompile();
                 });
+                asyncCompilePipelines();
             }
         });
     }
