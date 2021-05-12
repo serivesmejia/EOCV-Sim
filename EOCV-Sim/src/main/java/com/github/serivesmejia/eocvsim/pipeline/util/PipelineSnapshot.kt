@@ -18,7 +18,8 @@ class PipelineSnapshot(holdingPipeline: OpenCvPipeline) {
         val fieldValues = mutableMapOf<Field, Any>()
 
         for(field in pipelineClass.declaredFields) {
-            if(Modifier.isFinal(field.modifiers)) continue
+            if(Modifier.isFinal(field.modifiers) || !Modifier.isPublic(field.modifiers))
+                continue
 
             fieldValues[field] = field.get(holdingPipeline)
         }

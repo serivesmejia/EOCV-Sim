@@ -26,7 +26,7 @@ package com.github.serivesmejia.eocvsim.gui.component.tuner.element
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.component.SliderX
 import com.github.serivesmejia.eocvsim.tuner.TunableField
-import com.github.serivesmejia.eocvsim.util.event.KEventListener
+import com.github.serivesmejia.eocvsim.util.event.EventListener
 import javax.swing.JLabel
 import kotlin.math.roundToInt
 
@@ -43,7 +43,7 @@ class TunableSlider(val index: Int,
 
     constructor(i: Int, tunableField: TunableField<Any>, eocvSim: EOCVSim) : this(i, tunableField, eocvSim, null, 0.0, 255.0)
 
-    private val changeFieldValue = KEventListener {
+    private val changeFieldValue = EventListener {
         if(inControl) {
             tunableField.setGuiFieldValue(index, scaledValue.toString())
 

@@ -33,7 +33,7 @@ class EventHandler(val name: String) : Runnable {
     val listeners: Array<EventListener>
         get()  {
             synchronized(lock) {
-                return internalListeners.values.toTypedArray()
+                return internalListeners.toTypedArray()
             }
         }
 
@@ -44,31 +44,33 @@ class EventHandler(val name: String) : Runnable {
             }
         }
 
-    private val internalListeners     = HashMap<Int, EventListener>()
+    private val internalListeners     = ArrayList<EventListener>()
     private val internalOnceListeners = ArrayList<EventListener>()
-
-    companion object {
-        private var idCount = 0
-    }
 
     override fun run() {
         for(listener in listeners) {
             try {
-                listener.run()
+                listener.run(EventListenerRemover(this, listener))
             } catch (ex: Exception) {
-                Log.error("${name}-EventHandler", "Error while running listener #${listener.id} (${listener.javaClass})", ex)
+                Log.warn("${name}-EventHandler", "Error while running listener ${listener.javaClass.name}", ex)
             }
         }
+
+        val toRemoveOnceListeners = mutableListOf<EventListener>()
 
         //executing "doOnce" listeners
         for(listener in onceListeners) {
             try {
-                listener.run()
+                listener.run(EventListenerRemover(this, listener))
             } catch (ex: Exception) {
-                Log.error("${name}-EventHandler", "Error while running \"once\" listener (${listener.javaClass})", ex)
+                Log.warn("${name}-EventHandler", "Error while running \"once\" ${listener.javaClass.name}", ex)
             }
 
-            synchronized(onceLock) {
+            toRemoveOnceListeners.add(listener)
+        }
+
+        synchronized(onceLock) {
+            for(listener in toRemoveOnceListeners) {
                 internalOnceListeners.remove(listener)
             }
         }
@@ -76,37 +78,35 @@ class EventHandler(val name: String) : Runnable {
 
     fun doOnce(listener: EventListener) = synchronized(onceLock) {
         internalOnceListeners.add(listener)
-        listener.id = idCount + 1 //id doesn't matter
     }
-
-    fun doOnce(runnable: Runnable) = doOnce(KEventListener { runnable.run() })
-
-    fun doOnce(listener: (Int) -> Unit) = doOnce(KEventListener(listener))
 
     fun doPersistent(listener: EventListener) = synchronized(lock) {
-        listener.id = idCount + 1
-        internalListeners[listener.id] = listener
+        internalListeners.add(listener)
     }
 
-    fun doPersistent(runnable: Runnable) = doPersistent(KEventListener { runnable.run() })
-
-    fun doPersistent(listener: (Int) -> Unit) = doPersistent(KEventListener(listener))
-
-    fun getListener(id: Int): EventListener? = internalListeners[id]
-
-    fun getKListener(id: Int): KEventListener? {
-        val listener = getListener(id) ?: return null
-        return if(listener is KEventListener) { listener } else { null }
-    }
-
-    fun removePersistentListener(id: Int) {
-        if(internalListeners.contains(id)) {
-            synchronized(lock) { internalListeners.remove(id) }
+    fun removePersistentListener(listener: EventListener) {
+        if(internalListeners.contains(listener)) {
+            synchronized(lock) { internalListeners.remove(listener) }
         }
     }
 
-    fun removeAllListeners() = synchronized(lock) {
+    fun removeOnceListener(listener: EventListener) {
+        if(internalOnceListeners.contains(listener)) {
+            synchronized(onceLock) { internalOnceListeners.remove(listener) }
+        }
+    }
+
+    fun removeAllListeners() {
+        removeAllPersistentListeners()
+        removeAllOnceListeners()
+    }
+
+    fun removeAllPersistentListeners() = synchronized(lock) {
         internalListeners.clear()
+    }
+
+    fun removeAllOnceListeners() = synchronized(onceLock) {
+        internalOnceListeners.clear()
     }
 
 }

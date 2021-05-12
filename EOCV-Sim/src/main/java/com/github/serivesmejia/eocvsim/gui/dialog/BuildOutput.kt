@@ -100,7 +100,7 @@ class BuildOutput(parent: JFrame, private val eocvSim: EOCVSim) {
         })
         compiledPipelineManager.onBuildStart.doPersistent {
             if(!buildOutput.isVisible) {
-                compiledPipelineManager.onBuildStart.removePersistentListener(it)
+                it.removeThisPersistent()
             } else {
                 buildRunning()
             }
@@ -108,7 +108,7 @@ class BuildOutput(parent: JFrame, private val eocvSim: EOCVSim) {
 
         compiledPipelineManager.onBuildEnd.doPersistent {
             if(!buildOutput.isVisible) {
-                compiledPipelineManager.onBuildEnd.removePersistentListener(it)
+                it.removeThisPersistent()
             } else {
                 buildEnded()
             }

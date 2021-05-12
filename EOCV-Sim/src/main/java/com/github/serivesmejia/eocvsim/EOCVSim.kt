@@ -57,14 +57,15 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val VERSION = "3.0.0"
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
-        @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
+        @JvmField
+        val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
 
         private const val TAG = "EOCVSim"
 
         private var isNativeLibLoaded = false
 
         fun loadOpenCvLib() {
-            if(isNativeLibLoaded) return
+            if (isNativeLibLoaded) return
 
             Log.info(TAG, "Loading native lib...")
 
@@ -75,23 +76,30 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 Log.error(TAG, "Failure loading native lib", ex)
                 Log.info(TAG, "Retrying with old method...")
 
-                if(!SysUtil.loadCvNativeLib()) exitProcess(-1)
+                if (!SysUtil.loadCvNativeLib()) exitProcess(-1)
             }
 
             isNativeLibLoaded = true
         }
     }
 
-    @JvmField val onMainUpdate = EventHandler("OnMainUpdate")
+    @JvmField
+    val onMainUpdate = EventHandler("OnMainUpdate")
 
-    @JvmField val visualizer = Visualizer(this)
+    @JvmField
+    val visualizer = Visualizer(this)
 
-    @JvmField val configManager      = ConfigManager()
-    @JvmField val inputSourceManager = InputSourceManager(this)
-    @JvmField val pipelineManager    = PipelineManager(this)
-    @JvmField val tunerManager       = TunerManager(this)
+    @JvmField
+    val configManager = ConfigManager()
+    @JvmField
+    val inputSourceManager = InputSourceManager(this)
+    @JvmField
+    val pipelineManager = PipelineManager(this)
+    @JvmField
+    val tunerManager = TunerManager(this)
 
-    @JvmField val workspaceManager   = WorkspaceManager(this)
+    @JvmField
+    val workspaceManager = WorkspaceManager(this)
 
     val config: Config
         get() = configManager.config
@@ -158,7 +166,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.info(TAG, "Begin EOCVSim loop")
         Log.blank()
 
-        while(!eocvSimThread.isInterrupted) {
+        while (!eocvSimThread.isInterrupted) {
             //run all pending requested runnables
             onMainUpdate.run()
 
@@ -169,21 +177,30 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             try {
                 pipelineManager.update(inputSourceManager.lastMatFromSource)
-            } catch(ex: MaxActiveContextsException) { //handles when a lot of pipelines are stuck in the background
-                visualizer.asyncPleaseWaitDialog("There are many pipelines stuck in processFrame running in the background", "To avoid further issues, EOCV-Sim will exit now.",
-                    "Ok", Dimension(430, 150), true, true
+            } catch (ex: MaxActiveContextsException) { //handles when a lot of pipelines are stuck in the background
+                visualizer.asyncPleaseWaitDialog(
+                    "There are many pipelines stuck in processFrame running in the background",
+                    "To avoid further issues, EOCV-Sim will exit now.",
+                    "Ok",
+                    Dimension(430, 150),
+                    true,
+                    true
                 ).onCancel {
                     destroy(DestroyReason.CRASH) //destroy eocv sim when pressing "exit"
                 }
 
                 //print exception
-                Log.error(TAG,"Please note that the following exception is likely to be caused by one or more of the user pipelines", ex)
+                Log.error(
+                    TAG,
+                    "Please note that the following exception is likely to be caused by one or more of the user pipelines",
+                    ex
+                )
 
                 //block the current thread until the user closes the dialog
                 try {
                     //using sleep for avoiding burning cpu cycles
                     Thread.sleep(Long.MAX_VALUE)
-                } catch(ignored: InterruptedException) {
+                } catch (ignored: InterruptedException) {
                     //reinterrupt once user closes the dialog
                     Thread.currentThread().interrupt()
                 }
@@ -229,11 +246,14 @@ class EOCVSim(val params: Parameters = Parameters()) {
         destroy(DestroyReason.RESTART)
         Log.blank()
 
-        Thread({ EOCVSim().init() }, "main").start() //run next instance on a separate thread for the old one to get interrupted and ended
+        Thread(
+            { EOCVSim().init() },
+            "main"
+        ).start() //run next instance on a separate thread for the old one to get interrupted and ended
     }
 
     fun startRecordingSession() {
-        if(currentRecordingSession == null) {
+        if (currentRecordingSession == null) {
             currentRecordingSession = VideoRecordingSession(fpsLimiter.maxFPS, configManager.config.videoRecordingSize)
             currentRecordingSession!!.startRecordingSession()
 
@@ -254,56 +274,58 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
             Log.info(TAG, "Recording session stopped")
 
-            DialogFactory.createFileChooser(visualizer.frame, DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, FileFilters.recordedVideoFilter)
-                    .addCloseListener { _: Int, file: File?, selectedFileFilter: FileFilter? ->
-                        onMainUpdate.doOnce {
-                            if(file != null) {
+            DialogFactory.createFileChooser(
+                visualizer.frame,
+                DialogFactory.FileChooser.Mode.SAVE_FILE_SELECT, FileFilters.recordedVideoFilter
+            ).addCloseListener { _: Int, file: File?, selectedFileFilter: FileFilter? ->
+                onMainUpdate.doOnce {
+                    if (file != null) {
 
-                                var correctedFile = File(file.absolutePath)
-                                val extension = SysUtil.getExtensionByStringHandling(file.name)
+                        var correctedFile = File(file.absolutePath)
+                        val extension = SysUtil.getExtensionByStringHandling(file.name)
 
-                                if (selectedFileFilter is FileNameExtensionFilter) { //if user selected an extension
-                                    //get selected extension
-                                    correctedFile = file + "." + selectedFileFilter.extensions[0]
-                                } else if(extension.isPresent) {
-                                    if(!extension.get().equals("avi", true)) {
-                                        correctedFile = file + ".avi"
-                                    }
-                                } else {
-                                    correctedFile = file + ".avi"
-                                }
-
-                                if (correctedFile.exists()) {
-                                    SwingUtilities.invokeLater {
-                                        if (DialogFactory.createFileAlreadyExistsDialog(this) == FileAlreadyExists.UserChoice.REPLACE) {
-                                            onMainUpdate.doOnce { itVideo.saveTo(correctedFile) }
-                                        }
-                                    }
-                                } else {
-                                    itVideo.saveTo(correctedFile)
-                                }
-                            } else {
-                                itVideo.discardVideo()
+                        if (selectedFileFilter is FileNameExtensionFilter) { //if user selected an extension
+                            //get selected extension
+                            correctedFile = file + "." + selectedFileFilter.extensions[0]
+                        } else if (extension.isPresent) {
+                            if (!extension.get().equals("avi", true)) {
+                                correctedFile = file + ".avi"
                             }
-
-                            currentRecordingSession = null
-                            visualizer.pipelineSelectorPanel.buttonsPanel.pipelineRecordBtt.isEnabled = true
+                        } else {
+                            correctedFile = file + ".avi"
                         }
+
+                        if (correctedFile.exists()) {
+                            SwingUtilities.invokeLater {
+                                if (DialogFactory.createFileAlreadyExistsDialog(this) == FileAlreadyExists.UserChoice.REPLACE) {
+                                    onMainUpdate.doOnce { itVideo.saveTo(correctedFile) }
+                                }
+                            }
+                        } else {
+                            itVideo.saveTo(correctedFile)
+                        }
+                    } else {
+                        itVideo.discardVideo()
                     }
+
+                    currentRecordingSession = null
+                    visualizer.pipelineSelectorPanel.buttonsPanel.pipelineRecordBtt.isEnabled = true
+                }
+            }
         }
     }
 
     fun isCurrentlyRecording() = currentRecordingSession?.isRecording ?: false
 
     private fun updateVisualizerTitle() {
-        val isBuildRunning = if(pipelineManager.compiledPipelineManager.isBuildRunning) "(Building)" else ""
+        val isBuildRunning = if (pipelineManager.compiledPipelineManager.isBuildRunning) "(Building)" else ""
 
         val workspaceMsg = " - ${config.workspacePath} $isBuildRunning"
 
         val pipelineFpsMsg = " (${pipelineManager.pipelineFpsCounter.fps} Pipeline FPS)"
         val posterFpsMsg = " (${visualizer.viewport.matPoster.fpsCounter.fps} Poster FPS)"
-        val isPaused = if(pipelineManager.paused) " (Paused)" else ""
-        val isRecording = if(isCurrentlyRecording()) " RECORDING" else ""
+        val isPaused = if (pipelineManager.paused) " (Paused)" else ""
+        val isRecording = if (isCurrentlyRecording()) " RECORDING" else ""
 
         val msg = isRecording + pipelineFpsMsg + posterFpsMsg + isPaused
 

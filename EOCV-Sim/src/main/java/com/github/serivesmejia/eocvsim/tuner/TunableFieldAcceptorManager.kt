@@ -11,7 +11,7 @@ class TunableFieldAcceptorManager(private val acceptors: HashMap<Class<out Tunab
             val acceptorConstructor = try {
                 acceptorClass.getConstructor() //get constructor with no params
             } catch(ex: NoSuchMethodException) {
-                Log.error("TunableFieldAcceptorManager", "TunableFieldAcceptor ${acceptorClass.typeName} doesn't implement a constructor with zero parameters", ex)
+                Log.warn("TunableFieldAcceptorManager", "TunableFieldAcceptor ${acceptorClass.typeName} doesn't implement a constructor with zero parameters", ex)
                 continue
             }
 

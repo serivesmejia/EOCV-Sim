@@ -23,11 +23,12 @@
 
 package com.github.serivesmejia.eocvsim.util.event
 
-abstract class EventListener : Runnable {
+fun interface EventListener {
+    fun run(remover: EventListenerRemover)
+}
 
-    var id = 0
-        internal set
+class EventListenerRemover(val handler: EventHandler, val listener: EventListener) {
+    fun removeThisOnce() = handler.removeOnceListener(listener)
 
-    abstract override fun run()
-
+    fun removeThisPersistent() = handler.removePersistentListener(listener)
 }
