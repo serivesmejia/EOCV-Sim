@@ -50,7 +50,6 @@ public class TunerManager {
     private static HashMap<Type, Class<? extends TunableField<?>>> tunableFieldsTypes = null;
     private static HashMap<Class<? extends TunableField<?>>, Class<? extends TunableFieldAcceptor>> tunableFieldAcceptors = null;
 
-
     private boolean firstInit = true;
 
     public TunerManager(EOCVSim eocvSim) {

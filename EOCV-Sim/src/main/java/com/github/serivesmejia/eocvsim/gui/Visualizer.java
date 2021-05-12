@@ -35,10 +35,8 @@ import com.github.serivesmejia.eocvsim.gui.component.visualizer.TopMenuBar;
 import com.github.serivesmejia.eocvsim.gui.theme.Theme;
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.ReflectTaskbar;
-import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
 import com.github.serivesmejia.eocvsim.util.Log;
-import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher;
 import com.github.serivesmejia.eocvsim.workspace.util.template.GradleWorkspaceTemplate;
 import kotlin.Unit;
 
@@ -279,7 +277,7 @@ public class Visualizer {
                 double ratio = frame.getSize().getHeight() / 645;
 
                 double fontSize = 15.5 * ratio;
-                int columns = (int) Math.round(4 * ratio);
+                int columns = (int) Math.round(5 * ratio);
 
                 Font font = pipelineSelectorPanel.getPipelineSelectorLabel().getFont().deriveFont((float)fontSize);
 
@@ -386,11 +384,11 @@ public class Visualizer {
 
     public void asyncCompilePipelines() {
         if(PipelineCompiler.Companion.getIS_USABLE()) {
-            menuBar.fileWorkspCompile.setEnabled(false);
+            menuBar.workspCompile.setEnabled(false);
             pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(false);
 
             eocvSim.pipelineManager.compiledPipelineManager.asyncCompile((result) -> {
-                menuBar.fileWorkspCompile.setEnabled(true);
+                menuBar.workspCompile.setEnabled(true);
                 pipelineSelectorPanel.getButtonsPanel().getPipelineCompileBtt().setEnabled(true);
 
                 return Unit.INSTANCE;

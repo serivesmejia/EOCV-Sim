@@ -32,7 +32,7 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 No complicated setup is required, straight up importing the project into IntelliJ IDEA:
 
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
-      JDK 9 is the minimum required one, although it's not available for download so any JDK above that version will probably work fine.<br/>
+      JDK 8 is the minimum required one, any JDK above that version will probably work fine.<br/>
       You can download it from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html),
       and here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the installation process<br/>
 
@@ -66,7 +66,7 @@ No complicated setup is required, straight up importing the project into Intelli
    1) Clone EOCV-Sim repo and cd to the cloned folder
    
 	 git clone https://github.com/serivesmejia/EOCV-Sim.git
-	 cd EOCV-Sim	
+	 cd EOCV-Sim
    \**Or it can also be manually downloaded as a ZIP file from GitHub*<br/>
 
    2) Run EOCV-Sim through gradle:

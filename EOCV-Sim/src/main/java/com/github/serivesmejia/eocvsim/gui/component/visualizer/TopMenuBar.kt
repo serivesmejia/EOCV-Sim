@@ -39,18 +39,21 @@ import javax.swing.JMenuItem
 
 class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
-    @JvmField val mFileMenu = JMenu("File")
-    @JvmField val mEditMenu = JMenu("Edit")
-    @JvmField val mHelpMenu = JMenu("Help")
+    @JvmField val mFileMenu   = JMenu("File")
+    @JvmField val mWorkspMenu = JMenu("Workspace")
+    @JvmField val mEditMenu   = JMenu("Edit")
+    @JvmField val mHelpMenu   = JMenu("Help")
 
-    @JvmField val fileWorkspCompile = JMenuItem("Build java files")
+    @JvmField val workspCompile = JMenuItem("Build java files")
 
     init {
-        val fileNewSubmenu = JMenu("New")
-        mFileMenu.add(fileNewSubmenu)
+        // FILE
+
+        val fileNew = JMenu("New")
+        mFileMenu.add(fileNew)
 
         val fileNewInputSourceSubmenu = JMenu("Input Source")
-        fileNewSubmenu.add(fileNewInputSourceSubmenu)
+        fileNew.add(fileNewInputSourceSubmenu)
 
         //add all input source types to top bar menu
         for (type in SourceType.values()) {
@@ -64,42 +67,6 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
             fileNewInputSourceSubmenu.add(fileNewInputSourceItem)
         }
-
-        val fileWorkspace = JMenu("Workspace")
-
-        val fileWorkspSetWorkspace = JMenuItem("Select workspace")
-
-        fileWorkspSetWorkspace.addActionListener { visualizer.selectPipelinesWorkspace() }
-        fileWorkspace.add(fileWorkspSetWorkspace)
-
-        fileWorkspCompile.addActionListener { visualizer.asyncCompilePipelines() }
-        fileWorkspace.add(fileWorkspCompile)
-
-        val fileWorkspBuildOutput = JMenuItem("Output")
-
-        fileWorkspBuildOutput.addActionListener {
-            if(!BuildOutput.isAlreadyOpened)
-                DialogFactory.createBuildOutput(eocvSim)
-        }
-        fileWorkspace.add(fileWorkspBuildOutput)
-
-        val fileWorkspVSCode = JMenu("VS Code")
-
-        val fileWorkspVSCodeOpen = JMenuItem("Open in the current workspace")
-
-        fileWorkspVSCodeOpen.addActionListener {
-            VSCodeLauncher.asyncLaunch(eocvSim.workspaceManager.workspaceFile)
-        }
-        fileWorkspVSCode.add(fileWorkspVSCodeOpen)
-
-        val fileWorkspVSCodeCreate = JMenuItem("Create VS Code workspace")
-
-        fileWorkspVSCodeCreate.addActionListener { visualizer.createVSCodeWorkspace() }
-        fileWorkspVSCode.add(fileWorkspVSCodeCreate)
-
-        fileWorkspace.add(fileWorkspVSCode)
-
-        mFileMenu.add(fileWorkspace)
 
         val fileSaveMat = JMenuItem("Save current image")
 
@@ -121,11 +88,53 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
         add(mFileMenu)
 
+        //WORKSPACE
+
+        val workspSetWorkspace = JMenuItem("Select workspace")
+
+        workspSetWorkspace.addActionListener { visualizer.selectPipelinesWorkspace() }
+        mWorkspMenu.add(workspSetWorkspace)
+
+        workspCompile.addActionListener { visualizer.asyncCompilePipelines() }
+        mWorkspMenu.add(workspCompile)
+
+        val workspBuildOutput = JMenuItem("Output")
+
+        workspBuildOutput.addActionListener {
+            if(!BuildOutput.isAlreadyOpened)
+                DialogFactory.createBuildOutput(eocvSim)
+        }
+        mWorkspMenu.add(workspBuildOutput)
+
+        mWorkspMenu.addSeparator()
+
+        val workspVSCode = JMenu("VS Code")
+
+        val workspVSCodeOpen = JMenuItem("Open in current workspace")
+
+        workspVSCodeOpen.addActionListener {
+            VSCodeLauncher.asyncLaunch(eocvSim.workspaceManager.workspaceFile)
+        }
+        workspVSCode.add(workspVSCodeOpen)
+
+        val workspVSCodeCreate = JMenuItem("Create VS Code workspace")
+
+        workspVSCodeCreate.addActionListener { visualizer.createVSCodeWorkspace() }
+        workspVSCode.add(workspVSCodeCreate)
+
+        mWorkspMenu.add(workspVSCode)
+
+        add(mWorkspMenu)
+
+        // EDIT
+
         val editSettings = JMenuItem("Settings")
         editSettings.addActionListener { DialogFactory.createConfigDialog(eocvSim) }
 
         mEditMenu.add(editSettings)
         add(mEditMenu)
+
+        // HELP
 
         val helpUsage = JMenuItem("Usage")
         helpUsage.addActionListener {
@@ -134,6 +143,8 @@ class TopMenuBar(visualizer: Visualizer, eocvSim: EOCVSim) : JMenuBar() {
 
         helpUsage.isEnabled = Desktop.isDesktopSupported()
         mHelpMenu.add(helpUsage)
+
+        mHelpMenu.addSeparator()
 
         val helpAbout = JMenuItem("About")
         helpAbout.addActionListener { DialogFactory.createAboutDialog(eocvSim) }
