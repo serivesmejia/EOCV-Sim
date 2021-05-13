@@ -288,13 +288,16 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
-    @JvmOverloads fun removeAllPipelinesFrom(source: PipelineSource, refreshGuiPipelineList: Boolean = true) {
+    @JvmOverloads fun removeAllPipelinesFrom(source: PipelineSource,
+                                             refreshGuiPipelineList: Boolean = true,
+                                             changeToDefaultIfRemoved: Boolean = true) {
         for(pipeline in pipelines.toTypedArray()) {
             if(pipeline.source == source) {
                 pipelines.remove(pipeline)
 
                 if(currentPipeline != null && currentPipeline!!::class.java == pipeline.clazz) {
-                    requestChangePipeline(0) //change to default pipeline if the current pipeline was deleted
+                    if(changeToDefaultIfRemoved)
+                        requestChangePipeline(0) //change to default pipeline if the current pipeline was deleted
                 }
             }
         }
@@ -303,8 +306,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     @JvmOverloads
-    fun requestRemoveAllPipelinesFrom(source: PipelineSource, refreshGuiPipelineList: Boolean = true) {
-        onUpdate.doOnce { removeAllPipelinesFrom(source, refreshGuiPipelineList) }
+    fun requestRemoveAllPipelinesFrom(source: PipelineSource,
+                                      refreshGuiPipelineList: Boolean = true,
+                                      changeToDefaultIfRemoved: Boolean = true) {
+        onUpdate.doOnce {
+            removeAllPipelinesFrom(source, refreshGuiPipelineList, changeToDefaultIfRemoved)
+        }
     }
 
     /**
@@ -312,7 +319,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
      * if we're currently on the same pipeline or not
      */
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun forceChangePipeline(index: Int) {
+    fun forceChangePipeline(index: Int?) {
+        if(index == null) return
+
         currentPipeline?.let {
             latestSnapshot = PipelineSnapshot(it)
         }
@@ -373,6 +382,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         eocvSim.visualizer.pipelineSelectorPanel.selectedIndex = currentPipelineIndex
 
+        setPaused(false)
+
         //if pause on images option is turned on by user
         if (eocvSim.configManager.config.pauseOnImages) {
             //pause next frame if current selected inputsource is an image
@@ -386,12 +397,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
      * Change to the requested pipeline only if we're
      * not in the requested pipeline right now.
      */
-    fun changePipeline(index: Int) {
+    fun changePipeline(index: Int?) {
         if (index == currentPipelineIndex) return
         forceChangePipeline(index)
     }
 
-    fun requestChangePipeline(index: Int) = onUpdate.doOnce { changePipeline(index) }
+    fun requestChangePipeline(index: Int?) = onUpdate.doOnce { changePipeline(index) }
 
     fun requestForceChangePipeline(index: Int) = onUpdate.doOnce { forceChangePipeline(index) }
 
@@ -401,12 +412,22 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
+    fun getIndexOf(pipeline: OpenCvPipeline): Int? {
+        for((i, pipelineData) in pipelines.withIndex()) {
+            if(pipelineData.clazz.name == pipeline::class.java.name) {
+                return i
+            }
+        }
+
+        return null
+    }
+
     fun runThenPause() {
         setPaused(false)
         eocvSim.onMainUpdate.doOnce { setPaused(true) }
     }
 
-    fun setPaused(paused: Boolean, pauseReason: PauseReason) {
+    fun setPaused(paused: Boolean, pauseReason: PauseReason = PauseReason.USER_REQUESTED) {
         this.paused = paused
 
         if (this.paused) {
@@ -425,10 +446,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     @JvmOverloads
     fun requestSetPaused(paused: Boolean, pauseReason: PauseReason = PauseReason.USER_REQUESTED) {
         eocvSim.onMainUpdate.doOnce { setPaused(paused, pauseReason) }
-    }
-
-    fun setPaused(paused: Boolean) {
-        setPaused(paused, PauseReason.USER_REQUESTED)
     }
 
     fun refreshGuiPipelineList() = eocvSim.visualizer.pipelineSelectorPanel.updatePipelinesList()

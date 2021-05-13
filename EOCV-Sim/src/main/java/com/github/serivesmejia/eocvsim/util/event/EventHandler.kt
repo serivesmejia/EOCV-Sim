@@ -80,9 +80,13 @@ class EventHandler(val name: String) : Runnable {
         internalOnceListeners.add(listener)
     }
 
+    fun doOnce(runnable: Runnable) = doOnce { runnable.run() }
+
     fun doPersistent(listener: EventListener) = synchronized(lock) {
         internalListeners.add(listener)
     }
+
+    fun doPersistent(runnable: Runnable) = doPersistent { runnable.run() }
 
     fun removePersistentListener(listener: EventListener) {
         if(internalListeners.contains(listener)) {

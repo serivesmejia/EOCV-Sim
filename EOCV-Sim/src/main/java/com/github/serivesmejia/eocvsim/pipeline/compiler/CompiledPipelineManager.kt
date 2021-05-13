@@ -116,11 +116,17 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         val timeElapsed = String.format("%.2f", runtime.seconds())
 
-        pipelineManager.requestRemoveAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME, false)
-
         currentPipelineClassLoader = null
-
         val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
+
+
+        pipelineManager.eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = false
+
+        pipelineManager.requestRemoveAllPipelinesFrom(
+            PipelineSource.COMPILED_ON_RUNTIME,
+            refreshGuiPipelineList = false,
+            changeToDefaultIfRemoved = false
+        )
 
         lastBuildOutputMessage = when(result.status) {
             PipelineCompileStatus.SUCCESS -> {
@@ -139,6 +145,24 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 deleteJarFile()
                 "Build failed $messageEnd"
             }
+        }
+
+
+        val beforePipeline = pipelineManager.currentPipeline
+
+        pipelineManager.onUpdate.doOnce {
+            pipelineManager.refreshGuiPipelineList()
+
+            if(beforePipeline != null) {
+                val pipeline = pipelineManager.getIndexOf(beforePipeline)
+
+                pipelineManager.forceChangePipeline(pipeline)
+                pipelineManager.applyLatestSnapshot()
+            } else {
+                pipelineManager.changePipeline(0) //default pipeline
+            }
+
+            pipelineManager.eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
         }
 
         if(result.status == PipelineCompileStatus.SUCCESS) {
@@ -206,7 +230,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 Log.info(TAG, "Added ${pipelineClass.simpleName} from jar")
             }
 
-            pipelineManager.requestAddPipelineClasses(pipelines, PipelineSource.COMPILED_ON_RUNTIME, true)
+            pipelineManager.requestAddPipelineClasses(pipelines, PipelineSource.COMPILED_ON_RUNTIME)
         } catch(e: Exception) {
             Log.error(TAG, "Uncaught exception thrown while loading jar $PIPELINES_OUTPUT_JAR", e)
         }
