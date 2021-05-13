@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.workspace
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.FileWatcher
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
@@ -50,6 +51,7 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
                 workspaceConfigLoader.workspaceFile = value
 
                 eocvSim.config.workspacePath = value.absolutePath
+                eocvSim.configManager.saveToFile()
 
                 field = value
 
@@ -60,6 +62,8 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
 
                 fileWatcher = FileWatcher(value, null, "Workspace")
                 fileWatcher.init()
+
+                onWorkspaceChange.run()
             }
 
             cachedWorkspConfig = workspaceConfigLoader.loadWorkspaceConfig()
@@ -123,6 +127,8 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
         }
     }
 
+    val onWorkspaceChange = EventHandler("WorkspaceManager-OnChange")
+
     lateinit var fileWatcher: FileWatcher
         private set
 
@@ -151,6 +157,12 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
     }
 
     fun init() {
+        onWorkspaceChange.doPersistent {
+            fileWatcher.onChange.doPersistent {
+                eocvSim.pipelineManager.compiledPipelineManager.asyncCompile()
+            }
+        }
+
         workspaceFile = File(eocvSim.config.workspacePath)
         Log.blank()
     }

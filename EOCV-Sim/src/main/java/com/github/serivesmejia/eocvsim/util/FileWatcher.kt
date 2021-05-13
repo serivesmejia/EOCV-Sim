@@ -43,8 +43,6 @@ class FileWatcher(private val watchingDirectory: File,
                     if(fileExts != null && !fileExts.stream().anyMatch { file.name.endsWith(".$it") })
                         continue
 
-                    println(file)
-
                     val path = file.absolutePath
                     val lastModified = file.lastModified()
 

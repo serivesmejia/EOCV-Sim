@@ -82,6 +82,10 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     }
 
     fun uncheckedCompile(): PipelineCompileResult {
+        if(isBuildRunning) return PipelineCompileResult(
+            PipelineCompileStatus.FAILED, "A build is already running"
+        )
+
         isBuildRunning = true
         onBuildStart.run()
 
