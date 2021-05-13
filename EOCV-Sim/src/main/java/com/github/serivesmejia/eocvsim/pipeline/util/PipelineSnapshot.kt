@@ -37,17 +37,18 @@ class PipelineSnapshot(holdingPipeline: OpenCvPipeline) {
                 field.set(otherPipeline, value)
             } catch(e: Exception) {
                 Log.warn(
-                    "Failed to set field ${field.name} from snapshot of ${pipelineClass.name}."
+                    TAG,
+                    "Failed to set field ${field.name} from snapshot of ${pipelineClass.name}. " +
+                    "Retrying with by name lookup logic..."
                 )
-                Log.info(TAG, "Retrying with by name lookup logic...")
 
                 try {
-                    val field = otherPipeline::class.java.getDeclaredField(field.name)
-                    field.set(otherPipeline, value)
+                    val byNameField = otherPipeline::class.java.getDeclaredField(field.name)
+                    byNameField.set(otherPipeline, value)
                 } catch(e: Exception) {
                     Log.warn(
-                        "Definitely failed to set field ${field.name} from snapshot of ${pipelineClass.name}. " +
-                                "Did the source code change?", e
+                        TAG, "Definitely failed to set field ${field.name} from snapshot of ${pipelineClass.name}. " +
+                        "Did the source code change?", e
                     )
                 }
             }
