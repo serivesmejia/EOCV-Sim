@@ -40,7 +40,7 @@ class PipelineSnapshot(holdingPipeline: OpenCvPipeline) {
                     "Failed to set field ${field.name} from snapshot of ${pipelineClass.name}. " +
                             "Did the source code change?", e
                 )
-                Log.warn(TAG, "This exception can be safely ignored")
+                Log.info(TAG, "Retrying with name comparision logic...")
             }
         }
     }

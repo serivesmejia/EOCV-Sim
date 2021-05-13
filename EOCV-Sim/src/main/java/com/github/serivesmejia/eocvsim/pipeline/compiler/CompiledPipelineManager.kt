@@ -160,8 +160,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             if(beforePipeline != null) {
                 val pipeline = pipelineManager.getIndexOf(beforePipeline)
 
-                pipelineManager.forceChangePipeline(pipeline)
-                pipelineManager.applyLatestSnapshot()
+                pipelineManager.forceChangePipeline(pipeline, true)
             } else {
                 pipelineManager.changePipeline(0) //default pipeline
             }

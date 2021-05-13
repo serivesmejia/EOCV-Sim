@@ -319,7 +319,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
      * if we're currently on the same pipeline or not
      */
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun forceChangePipeline(index: Int?) {
+    fun forceChangePipeline(index: Int?, applyLatestSnapshot: Boolean = false) {
         if(index == null) return
 
         currentPipeline?.let {
@@ -372,6 +372,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentTelemetry     = nextTelemetry
         currentPipelineIndex = index
         currentPipelineName  = currentPipeline!!.javaClass.simpleName
+
+        if(applyLatestSnapshot) applyLatestSnapshot()
 
         hasInitCurrentPipeline = false
 
