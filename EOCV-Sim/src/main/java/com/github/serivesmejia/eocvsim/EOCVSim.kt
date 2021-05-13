@@ -229,6 +229,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.info(TAG, "Trying to save config file...")
 
         inputSourceManager.currentInputSource?.close()
+        workspaceManager.stopFileWatcher()
         configManager.saveToFile()
         visualizer.close()
 

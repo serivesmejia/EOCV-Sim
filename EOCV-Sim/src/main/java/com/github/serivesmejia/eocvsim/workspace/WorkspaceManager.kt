@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.workspace
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.util.FileWatcher
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.workspace.config.WorkspaceConfig
@@ -47,10 +48,18 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
         set(value) {
             if(value != workspaceFile) {
                 workspaceConfigLoader.workspaceFile = value
+
                 eocvSim.config.workspacePath = value.absolutePath
+
                 field = value
 
                 Log.info(TAG, "Set current workspace to ${value.absolutePath}")
+
+                if(::fileWatcher.isInitialized)
+                    fileWatcher.stop()
+
+                fileWatcher = FileWatcher(value, null, "Workspace")
+                fileWatcher.init()
             }
 
             cachedWorkspConfig = workspaceConfigLoader.loadWorkspaceConfig()
@@ -111,6 +120,15 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
             file.startsWith(it.toFile().absolutePath)
         } && excludedFileExtensions.stream().noneMatch {
             file.name.endsWith(".$it")
+        }
+    }
+
+    lateinit var fileWatcher: FileWatcher
+        private set
+
+    fun stopFileWatcher() {
+        if(::fileWatcher.isInitialized) {
+            fileWatcher.stop()
         }
     }
 
