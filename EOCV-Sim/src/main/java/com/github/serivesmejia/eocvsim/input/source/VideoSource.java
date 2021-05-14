@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.input.source;
 
 import com.github.serivesmejia.eocvsim.gui.Visualizer;
 import com.github.serivesmejia.eocvsim.input.InputSource;
+import com.github.serivesmejia.eocvsim.util.FileFilters;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.google.gson.annotations.Expose;
 import org.opencv.core.Mat;
@@ -34,6 +35,7 @@ import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 import org.openftc.easyopencv.MatRecycler;
 
+import javax.swing.filechooser.FileFilter;
 import java.util.Objects;
 
 public class VideoSource extends InputSource {
@@ -193,6 +195,11 @@ public class VideoSource extends InputSource {
     @Override
     protected InputSource internalCloneSource() {
         return new VideoSource(videoPath, size);
+    }
+
+    @Override
+    public FileFilter getFileFilters() {
+        return FileFilters.videoMediaFilter;
     }
 
     @Override

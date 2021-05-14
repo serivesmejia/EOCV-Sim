@@ -23,22 +23,30 @@
 
 package com.github.serivesmejia.eocvsim.input;
 
-import com.github.serivesmejia.eocvsim.input.source.CameraSource;
-import com.github.serivesmejia.eocvsim.input.source.ImageSource;
-import com.github.serivesmejia.eocvsim.input.source.VideoSource;
+import com.github.serivesmejia.eocvsim.input.source.*;
+
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 public enum SourceType {
 
-    IMAGE(ImageSource.class, "Image"),
-    CAMERA(CameraSource.class, "Camera"),
-    VIDEO(VideoSource.class, "Video"),
+    IMAGE(new ImageSource(""), "Image"),
+    CAMERA(new CameraSource(0, null), "Camera"),
+    VIDEO(new VideoSource("", null), "Video"),
     UNKNOWN(null, "Unknown");
 
     public final Class<? extends InputSource> klazz;
     public final String coolName;
+    public final InputSource stubInstance;
 
-    SourceType(Class<? extends InputSource> klazz, String coolName) {
-        this.klazz = klazz;
+    SourceType(InputSource instance, String coolName) {
+        stubInstance = instance;
+
+        if(instance != null)
+            this.klazz = instance.getClass();
+        else
+            this.klazz = null;
+
         this.coolName = coolName;
     }
 
@@ -57,6 +65,15 @@ public enum SourceType {
                 return sourceType;
             }
         }
+        return UNKNOWN;
+    }
+
+    public static SourceType isFileUsableForSource(File file) {
+        for(SourceType type : values()) {
+            if(type.stubInstance.getFileFilters().accept(file))
+                return type;
+        }
+
         return UNKNOWN;
     }
 

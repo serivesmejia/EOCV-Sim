@@ -26,6 +26,8 @@ package com.github.serivesmejia.eocvsim.input;
 import com.github.serivesmejia.eocvsim.EOCVSim;
 import org.opencv.core.Mat;
 
+import javax.swing.filechooser.FileFilter;
+
 public abstract class InputSource implements Comparable<InputSource> {
 
     public transient boolean isDefault = false;
@@ -75,6 +77,8 @@ public abstract class InputSource implements Comparable<InputSource> {
     public final String getName() {
         return name;
     }
+
+    public abstract FileFilter getFileFilters();
 
     @Override
     public final int compareTo(InputSource source) {

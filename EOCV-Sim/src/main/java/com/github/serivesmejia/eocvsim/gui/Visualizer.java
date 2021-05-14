@@ -28,6 +28,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
+import com.github.serivesmejia.eocvsim.gui.component.visualizer.InputSourceDropTarget;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline.PipelineSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.SourceSelectorPanel;
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.TelemetryPanel;
@@ -193,6 +194,8 @@ public class Visualizer {
         globalSplitPane.setResizeWeight(1);
         globalSplitPane.setOneTouchExpandable(false);
         globalSplitPane.setContinuousLayout(true);
+
+        globalSplitPane.setDropTarget(new InputSourceDropTarget(eocvSim));
 
         frame.add(globalSplitPane, BorderLayout.CENTER);
 
@@ -405,9 +408,9 @@ public class Visualizer {
                 frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
         ).addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
             if (OPTION == JFileChooser.APPROVE_OPTION) {
-                eocvSim.onMainUpdate.doOnce(() -> {
-                    eocvSim.workspaceManager.setWorkspaceFile(selectedFile);
-                });
+                eocvSim.onMainUpdate.doOnce(() ->
+                        eocvSim.workspaceManager.setWorkspaceFile(selectedFile)
+                );
                 asyncCompilePipelines();
             }
         });
@@ -417,7 +420,8 @@ public class Visualizer {
         DialogFactory.createFileChooser(frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT)
         .addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
             if(OPTION == JFileChooser.APPROVE_OPTION) {
-                if(selectedFile.isDirectory() && Objects.requireNonNull(selectedFile.listFiles()).length == 0) {
+                if(selectedFile.isDirectory() &&
+                        Objects.requireNonNull(selectedFile.listFiles()).length == 0) {
                     eocvSim.workspaceManager.createWorkspaceWithTemplateAsync(selectedFile, GradleWorkspaceTemplate.INSTANCE);
                 } else {
                     asyncPleaseWaitDialog(

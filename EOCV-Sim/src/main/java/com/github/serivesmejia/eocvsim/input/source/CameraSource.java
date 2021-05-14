@@ -33,6 +33,8 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 import org.openftc.easyopencv.MatRecycler;
 
+import javax.swing.filechooser.FileFilter;
+
 public class CameraSource extends InputSource {
 
     @Expose
@@ -175,6 +177,11 @@ public class CameraSource extends InputSource {
     @Override
     protected InputSource internalCloneSource() {
         return new CameraSource(webcamIndex, size);
+    }
+
+    @Override
+    public FileFilter getFileFilters() {
+        return null;
     }
 
     @Override
