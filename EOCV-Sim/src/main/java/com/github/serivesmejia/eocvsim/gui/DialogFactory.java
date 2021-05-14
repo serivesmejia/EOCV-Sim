@@ -60,19 +60,25 @@ public class DialogFactory {
         return createFileChooser(parent, null, new FileFilter[0]);
     }
 
-    public static void createSourceDialog(EOCVSim eocvSim, SourceType type) {
+    public static void createSourceDialog(EOCVSim eocvSim,
+                                          SourceType type,
+                                          File initialFile) {
         invokeLater(() -> {
             switch (type) {
                 case IMAGE:
-                    new CreateImageSource(eocvSim.visualizer.frame, eocvSim);
+                    new CreateImageSource(eocvSim.visualizer.frame, eocvSim, initialFile);
                     break;
                 case CAMERA:
                     new CreateCameraSource(eocvSim.visualizer.frame, eocvSim);
                     break;
                 case VIDEO:
-                    new CreateVideoSource(eocvSim.visualizer.frame, eocvSim);
+                    new CreateVideoSource(eocvSim.visualizer.frame, eocvSim, initialFile);
             }
         });
+    }
+
+    public static void createSourceDialog(EOCVSim eocvSim, SourceType type) {
+        createSourceDialog(eocvSim, type, null);
     }
 
     public static void createSourceDialog(EOCVSim eocvSim) {

@@ -70,8 +70,9 @@ public enum SourceType {
 
     public static SourceType isFileUsableForSource(File file) {
         for(SourceType type : values()) {
-            if(type.stubInstance.getFileFilters().accept(file))
-                return type;
+            if(type.stubInstance != null && type.stubInstance.getFileFilters() != null)
+                if(type.stubInstance.getFileFilters().accept(file))
+                    return type;
         }
 
         return UNKNOWN;

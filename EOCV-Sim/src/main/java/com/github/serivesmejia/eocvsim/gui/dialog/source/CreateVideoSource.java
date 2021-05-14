@@ -56,12 +56,16 @@ public class CreateVideoSource {
     public JButton createButton = null;
     public boolean selectedValidVideo = false;
 
+    public File initialFile = null;
+
     private EOCVSim eocvSim = null;
 
-    public CreateVideoSource(JFrame parent, EOCVSim eocvSim) {
+    public CreateVideoSource(JFrame parent, EOCVSim eocvSim, File initialFile) {
 
         createVideoSource = new JDialog(parent);
+
         this.eocvSim = eocvSim;
+        this.initialFile = initialFile;
 
         eocvSim.visualizer.childDialogs.add(createVideoSource);
 
@@ -82,8 +86,13 @@ public class CreateVideoSource {
         fileSelectorVideo = new FileSelector(18, FileFilters.videoMediaFilter);
 
         fileSelectorVideo.onFileSelect.doPersistent(() ->
-                videoFileSelected(fileSelectorVideo.getLastSelectedFile())
+            videoFileSelected(fileSelectorVideo.getLastSelectedFile())
         );
+
+        if(initialFile != null)
+            SwingUtilities.invokeLater(() ->
+                fileSelectorVideo.setLastSelectedFile(initialFile)
+            );
 
         contentsPanel.add(fileSelectorVideo);
 

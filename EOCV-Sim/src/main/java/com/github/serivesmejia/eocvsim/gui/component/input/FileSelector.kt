@@ -46,7 +46,12 @@ class FileSelector(columns: Int = 18,
     val selectDirButton = JButton("Select file...")
 
     var lastSelectedFile: File? = null
-        private set
+        set(value) {
+            dirTextField.text = value?.absolutePath ?: ""
+            field = value
+            onFileSelect.run()
+        }
+
     var lastSelectedFileFilter: FileFilter? = null
         private set
 
@@ -57,10 +62,8 @@ class FileSelector(columns: Int = 18,
             val frame = SwingUtilities.getWindowAncestor(this)
             DialogFactory.createFileChooser(frame, mode, *fileFilters).addCloseListener { returnVal: Int, selectedFile: File?, selectedFileFilter: FileFilter? ->
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    lastSelectedFile = selectedFile
                     lastSelectedFileFilter = selectedFileFilter
-                    dirTextField.text = selectedFile?.absolutePath ?: ""
-                    onFileSelect.run()
+                    lastSelectedFile = selectedFile
                 }
             }
         }

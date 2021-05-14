@@ -48,13 +48,17 @@ public class CreateImageSource {
 
     public FileSelector imageFileSelector = null;
 
+    private File initialFile = null;
+
     public JButton createButton = null;
     public boolean selectedValidImage = false;
     private EOCVSim eocvSim = null;
 
-    public CreateImageSource(JFrame parent, EOCVSim eocvSim) {
+    public CreateImageSource(JFrame parent, EOCVSim eocvSim, File initialFile) {
         createImageSource = new JDialog(parent);
+
         this.eocvSim = eocvSim;
+        this.initialFile = initialFile;
 
         eocvSim.visualizer.childDialogs.add(createImageSource);
 
@@ -73,7 +77,16 @@ public class CreateImageSource {
         //file select part
 
         imageFileSelector = new FileSelector(18, FileFilters.imagesFilter);
-        imageFileSelector.onFileSelect.doPersistent(() -> imageFileSelected(imageFileSelector.getLastSelectedFile()));
+
+        imageFileSelector.onFileSelect.doPersistent(() ->
+            imageFileSelected(imageFileSelector.getLastSelectedFile())
+        );
+
+
+        if(initialFile != null)
+            SwingUtilities.invokeLater(() ->
+                imageFileSelector.setLastSelectedFile(initialFile)
+            );
 
         contentsPanel.add(imageFileSelector);
 

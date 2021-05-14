@@ -55,8 +55,8 @@ public class CreateCameraSource {
 
     public CreateCameraSource(JFrame parent, EOCVSim eocvSim) {
         createCameraSource = new JDialog(parent);
-        this.eocvSim = eocvSim;
 
+        this.eocvSim = eocvSim;
         eocvSim.visualizer.childDialogs.add(createCameraSource);
 
         initCreateImageSource();
@@ -198,6 +198,8 @@ public class CreateCameraSource {
                 updateCreateBtt();
             }
         });
+
+        SwingUtilities.invokeLater(() -> cameraIdField.setText("0"));
 
         cancelButton.addActionListener(e -> {
             wasCancelled = true;
