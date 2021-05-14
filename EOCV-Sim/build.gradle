@@ -7,6 +7,14 @@ plugins {
 
 apply from: '../build.common.gradle'
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
 ext.kotest_version = '4.4.3'
 
 test {
