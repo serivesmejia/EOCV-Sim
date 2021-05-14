@@ -37,6 +37,7 @@ import com.github.serivesmejia.eocvsim.gui.util.GuiUtil;
 import com.github.serivesmejia.eocvsim.gui.util.ReflectTaskbar;
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineCompiler;
 import com.github.serivesmejia.eocvsim.util.Log;
+import com.github.serivesmejia.eocvsim.util.event.EventHandler;
 import com.github.serivesmejia.eocvsim.workspace.util.template.GradleWorkspaceTemplate;
 import kotlin.Unit;
 
@@ -60,12 +61,12 @@ public class Visualizer {
         }
     }
 
+    public final EventHandler onInitFinished = new EventHandler("OnVisualizerInitFinish");
+
     public final ArrayList<AsyncPleaseWaitDialog> pleaseWaitDialogs = new ArrayList<>();
 
     public final ArrayList<JFrame> childFrames = new ArrayList<>();
     public final ArrayList<JDialog> childDialogs = new ArrayList<>();
-
-    private final ArrayList<Runnable> onInitFinishedRunns = new ArrayList<>();
 
     private final EOCVSim eocvSim;
 
@@ -210,15 +211,14 @@ public class Visualizer {
 
         globalSplitPane.setDividerLocation(1070);
 
+        onInitFinished.run();
+        onInitFinished.setCallRightAway(true);
+
         frame.setVisible(true);
 
         registerListeners();
 
         colorPicker = new ColorPicker(viewport.image);
-
-        for(Runnable runn : onInitFinishedRunns) {
-            runn.run();
-        }
 
         hasFinishedInitializing = true;
     }
@@ -310,10 +310,6 @@ public class Visualizer {
         while (!hasFinishedInitializing) {
             Thread.yield();
         }
-    }
-
-    public void onInitFinished(Runnable runn) {
-        onInitFinishedRunns.add(runn);
     }
 
     public void close() {

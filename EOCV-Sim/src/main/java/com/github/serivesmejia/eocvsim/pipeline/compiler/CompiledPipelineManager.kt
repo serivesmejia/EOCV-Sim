@@ -78,7 +78,9 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     fun init() {
         Log.info(TAG, "Initializing...")
-        asyncCompile()
+        pipelineManager.eocvSim.visualizer.onInitFinished.doOnce {
+            asyncCompile()
+        }
     }
 
     fun uncheckedCompile(): PipelineCompileResult {
@@ -122,7 +124,6 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         currentPipelineClassLoader = null
         val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
-
 
         pipelineManager.eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = false
 

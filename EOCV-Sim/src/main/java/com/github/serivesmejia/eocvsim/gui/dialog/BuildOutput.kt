@@ -98,7 +98,7 @@ class BuildOutput(parent: JFrame, private val eocvSim: EOCVSim) {
                 isAlreadyOpened = false
             }
         })
-        compiledPipelineManager.onBuildStart.doPersistent {
+        compiledPipelineManager.onBuildStart {
             if(!buildOutput.isVisible) {
                 it.removeThisPersistent()
             } else {
@@ -106,7 +106,7 @@ class BuildOutput(parent: JFrame, private val eocvSim: EOCVSim) {
             }
         }
 
-        compiledPipelineManager.onBuildEnd.doPersistent {
+        compiledPipelineManager.onBuildEnd {
             if(!buildOutput.isVisible) {
                 it.removeThisPersistent()
             } else {

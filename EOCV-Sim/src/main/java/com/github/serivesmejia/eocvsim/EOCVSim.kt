@@ -130,6 +130,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         Log.blank()
 
         configManager.init() //load config
+
         workspaceManager.init()
 
         visualizer.initAsync(configManager.config.simTheme) //create gui in the EDT
@@ -139,7 +140,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         tunerManager.init() //init tunable variables manager
 
         //shows a warning when a pipeline gets "stuck"
-        pipelineManager.onPipelineTimeout.doPersistent {
+        pipelineManager.onPipelineTimeout {
             visualizer.asyncPleaseWaitDialog(
                 "Current pipeline took too long to ${pipelineManager.lastPipelineAction}",
                 "Falling back to DefaultPipeline",
@@ -182,9 +183,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
                     "There are many pipelines stuck in processFrame running in the background",
                     "To avoid further issues, EOCV-Sim will exit now.",
                     "Ok",
-                    Dimension(430, 150),
-                    true,
-                    true
+                    Dimension(450, 150),
+                    true, true
                 ).onCancel {
                     destroy(DestroyReason.CRASH) //destroy eocv sim when pressing "exit"
                 }
@@ -242,6 +242,8 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
     fun restart() {
         Log.info(TAG, "Restarting...")
+
+        pipelineManager.captureStaticSnapshot()
 
         Log.blank()
         destroy(DestroyReason.RESTART)

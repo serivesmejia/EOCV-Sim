@@ -75,7 +75,7 @@ class PipelineSelectorButtonsPanel(eocvSim: EOCVSim) : JPanel(GridBagLayout()) {
             val window = SwingUtilities.getWindowAncestor(this)
             val popup = PopupX(window, workspaceButtonsPanel, workspaceLocation.x, workspaceLocation.y)
 
-            popup.onShow.doPersistent {
+            popup.onShow {
                 popup.setLocation(
                     popup.window.location.x - workspaceButtonsPanel.width / 5,
                     popup.window.location.y

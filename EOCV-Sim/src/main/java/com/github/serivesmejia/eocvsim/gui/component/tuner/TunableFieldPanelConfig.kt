@@ -109,7 +109,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
         mConstraints.gridy = 0
         add(sliderRangeFieldsPanel, mConstraints)
 
-        colorSpaceComboBox.onSelect.doPersistent { updateConfigSourceLabel(currentConfig) }
+        colorSpaceComboBox.onSelect { updateConfigSourceLabel(currentConfig) }
         //combo box to select color space
         colorSpaceComboBox.selectedEnum = localConfig.pickerColorSpace
 
@@ -142,7 +142,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                 //when it gets unfocused in favour of this new frame
                 fieldOptions.lastConfigPopup?.closeOnFocusLost = false
 
-                popup.onShow.doPersistent {
+                popup.onShow {
                     popup.setLocation(
                         popup.window.location.x - applyModesPanel.width / 8,
                         popup.window.location.y + applyModesPanel.height + applyToAllButton.height
@@ -150,7 +150,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
                 }
 
                 //untoggle the apply to all button if the popup closes
-                popup.onHide.doPersistent {
+                popup.onHide {
                     applyToAllButton.isSelected = false
 
                     fieldOptions.lastConfigPopup?.let {
@@ -321,7 +321,7 @@ class TunableFieldPanelConfig(private val fieldOptions: TunableFieldPanelOptions
     //simple short hand for a repetitive instantiation...
     private fun createRangeFields(): SizeFields {
         val fields = SizeFields(localConfig.sliderRange, allowsDecimals, true,"Slider range:", " to ")
-        fields.onChange.doPersistent {
+        fields.onChange {
             updateConfigSourceLabel(currentConfig)
         }
 

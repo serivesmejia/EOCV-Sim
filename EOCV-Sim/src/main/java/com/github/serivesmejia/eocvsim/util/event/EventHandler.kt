@@ -44,6 +44,8 @@ class EventHandler(val name: String) : Runnable {
             }
         }
 
+    var callRightAway = false
+
     private val internalListeners     = ArrayList<EventListener>()
     private val internalOnceListeners = ArrayList<EventListener>()
 
@@ -76,14 +78,23 @@ class EventHandler(val name: String) : Runnable {
         }
     }
 
-    fun doOnce(listener: EventListener) = synchronized(onceLock) {
-        internalOnceListeners.add(listener)
+    fun doOnce(listener: EventListener) {
+        synchronized(onceLock) {
+            internalOnceListeners.add(listener)
+        }
+
+        if(callRightAway) run()
     }
 
     fun doOnce(runnable: Runnable) = doOnce { runnable.run() }
 
-    fun doPersistent(listener: EventListener) = synchronized(lock) {
-        internalListeners.add(listener)
+
+    fun doPersistent(listener: EventListener) {
+        synchronized(lock) {
+            internalListeners.add(listener)
+        }
+
+        if(callRightAway) run()
     }
 
     fun doPersistent(runnable: Runnable) = doPersistent { runnable.run() }
@@ -112,5 +123,7 @@ class EventHandler(val name: String) : Runnable {
     fun removeAllOnceListeners() = synchronized(onceLock) {
         internalOnceListeners.clear()
     }
+
+    operator fun invoke(listener: EventListener) = doPersistent(listener)
 
 }

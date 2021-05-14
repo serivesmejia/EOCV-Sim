@@ -46,7 +46,10 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     companion object {
         const val PIPELINE_TIMEOUT_MS = 4100L
-        const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 8
+        const val MAX_ALLOWED_ACTIVE_PIPELINE_CONTEXTS = 5
+
+        var staticSnapshot: PipelineSnapshot? = null
+            private set
 
         private const val TAG = "PipelineManager"
     }
@@ -119,9 +122,14 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.info(TAG, "Found " + pipelines.size + " pipeline(s)")
         Log.blank()
 
-        requestChangePipeline(0) //change to the default pipeline
+        if(!applyStaticSnapshot())
+            requestForceChangePipeline(0)
 
         compiledPipelineManager.init()
+
+        eocvSim.visualizer.onInitFinished.doOnce {
+            eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+        }
     }
 
     fun update(inputMat: Mat) {
@@ -319,12 +327,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
      * if we're currently on the same pipeline or not
      */
     @OptIn(ObsoleteCoroutinesApi::class)
-    fun forceChangePipeline(index: Int?, applyLatestSnapshot: Boolean = false) {
+    fun forceChangePipeline(index: Int?,
+                            applyLatestSnapshot: Boolean = false,
+                            applyStaticSnapshot: Boolean = false) {
         if(index == null) return
 
-        currentPipeline?.let {
-            latestSnapshot = PipelineSnapshot(it)
-        }
+        captureSnapshot()
 
         var nextPipeline: OpenCvPipeline? = null
         var nextTelemetry: Telemetry? = null
@@ -374,6 +382,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
         currentPipelineName  = currentPipeline!!.javaClass.simpleName
 
         if(applyLatestSnapshot) applyLatestSnapshot()
+        if(applyStaticSnapshot) staticSnapshot?.transferTo(currentPipeline!!)
 
         hasInitCurrentPipeline = false
 
@@ -388,7 +397,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
         //if pause on images option is turned on by user
         if (eocvSim.configManager.config.pauseOnImages) {
-            //pause next frame if current selected inputsource is an image
+            //pause next frame if current selected input source is an image
             eocvSim.inputSourceManager.pauseIfImageTwoFrames()
         }
 
@@ -404,7 +413,11 @@ class PipelineManager(var eocvSim: EOCVSim) {
         forceChangePipeline(index)
     }
 
-    fun requestChangePipeline(index: Int?) = onUpdate.doOnce { changePipeline(index) }
+    fun requestChangePipeline(index: Int?) {
+        onUpdate.doOnce {
+            changePipeline(index)
+        }
+    }
 
     fun requestForceChangePipeline(index: Int) = onUpdate.doOnce { forceChangePipeline(index) }
 
@@ -414,9 +427,40 @@ class PipelineManager(var eocvSim: EOCVSim) {
         }
     }
 
-    fun getIndexOf(pipeline: OpenCvPipeline): Int? {
+    fun captureSnapshot() {
+        if(currentPipeline != null) {
+            latestSnapshot = PipelineSnapshot(currentPipeline!!)
+        }
+    }
+
+    fun captureStaticSnapshot() {
+        if(currentPipeline != null) {
+            staticSnapshot = PipelineSnapshot(currentPipeline!!)
+        }
+    }
+
+    fun applyStaticSnapshot(): Boolean {
+        staticSnapshot?.let {
+           val index = getIndexOf(it.pipelineClass)
+
+           if(index != null) {
+                onUpdate.doOnce {
+                    forceChangePipeline(index, applyStaticSnapshot = true)
+                    staticSnapshot = null
+                }
+                return@applyStaticSnapshot true
+            }
+        }
+
+        staticSnapshot = null
+        return false
+    }
+
+    fun getIndexOf(pipeline: OpenCvPipeline) = getIndexOf(pipeline::class.java)
+
+    fun getIndexOf(pipelineClass: Class<out OpenCvPipeline>): Int? {
         for((i, pipelineData) in pipelines.withIndex()) {
-            if(pipelineData.clazz.name == pipeline::class.java.name) {
+            if(pipelineData.clazz.name == pipelineClass.name) {
                 return i
             }
         }

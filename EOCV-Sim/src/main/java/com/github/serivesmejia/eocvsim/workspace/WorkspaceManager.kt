@@ -157,8 +157,8 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
     }
 
     fun init() {
-        onWorkspaceChange.doPersistent {
-            fileWatcher.onChange.doPersistent {
+        onWorkspaceChange {
+            fileWatcher.onChange {
                 eocvSim.pipelineManager.compiledPipelineManager.asyncCompile()
             }
         }

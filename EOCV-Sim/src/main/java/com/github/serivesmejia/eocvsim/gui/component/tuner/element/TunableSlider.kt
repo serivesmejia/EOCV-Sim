@@ -64,7 +64,7 @@ class TunableSlider(val index: Int,
             }
         }
 
-        tunableField.onValueChange.doPersistent {
+        tunableField.onValueChange {
             if (!inControl) {
                 scaledValue = try {
                     tunableField.getGuiFieldValue(index).toString().toDouble()

@@ -54,7 +54,7 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
     val buttonsPanel = PipelineSelectorButtonsPanel(eocvSim)
 
-    var allowPipelineSwitching = true
+    var allowPipelineSwitching = false
 
     private var beforeSelectedPipeline = -1
 
