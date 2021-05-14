@@ -125,10 +125,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
         if(!applyStaticSnapshot())
             requestForceChangePipeline(0)
 
-        compiledPipelineManager.init()
+        onUpdate.doOnce {
+            compiledPipelineManager.init()
 
-        eocvSim.visualizer.onInitFinished.doOnce {
-            eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+            eocvSim.visualizer.onInitFinished.doOnce {
+                eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+            }
         }
     }
 

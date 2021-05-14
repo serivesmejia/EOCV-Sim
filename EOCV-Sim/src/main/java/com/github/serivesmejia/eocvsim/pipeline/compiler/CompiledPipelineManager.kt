@@ -125,7 +125,10 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         currentPipelineClassLoader = null
         val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
 
-        pipelineManager.eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = false
+        val pipelineSelectorPanel = pipelineManager.eocvSim.visualizer.pipelineSelectorPanel
+        val beforeAllowSwitching = pipelineSelectorPanel.allowPipelineSwitching
+
+        pipelineSelectorPanel.allowPipelineSwitching = false
 
         pipelineManager.requestRemoveAllPipelinesFrom(
             PipelineSource.COMPILED_ON_RUNTIME,
@@ -152,7 +155,6 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
             }
         }
 
-
         val beforePipeline = pipelineManager.currentPipeline
 
         pipelineManager.onUpdate.doOnce {
@@ -166,7 +168,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 pipelineManager.changePipeline(0) //default pipeline
             }
 
-            pipelineManager.eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+            pipelineSelectorPanel.allowPipelineSwitching = beforeAllowSwitching
         }
 
         if(result.status == PipelineCompileStatus.SUCCESS) {
@@ -234,7 +236,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 Log.info(TAG, "Added ${pipelineClass.simpleName} from jar")
             }
 
-            pipelineManager.requestAddPipelineClasses(pipelines, PipelineSource.COMPILED_ON_RUNTIME)
+            pipelineManager.requestAddPipelineClasses(pipelines, PipelineSource.COMPILED_ON_RUNTIME, false)
         } catch(e: Exception) {
             Log.error(TAG, "Uncaught exception thrown while loading jar $PIPELINES_OUTPUT_JAR", e)
         }

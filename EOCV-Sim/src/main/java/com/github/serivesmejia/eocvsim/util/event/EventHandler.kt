@@ -52,7 +52,7 @@ class EventHandler(val name: String) : Runnable {
     override fun run() {
         for(listener in listeners) {
             try {
-                listener.run(EventListenerRemover(this, listener))
+                runListener(listener)
             } catch (ex: Exception) {
                 Log.warn("${name}-EventHandler", "Error while running listener ${listener.javaClass.name}", ex)
             }
@@ -63,7 +63,7 @@ class EventHandler(val name: String) : Runnable {
         //executing "doOnce" listeners
         for(listener in onceListeners) {
             try {
-                listener.run(EventListenerRemover(this, listener))
+                runListener(listener)
             } catch (ex: Exception) {
                 Log.warn("${name}-EventHandler", "Error while running \"once\" ${listener.javaClass.name}", ex)
             }
@@ -83,7 +83,7 @@ class EventHandler(val name: String) : Runnable {
             internalOnceListeners.add(listener)
         }
 
-        if(callRightAway) run()
+        if(callRightAway) runListener(listener)
     }
 
     fun doOnce(runnable: Runnable) = doOnce { runnable.run() }
@@ -94,7 +94,7 @@ class EventHandler(val name: String) : Runnable {
             internalListeners.add(listener)
         }
 
-        if(callRightAway) run()
+        if(callRightAway) runListener(listener)
     }
 
     fun doPersistent(runnable: Runnable) = doPersistent { runnable.run() }
@@ -125,5 +125,7 @@ class EventHandler(val name: String) : Runnable {
     }
 
     operator fun invoke(listener: EventListener) = doPersistent(listener)
+
+    private fun runListener(listener: EventListener) = listener.run(EventListenerRemover(this, listener))
 
 }
