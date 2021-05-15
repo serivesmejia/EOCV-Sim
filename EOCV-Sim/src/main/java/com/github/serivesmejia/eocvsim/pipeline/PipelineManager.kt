@@ -122,16 +122,23 @@ class PipelineManager(var eocvSim: EOCVSim) {
         Log.info(TAG, "Found " + pipelines.size + " pipeline(s)")
         Log.blank()
 
-        if(!applyStaticSnapshot())
-            requestForceChangePipeline(0)
+        compiledPipelineManager.init()
 
         onUpdate.doOnce {
-            compiledPipelineManager.init()
-
-            eocvSim.visualizer.onInitFinished.doOnce {
-                eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
-            }
+            if(compiledPipelineManager.isBuildRunning)
+                compiledPipelineManager.onBuildEnd.doOnce(::applyStaticSnapOrDef)
+            else
+                applyStaticSnapOrDef()
         }
+    }
+
+    private fun applyStaticSnapOrDef() {
+        refreshGuiPipelineList()
+
+        if(!applyStaticSnapshot())
+            forceChangePipeline(0)
+
+        eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
     }
 
     fun update(inputMat: Mat) {
@@ -149,7 +156,7 @@ class PipelineManager(var eocvSim: EOCVSim) {
             currentTelemetry?.infoItem?.setValue("")
         }
 
-        if(paused) return
+        if(paused || currentPipeline == null) return
 
         timestampedPipelineHandler.update(currentPipeline)
 
@@ -442,16 +449,16 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun applyStaticSnapshot(): Boolean {
-        staticSnapshot?.let {
-           val index = getIndexOf(it.pipelineClass)
+        staticSnapshot?.let { snap ->
+            onUpdate.doOnce {
+                val index = getIndexOf(snap.pipelineClass)
 
-           if(index != null) {
-                onUpdate.doOnce {
+                if(index != null) {
                     forceChangePipeline(index, applyStaticSnapshot = true)
                     staticSnapshot = null
-                }
-                return@applyStaticSnapshot true
+               }
             }
+            return@applyStaticSnapshot true
         }
 
         staticSnapshot = null

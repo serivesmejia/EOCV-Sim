@@ -79,11 +79,11 @@ class EventHandler(val name: String) : Runnable {
     }
 
     fun doOnce(listener: EventListener) {
-        synchronized(onceLock) {
+        if(callRightAway)
+            runListener(listener)
+        else synchronized(onceLock) {
             internalOnceListeners.add(listener)
         }
-
-        if(callRightAway) runListener(listener)
     }
 
     fun doOnce(runnable: Runnable) = doOnce { runnable.run() }

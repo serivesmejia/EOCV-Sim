@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.openftc.easyopencv.OpenCvPipeline
 import java.io.File
 
@@ -76,14 +77,14 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     val workspaceManager get() = pipelineManager.eocvSim.workspaceManager
 
+    private val visualizer get() = pipelineManager.eocvSim.visualizer
+
     fun init() {
         Log.info(TAG, "Initializing...")
-        pipelineManager.eocvSim.visualizer.onInitFinished.doOnce {
-            asyncCompile()
-        }
+        asyncCompile(false)
     }
 
-    fun uncheckedCompile(): PipelineCompileResult {
+    fun uncheckedCompile(fixSelectedPipeline: Boolean = false): PipelineCompileResult {
         if(isBuildRunning) return PipelineCompileResult(
             PipelineCompileStatus.FAILED, "A build is already running"
         )
@@ -126,9 +127,10 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         val messageEnd = "(took $timeElapsed seconds)\n\n${result.message}".trim()
 
         val pipelineSelectorPanel = pipelineManager.eocvSim.visualizer.pipelineSelectorPanel
-        val beforeAllowSwitching = pipelineSelectorPanel.allowPipelineSwitching
+        val beforeAllowSwitching = pipelineSelectorPanel?.allowPipelineSwitching
 
-        pipelineSelectorPanel.allowPipelineSwitching = false
+        if(fixSelectedPipeline)
+            pipelineSelectorPanel?.allowPipelineSwitching = false
 
         pipelineManager.requestRemoveAllPipelinesFrom(
             PipelineSource.COMPILED_ON_RUNTIME,
@@ -160,15 +162,17 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         pipelineManager.onUpdate.doOnce {
             pipelineManager.refreshGuiPipelineList()
 
-            if(beforePipeline != null) {
-                val pipeline = pipelineManager.getIndexOf(beforePipeline)
+            if(fixSelectedPipeline) {
+                if(beforePipeline != null) {
+                    val pipeline = pipelineManager.getIndexOf(beforePipeline)
 
-                pipelineManager.forceChangePipeline(pipeline, true)
-            } else {
-                pipelineManager.changePipeline(0) //default pipeline
+                    pipelineManager.forceChangePipeline(pipeline, true)
+                } else {
+                    pipelineManager.changePipeline(0) //default pipeline
+                }
+
+                pipelineSelectorPanel?.allowPipelineSwitching = beforeAllowSwitching!!
             }
-
-            pipelineSelectorPanel.allowPipelineSwitching = beforeAllowSwitching
         }
 
         if(result.status == PipelineCompileStatus.SUCCESS) {
@@ -180,14 +184,21 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
                 DialogFactory.createBuildOutput(pipelineManager.eocvSim)
         }
 
+        onBuildEnd.callRightAway = true
         onBuildEnd.run()
+
+        GlobalScope.launch {
+            delay(1000)
+            onBuildEnd.callRightAway = false
+        }
+
         isBuildRunning = false
 
         return result
     }
 
-    fun compile() = try {
-        uncheckedCompile()
+    fun compile(fixSelectedPipeline: Boolean = true) = try {
+        uncheckedCompile(fixSelectedPipeline)
     } catch(e: Exception) {
         isBuildRunning = false
         onBuildEnd.run()
@@ -212,8 +223,11 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     }
 
     @JvmOverloads
-    fun asyncCompile(endCallback: (PipelineCompileResult) -> Unit = {}) = GlobalScope.launch(Dispatchers.IO) {
-        endCallback(compile())
+    fun asyncCompile(
+        fixSelectedPipeline: Boolean = true,
+        endCallback: (PipelineCompileResult) -> Unit = {}
+    ) = GlobalScope.launch(Dispatchers.IO) {
+        endCallback(compile(fixSelectedPipeline))
     }
 
     private fun deleteJarFile() {
