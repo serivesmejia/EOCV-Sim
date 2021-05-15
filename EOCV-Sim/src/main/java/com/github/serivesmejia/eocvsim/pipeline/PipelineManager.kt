@@ -133,12 +133,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     private fun applyStaticSnapOrDef() {
-        refreshGuiPipelineList()
-
-        if(!applyStaticSnapshot())
+        onUpdate.doOnce {
+            if(!applyStaticSnapshot())
             forceChangePipeline(0)
 
-        eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+            eocvSim.visualizer.pipelineSelectorPanel.allowPipelineSwitching = true
+        }
     }
 
     fun update(inputMat: Mat) {
