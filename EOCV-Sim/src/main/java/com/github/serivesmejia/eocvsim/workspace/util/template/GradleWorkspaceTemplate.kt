@@ -27,6 +27,7 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher
 import com.github.serivesmejia.eocvsim.workspace.util.WorkspaceTemplate
+import com.github.serivesmejia.eocvsim.EOCVSim
 import net.lingala.zip4j.ZipFile
 import java.io.File
 import java.io.IOException
@@ -62,8 +63,13 @@ object GradleWorkspaceTemplate : WorkspaceTemplate() {
 
     private fun reformatTemplate(folder: File) {
         val settingsGradleFile = File(folder, File.separator + "settings.gradle")
+        val buildGradleFile = File(folder, File.separator + "build.gradle")
+
         //replace the root project name variable in the file to the root folder name
         SysUtil.replaceStrInFile(settingsGradleFile, "\$workspace_name", folder.name)
+
+        //replace the version of the eocvsim dependency in build.gradle to the current one
+        SysUtil.replaceStrInFile(buildGradleFile, "\$version", EOCVSim.VERSION)
     }
 
 }

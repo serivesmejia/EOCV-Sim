@@ -28,20 +28,28 @@ import javax.swing.JComboBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
-                                private val clazz: Class<T>,
-                                values: Array<T>) : JPanel() {
+class EnumComboBox<T : Enum<T>>(
+    descriptiveText: String = "Select a value:",
+    private val clazz: Class<T>,
+    values: Array<T>,
+    private val nameSupplier: (T) -> String = { it.name },
+    private val enumSupplier: (String) -> T = {
+        java.lang.Enum.valueOf(clazz, it) as T
+    }
+) : JPanel() {
 
     val descriptiveLabel = JLabel(descriptiveText)
     val comboBox = JComboBox<String>()
 
     var selectedEnum: T?
         set(value) {
-            comboBox.selectedItem = value?.name
+            value?.let {
+                comboBox.selectedItem = nameSupplier(it)
+            }
         }
         get() {
             comboBox.selectedItem?.let {
-                return java.lang.Enum.valueOf(clazz, comboBox.selectedItem.toString())
+                return enumSupplier(comboBox.selectedItem.toString())
             }
             return null
         }
@@ -55,7 +63,7 @@ class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
         }
 
         for(value in values) {
-            comboBox.addItem(value.name)
+            comboBox.addItem(nameSupplier(value))
         }
         add(comboBox)
 
@@ -64,7 +72,7 @@ class EnumComboBox<T : Enum<T>>(descriptiveText: String = "Select a value:",
 
 
     fun removeEnumOption(enum: T) {
-        comboBox.removeItem(enum.name)
+        comboBox.removeItem(nameSupplier(enum))
     }
 
 }

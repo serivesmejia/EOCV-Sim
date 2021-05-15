@@ -349,14 +349,14 @@ public class SysUtil {
             Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            result.exitCode = process.waitFor();
-
             String line = "";
             StringBuilder message = new StringBuilder();
 
             while((line = reader.readLine()) != null) {
                 message.append(line);
             }
+
+            result.exitCode = process.waitFor();
 
             result.output = message.toString();
         } catch (IOException | InterruptedException e) {

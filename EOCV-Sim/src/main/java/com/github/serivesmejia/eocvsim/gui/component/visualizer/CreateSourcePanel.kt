@@ -35,7 +35,11 @@ import javax.swing.JPanel
 
 class CreateSourcePanel(eocvSim: EOCVSim) : JPanel(GridLayout(2, 1)) {
 
-    private val sourceSelectComboBox = EnumComboBox("", SourceType::class.java, SourceType.values())
+    private val sourceSelectComboBox = EnumComboBox(
+        "", SourceType::class.java, SourceType.values(),
+        { it.coolName }, { SourceType.fromCoolName(it) }
+    )
+
     private val sourceSelectPanel    = JPanel(FlowLayout(FlowLayout.CENTER))
 
     private val nextButton = JButton("Next")
