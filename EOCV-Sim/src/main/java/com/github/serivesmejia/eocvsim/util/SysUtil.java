@@ -342,7 +342,7 @@ public class SysUtil {
         if (OS == OperatingSystem.WINDOWS) {
             processBuilder.command("cmd.exe", "/c", command);
         } else {
-            processBuilder.command("bash", "-c", command);
+            processBuilder.command("sh", "-c", command);
         }
 
         try {
@@ -361,6 +361,7 @@ public class SysUtil {
             result.output = message.toString();
         } catch (IOException | InterruptedException e) {
             result.output = StrUtil.fromException(e);
+            result.exitCode = 0;
         }
 
         return result;

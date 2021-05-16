@@ -23,6 +23,7 @@
 
 package com.github.serivesmejia.eocvsim.gui.component.tuner
 
+import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.gui.Icons
 import com.github.serivesmejia.eocvsim.gui.component.ImageX
 import com.github.serivesmejia.eocvsim.gui.component.Viewport
@@ -38,8 +39,15 @@ import java.awt.Toolkit
 class ColorPicker(private val imageX: ImageX) {
 
     companion object {
-        val colorPickIco = Icons.getImageResized("ico_colorpick_pointer", 200, 200).image
-        val colorPickCursor = Toolkit.getDefaultToolkit().createCustomCursor(colorPickIco, Point(0, 0), "Color Pick Pointer")
+        private val size = if(SysUtil.OS == SysUtil.OperatingSystem.WINDOWS) {
+            200
+        } else { 35 }
+
+        val colorPickIco = Icons.getImageResized("ico_colorpick_pointer", size, size).image
+
+        val colorPickCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+            colorPickIco, Point(0, 0), "Color Pick Pointer"
+        )
     }
 
     var isPicking = false
@@ -66,7 +74,9 @@ class ColorPicker(private val imageX: ImageX) {
                 val color = Color(packedColor, true)
 
                 //wrap Java's color to OpenCV's Scalar since we're EOCV-Sim not JavaCv-Sim right?
-                colorRgb = Scalar(color.red.toDouble(), color.green.toDouble(), color.blue.toDouble())
+                colorRgb = Scalar(
+                    color.red.toDouble(), color.green.toDouble(), color.blue.toDouble()
+                )
 
                 hasPicked = true
                 onPick.run() //run all oick listeners
