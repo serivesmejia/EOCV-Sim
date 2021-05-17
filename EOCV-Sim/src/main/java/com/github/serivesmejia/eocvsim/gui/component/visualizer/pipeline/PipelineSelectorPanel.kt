@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.gui.util.icon.PipelineListIconRenderer
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +67,7 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
         pipelineSelectorLabel.horizontalAlignment = JLabel.CENTER
         add(pipelineSelectorLabel)
 
+        pipelineSelector.setCellRenderer(PipelineListIconRenderer(eocvSim.pipelineManager))
         pipelineSelector.selectionMode = ListSelectionModel.SINGLE_SELECTION
 
         val pipelineSelectorScrollContainer = JPanel()
@@ -118,8 +120,7 @@ class PipelineSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
         launch(Dispatchers.Swing) {
             val listModel = DefaultListModel<String>()
             for (pipeline in eocvSim.pipelineManager.pipelines) {
-                val source = if(pipeline.source == PipelineSource.CLASSPATH) "C" else "R"
-                listModel.addElement("[$source] ${pipeline.clazz.simpleName}")
+                listModel.addElement(pipeline.clazz.simpleName)
             }
 
             pipelineSelector.fixedCellWidth = 240

@@ -47,6 +47,9 @@ object Icons {
         addImage("ico_textbox", "/images/icon/ico_textbox.png")
         addImage("ico_colorpick", "/images/icon/ico_colorpick.png")
 
+        addImage("ico_gears", "/images/icon/ico_gears.png")
+        addImage("ico_hammer", "/images/icon/ico_hammer.png")
+
         addImage("ico_colorpick_pointer", "/images/icon/ico_colorpick_pointer.png")
     }
 

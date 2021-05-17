@@ -408,6 +408,8 @@ public class Visualizer {
                 frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT
         ).addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
             if (OPTION == JFileChooser.APPROVE_OPTION) {
+                if(!selectedFile.exists()) selectedFile.mkdir();
+
                 eocvSim.onMainUpdate.doOnce(() ->
                         eocvSim.workspaceManager.setWorkspaceFile(selectedFile)
                 );
@@ -420,6 +422,8 @@ public class Visualizer {
         DialogFactory.createFileChooser(frame, DialogFactory.FileChooser.Mode.DIRECTORY_SELECT)
         .addCloseListener((OPTION, selectedFile, selectedFileFilter) -> {
             if(OPTION == JFileChooser.APPROVE_OPTION) {
+                if(!selectedFile.exists()) selectedFile.mkdir();
+
                 if(selectedFile.isDirectory() &&
                         Objects.requireNonNull(selectedFile.listFiles()).length == 0) {
                     eocvSim.workspaceManager.createWorkspaceWithTemplateAsync(selectedFile, GradleWorkspaceTemplate.INSTANCE);

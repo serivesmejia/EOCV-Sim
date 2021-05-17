@@ -477,6 +477,17 @@ class PipelineManager(var eocvSim: EOCVSim) {
         return null
     }
 
+    fun getPipelinesFrom(source: PipelineSource): Array<PipelineData> {
+        val pipelinesData = arrayListOf<PipelineData>()
+
+        for(pipeline in pipelines) {
+            if(pipeline.source == source)
+                pipelinesData.add(pipeline)
+        }
+
+        return pipelinesData.toTypedArray()
+    }
+
     fun runThenPause() {
         setPaused(false)
         eocvSim.onMainUpdate.doOnce { setPaused(true) }

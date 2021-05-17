@@ -60,7 +60,12 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
                 if(::fileWatcher.isInitialized)
                     fileWatcher.stop()
 
-                fileWatcher = FileWatcher(value, null, "Workspace")
+                fileWatcher = FileWatcher(
+                    arrayListOf(
+                        sourcesAbsolutePath.toFile(),
+                        resourcesAbsolutePath.toFile()
+                    ), null, "Workspace"
+                )
                 fileWatcher.init()
 
                 onWorkspaceChange.run()
