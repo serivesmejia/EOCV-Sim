@@ -32,6 +32,7 @@ import com.github.serivesmejia.eocvsim.util.SysUtil;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
+import javax.swing.SwingUtilities;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +105,6 @@ public class InputSourceManager {
 
     public void addInputSource(String name, InputSource inputSource) {
         if (inputSource == null) {
-            currentInputSource = null;
             return;
         }
 
@@ -124,6 +124,18 @@ public class InputSourceManager {
 
         if(eocvSim.visualizer.sourceSelectorPanel != null) {
             eocvSim.visualizer.sourceSelectorPanel.updateSourcesList();
+
+            SwingUtilities.invokeLater(() -> {
+                int index = eocvSim.visualizer.sourceSelectorPanel.getIndexOf(name);
+
+                eocvSim.visualizer.sourceSelectorPanel
+                    .getSourceSelector().setSelectedIndex(index);
+
+                eocvSim.onMainUpdate.doOnce(() -> {
+                    eocvSim.pipelineManager.requestSetPaused(false);
+                    pauseIfImageTwoFrames();
+                });
+            });
         }
 
         Log.info("InputSourceManager", "Adding InputSource " + inputSource.toString() + " (" + inputSource.getClass().getSimpleName() + ")");
@@ -185,7 +197,9 @@ public class InputSourceManager {
         Log.info("InputSourceManager", "Set InputSource to " + currentInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 
         //enable or disable source delete button depending if source is default or not
-        eocvSim.visualizer.sourceSelectorPanel.getSourceSelectorDeleteBtt().setEnabled(!currentInputSource.isDefault);
+        eocvSim.visualizer.sourceSelectorPanel.getSourceSelectorDeleteBtt().setEnabled(
+            !currentInputSource.isDefault
+        );
 
         return true;
     }
@@ -226,7 +240,7 @@ public class InputSourceManager {
                     new Dimension(300, 150), true
             );
 
-            apwd.onCancel(() -> System.exit(0));
+            apwd.onCancel(() -> eocvSim.destroy());
         }
 
         return apwd;

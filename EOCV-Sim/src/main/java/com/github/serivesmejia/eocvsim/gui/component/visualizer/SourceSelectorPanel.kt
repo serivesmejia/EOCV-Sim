@@ -29,6 +29,8 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
     private var lastCreateSourcePopup: PopupX? = null
 
+    var allowSourceSwitching = true
+
     init {
         layout = FlowLayout(FlowLayout.CENTER)
 
@@ -81,6 +83,8 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
     private fun registerListeners() {
         //listener for changing input sources
         sourceSelector.addListSelectionListener { evt ->
+            if(!allowSourceSwitching) return@addListSelectionListener
+
             try {
                 if (sourceSelector.selectedIndex != -1) {
                     val model = sourceSelector.model
@@ -133,7 +137,18 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
             sourceSelector.model = listModel
             sourceSelector.revalidate()
             sourceSelectorScroll.revalidate()
+
+            sourceSelector.selectedIndex = 0
         }
+    }
+
+    fun getIndexOf(name: String): Int? {
+        for(i in 0..sourceSelector.model.size) {
+            if(sourceSelector.model.getElementAt(i) == name)
+                return i
+        }
+
+        return 0
     }
 
     fun revalAndRepaint() {

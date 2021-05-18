@@ -202,12 +202,14 @@ public class CreateVideoSource {
     }
 
     public void createSource(String sourceName, String videoPath, Size size) {
-        eocvSim.onMainUpdate.doOnce(() ->
-                eocvSim.inputSourceManager.addInputSource(
-                        sourceName,
-                        new VideoSource(videoPath, size)
-                )
-        );
+        eocvSim.onMainUpdate.doOnce(() -> {
+            eocvSim.inputSourceManager.addInputSource(
+                sourceName,
+                new VideoSource(videoPath, size)
+            );
+
+            eocvSim.inputSourceManager.requestSetInputSource(sourceName);
+        });
     }
 
     public void updateCreateBtt() {
