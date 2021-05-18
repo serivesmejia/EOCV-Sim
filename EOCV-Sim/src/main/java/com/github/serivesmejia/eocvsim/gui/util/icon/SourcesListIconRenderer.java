@@ -21,7 +21,7 @@
  *
  */
 
-package com.github.serivesmejia.eocvsim.gui.util;
+package com.github.serivesmejia.eocvsim.gui.util.icon;
 
 import com.github.serivesmejia.eocvsim.gui.Icons;
 import com.github.serivesmejia.eocvsim.input.InputSourceManager;

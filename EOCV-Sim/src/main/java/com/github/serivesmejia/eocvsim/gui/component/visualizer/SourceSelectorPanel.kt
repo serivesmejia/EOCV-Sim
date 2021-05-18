@@ -2,8 +2,9 @@ package com.github.serivesmejia.eocvsim.gui.component.visualizer
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
-import com.github.serivesmejia.eocvsim.gui.util.SourcesListIconRenderer
+import com.github.serivesmejia.eocvsim.gui.util.icon.SourcesListIconRenderer
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
+import com.github.serivesmejia.eocvsim.util.extension.clipUpperZero
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -116,10 +117,14 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
 
         // delete selected input source
         sourceSelectorDeleteBtt.addActionListener {
-            val source = sourceSelector.model.getElementAt(sourceSelector.selectedIndex)
+            val index = sourceSelector.selectedIndex
+            val source = sourceSelector.model.getElementAt(index)
+
             eocvSim.onMainUpdate.doOnce {
                 eocvSim.inputSourceManager.deleteInputSource(source)
                 updateSourcesList()
+
+                sourceSelector.selectedIndex = (index - 1).clipUpperZero()
             }
         }
     }
