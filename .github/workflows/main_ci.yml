@@ -25,6 +25,7 @@ jobs:
         path: '**/*'
 
   test_linux:
+    needs: [ build ]
     runs-on: ubuntu-latest
 
     steps:
