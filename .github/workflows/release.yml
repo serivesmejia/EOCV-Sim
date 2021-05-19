@@ -2,7 +2,7 @@ name: Make GitHub Release
 
 on: 
   push:
-    branches: [ master ]
+    #branches: [ master ]
     tags:
       - 'v*'
 
@@ -29,5 +29,5 @@ jobs:
         with:
           files: '**/*'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   
