@@ -6,6 +6,6 @@ updates:
       interval: "daily"
   - package-ecosystem: "github-actions"
     directory: "/" # Location of package manifests
-    target-branch: "develop"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
