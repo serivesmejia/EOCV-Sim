@@ -82,6 +82,10 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
     fun init() {
         Log.info(TAG, "Initializing...")
         asyncCompile(false)
+
+        workspaceManager.onWorkspaceChange {
+            asyncCompile()
+        }
     }
 
     fun uncheckedCompile(fixSelectedPipeline: Boolean = false): PipelineCompileResult {
