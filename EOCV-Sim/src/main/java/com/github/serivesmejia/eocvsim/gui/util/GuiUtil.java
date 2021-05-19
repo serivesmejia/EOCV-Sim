@@ -96,7 +96,7 @@ public final class GuiUtil {
             nw = (icon.getIconWidth() * nh) / icon.getIconHeight();
         }
 
-        return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, java.awt.Image.SCALE_DEFAULT));
+        return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_SMOOTH));
 
     }
 

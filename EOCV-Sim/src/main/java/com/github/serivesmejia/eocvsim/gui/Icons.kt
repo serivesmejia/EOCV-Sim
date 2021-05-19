@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.gui
 
 import com.github.serivesmejia.eocvsim.gui.util.GuiUtil
+import com.github.serivesmejia.eocvsim.util.Log
 import java.awt.image.BufferedImage
 import java.util.NoSuchElementException
 import javax.swing.ImageIcon
@@ -51,6 +52,8 @@ object Icons {
         addImage("ico_hammer", "/images/icon/ico_hammer.png")
 
         addImage("ico_colorpick_pointer", "/images/icon/ico_colorpick_pointer.png")
+
+        printIconsList()
     }
 
     fun getImage(name: String): ImageIcon {
@@ -63,11 +66,11 @@ object Icons {
     fun getImageResized(name: String, width: Int, height: Int): ImageIcon {
         //determines the icon name from the:
         //name, widthxheight, is inverted or is original
-        val resIconName = "$name-${width}x${height}-${
+        val resIconName = "$name-${width}x${height}${
             if(colorsInverted) {
-                "inverted"
+                "-inverted"
             } else {
-                "original"
+                ""
             }
         }"
 
@@ -103,6 +106,20 @@ object Icons {
                 colorsInverted = false
             }
         }
+    }
+
+    fun printIconsList() {
+        val builder = StringBuilder()
+
+        for((name, _) in icons) {
+            builder.appendLine(name)
+        }
+
+        for((name, _) in resizedIcons) {
+            builder.appendLine(name)
+        }
+
+        Log.info("Icons", "Loaded icons:\n" + builder.toString())
     }
 
     fun invertAll() {

@@ -31,8 +31,6 @@ import java.awt.*;
 
 public class SourcesListIconRenderer extends DefaultListCellRenderer {
 
-    private static boolean colorsInverted = false;
-
     private ImageIcon imgIcon = null;
     private ImageIcon camIcon = null;
     private ImageIcon vidIcon = null;
