@@ -4,10 +4,10 @@ on: [push, pull_request]
 
 jobs:
   test_linux:
-    needs: [ build ]
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v2
     - name: Set up JDK 8
       uses: actions/setup-java@v1
       with:
@@ -18,10 +18,10 @@ jobs:
       run: ./gradlew test
 
   test_windows:
-    needs: [ build ]
     runs-on: windows-latest
 
     steps:
+    - uses: actions/checkout@v2
     - name: Set up JDK 8
       uses: actions/setup-java@v1
       with:
@@ -32,10 +32,10 @@ jobs:
       run: ./gradlew test
 
   test_mac:
-    needs: [ build ]
     runs-on: macos-latest
 
     steps:
+    - uses: actions/checkout@v2
     - name: Set up JDK 8
       uses: actions/setup-java@v1
       with:
