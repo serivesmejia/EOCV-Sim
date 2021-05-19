@@ -27,7 +27,7 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/dev'}}
     needs: [ build ]
     runs-on: ubuntu-latest
-    steps::
+    steps:
       - uses: actions/download-artifact@v2
         with:
           name: jar
@@ -37,7 +37,7 @@ jobs:
           tag: 'Dev'
           rm: true
           files: |
-            EOCV-Sim/build/libs/*.jar
+            *.jar
         if: github.event_name == 'push'
 
   release-stable:
