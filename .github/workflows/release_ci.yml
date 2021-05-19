@@ -20,6 +20,7 @@ jobs:
     # Upload final fat jar as artifact.
     - uses: actions/upload-artifact@master
       with:
+        name: jar
         path: '**/*'
 
   release-dev:
@@ -51,4 +52,4 @@ jobs:
         with:
           files: '**/*'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
