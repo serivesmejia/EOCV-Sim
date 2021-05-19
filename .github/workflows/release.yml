@@ -17,8 +17,8 @@ jobs:
         java-version: 8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build -x test
+    - name: Build shadow jar with Gradle
+      run: ./gradlew shadowJar
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
