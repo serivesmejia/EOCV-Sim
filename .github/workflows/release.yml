@@ -28,14 +28,15 @@ jobs:
 
   release-dev:
     if: !startsWith(github.ref, 'refs/tags/v')
+    needs: [ build ]
     - uses: eine/tip@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
-          rm: true
-          files: |
-            EOCV-Sim/build/libs/*.jar
-        if: github.event_name == 'push'
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: 'Dev'
+        rm: true
+        files: |
+          EOCV-Sim/build/libs/*.jar
+      if: github.event_name == 'push'
 
   release-stable:
     if: startsWith(github.ref, 'refs/tags/v')
