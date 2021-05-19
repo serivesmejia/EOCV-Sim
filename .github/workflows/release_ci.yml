@@ -22,7 +22,7 @@ jobs:
       run: |
         cd EOCV-Sim/build/libs
         for filename in *.jar; do
-            chmod +x "$filename"
+            chmod 755 "$filename"
             echo "Granted execution permissions to $filename"
         done
     # Upload final fat jar as artifact.
