@@ -24,7 +24,7 @@ jobs:
         path: EOCV-Sim/build/libs
 
   release-dev:
-    if: !startsWith(github.ref, 'refs/tags/v')
+    if: ${{!startsWith(github.ref, 'refs/tags/v')}}
     if: github.ref == 'refs/heads/dev'
     needs: [ build ]
     runs-on: ubuntu-latest
@@ -52,4 +52,3 @@ jobs:
           files: '**/*'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  
