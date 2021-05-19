@@ -2,7 +2,7 @@ name: Build and test with gradle
 
 on: [push, pull_request]
 
-jobs
+jobs:
   test_linux:
     needs: [ build ]
     runs-on: ubuntu-latest
