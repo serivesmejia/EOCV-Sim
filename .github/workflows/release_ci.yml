@@ -18,6 +18,13 @@ jobs:
       run: chmod +x gradlew
     - name: Build shadow jar with Gradle
       run: ./gradlew shadowJar -x test
+    - name: Grant execute permission to all jars
+      run: |
+        cd EOCV-Sim/build/libs
+        for filename in *.jar; do
+            chmod +x "$filename"
+            echo "Granted execution permissions to $filename"
+        done
     # Upload final fat jar as artifact.
     - uses: actions/upload-artifact@master
       with:
