@@ -24,8 +24,7 @@ jobs:
         path: EOCV-Sim/build/libs
 
   release-dev:
-    if: ${{!startsWith(github.ref, 'refs/tags/v')}}
-    if: github.ref == 'refs/heads/dev'
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/dev'}}
     needs: [ build ]
     runs-on: ubuntu-latest
     steps:
@@ -39,8 +38,7 @@ jobs:
         if: github.event_name == 'push'
 
   release-stable:
-    if: startsWith(github.ref, 'refs/tags/v')
-    if: github.ref == 'refs/heads/master'
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}
     needs: [ build ]
     runs-on: ubuntu-latest
     steps:
