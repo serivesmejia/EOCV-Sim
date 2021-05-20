@@ -43,7 +43,10 @@ allprojects {
             "yyMMdd-hhmm"
         ).format(LocalDateTime.now())
 
-        version += "-dev-${date}"
+        String hash = findProperty('hash')
+
+        version += "-dev-${hash ?: date}"
+        println("Final version of ${project.name} is $version")
 
         File libsFolder = java.nio.file.Paths.get(
             projectDir.absolutePath, 'build', 'libs'

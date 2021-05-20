@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.gui;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.github.serivesmejia.eocvsim.EOCVSim;
+import com.github.serivesmejia.eocvsim.Build;
 import com.github.serivesmejia.eocvsim.gui.component.Viewport;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.ColorPicker;
 import com.github.serivesmejia.eocvsim.gui.component.tuner.TunableFieldPanel;
@@ -70,13 +71,10 @@ public class Visualizer {
     public final ArrayList<JDialog> childDialogs = new ArrayList<>();
 
     private final EOCVSim eocvSim;
-
-    public JFrame frame = null;
+    public JFrame frame;
 
     public Viewport viewport = null;
-
     public TopMenuBar menuBar = null;
-
     public JPanel tunerMenuPanel = new JPanel();
 
     public JScrollPane imgScrollPane = null;
@@ -87,9 +85,9 @@ public class Visualizer {
 
     public PipelineSelectorPanel pipelineSelectorPanel = null;
     public SourceSelectorPanel sourceSelectorPanel = null;
-    public TelemetryPanel telemetryPanel = null;
+    public TelemetryPanel telemetryPanel;
 
-    private String title = "EasyOpenCV Simulator v" + EOCVSim.VERSION;
+    private String title = "EasyOpenCV Simulator v" + Build.standardVersionString;
     private String titleMsg = "No pipeline";
     private String beforeTitle = "";
     private String beforeTitleMsg = "";
@@ -124,6 +122,10 @@ public class Visualizer {
         }
 
         Icons.INSTANCE.setDark(FlatLaf.isLafDark());
+
+        if(Build.isDev) {
+            title += "-";
+        }
 
         //instantiate all swing elements after theme installation
         frame = new JFrame();
@@ -413,7 +415,6 @@ public class Visualizer {
                 eocvSim.onMainUpdate.doOnce(() ->
                         eocvSim.workspaceManager.setWorkspaceFile(selectedFile)
                 );
-                asyncCompilePipelines();
             }
         });
     }

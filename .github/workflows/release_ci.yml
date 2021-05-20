@@ -5,7 +5,7 @@ on:
     branches: [ master, dev ]
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,8 +24,8 @@ jobs:
 
     - name: Build dev shadow jar with Gradle
       run: |
-        ./gradlew shadowJar -x test
-        ls EOCV-Sim/build/libs
+        SHA_SHORT=$(git rev-parse --short HEAD)"
+        ./gradlew -Phash=$SHA_SHORT shadowJar -x test
       if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref != 'refs/heads/master' }}
 
     - uses: eine/tip@master
