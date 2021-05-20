@@ -34,7 +34,7 @@ jobs:
         tag: 'Dev'
         rm: true
         files: |
-          'EOCV-Sim/build/libs/*.jar'
+          EOCV-Sim/build/libs/*.jar
         if: github.event_name == 'push'
 
     - uses: softprops/action-gh-release@v1
