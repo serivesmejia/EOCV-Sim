@@ -57,7 +57,7 @@ task(writeBuildClassJava) {
 
     File versionFile = new File(
         java.nio.file.Path.of(
-            projectDir, 'src', 'main', 'java',
+            projectDir.absolutePath, 'src', 'main', 'java',
             'com', 'github', 'serivesmejia', 'eocvsim', 'Build.java'
         ).toAbsolutePath().toString()
     )
