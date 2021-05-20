@@ -24,7 +24,7 @@ jobs:
 
     - name: Build dev shadow jar with Gradle
       run: |
-        SHA_SHORT=$(git rev-parse --short HEAD)"
+        SHA_SHORT="$(git rev-parse --short HEAD)"
         ./gradlew -Phash=$SHA_SHORT shadowJar -x test
       if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref != 'refs/heads/master' }}
 
