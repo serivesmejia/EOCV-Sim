@@ -14,14 +14,20 @@ jobs:
       with:
         distribution: adopt
         java-version: 8
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
     - name: Build release shadow jar with Gradle
       run: ./gradlew -Penv=release shadowJar -x test
       if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}
+
     - name: Build dev shadow jar with Gradle
-      run: ./gradlew shadowJar -x test
+      run: |
+        ./gradlew shadowJar -x test
+        ls EOCV-Sim/build/libs
       if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref != 'refs/heads/master' }}
+
     - uses: eine/tip@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,22 +36,10 @@ jobs:
         files: |
           'EOCV-Sim/build/libs/*.jar'
         if: github.event_name == 'push'
-    # Upload final fat jar as artifact.
-    - uses: actions/upload-artifact@master
-      with:
-        name: jar
-        path: 'EOCV-Sim/build/libs'
 
-  release-stable:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: jar
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: '**/*'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: softprops/action-gh-release@v1
+      if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}
+      with:
+        files: 'EOCV-Sim/build/libs/*.jar'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
