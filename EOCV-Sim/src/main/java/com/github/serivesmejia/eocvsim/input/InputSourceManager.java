@@ -196,12 +196,8 @@ public class InputSourceManager {
 
         Log.info("InputSourceManager", "Set InputSource to " + currentInputSource.toString() + " (" + src.getClass().getSimpleName() + ")");
 
-        //enable or disable source delete button depending if source is default or not
-        eocvSim.visualizer.sourceSelectorPanel.getSourceSelectorDeleteBtt().setEnabled(
-            !currentInputSource.isDefault
-        );
-
         return true;
+
     }
 
     public boolean isNameOnUse(String name) {

@@ -91,6 +91,10 @@ class SourceSelectorPanel(private val eocvSim: EOCVSim) : JPanel() {
                     val model = sourceSelector.model
                     val source = model.getElementAt(sourceSelector.selectedIndex)
 
+                    //enable or disable source delete button depending if source is default or not
+                    eocvSim.visualizer.sourceSelectorPanel.sourceSelectorDeleteBtt
+                        .isEnabled = !(eocvSim.inputSourceManager.sources[source]?.isDefault ?: true)
+
                     if (!evt.valueIsAdjusting && source != beforeSelectedSource) {
                         if (!eocvSim.pipelineManager.paused) {
                             eocvSim.inputSourceManager.requestSetInputSource(source)
