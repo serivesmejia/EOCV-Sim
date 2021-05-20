@@ -55,12 +55,10 @@ task(writeBuildClassJava) {
 
     String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
 
-    File versionFile = new File(
-        java.nio.file.Path.of(
-            projectDir.absolutePath, 'src', 'main', 'java',
-            'com', 'github', 'serivesmejia', 'eocvsim', 'Build.java'
-        ).toAbsolutePath().toString()
-    )
+    File versionFile = java.nio.file.Paths.get(
+        projectDir.absolutePath, 'src', 'main', 'java',
+        'com', 'github', 'serivesmejia', 'eocvsim', 'Build.java'
+    ).toFile()
 
     versionFile.delete()
 

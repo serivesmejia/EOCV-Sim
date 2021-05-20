@@ -45,11 +45,10 @@ allprojects {
 
         version += "-dev-${date}"
 
-        File libsFolder = new File(
-            java.nio.file.Path.of(
-                projectDir.absolutePath, 'build', 'libs'
-            ).toAbsolutePath().toString()
-        )
+        File libsFolder = java.nio.file.Paths.get(
+            projectDir.absolutePath, 'build', 'libs'
+        ).toFile()
+
 
         for(file in libsFolder.listFiles()) {
              if(file.name.contains("dev") && file.name.endsWith(".jar"))
