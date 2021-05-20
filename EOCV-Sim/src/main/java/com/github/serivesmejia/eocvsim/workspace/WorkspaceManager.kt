@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.workspace
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.FileWatcher
 import com.github.serivesmejia.eocvsim.util.Log
@@ -168,7 +169,12 @@ class WorkspaceManager(val eocvSim: EOCVSim) {
             }
         }
 
-        workspaceFile = File(eocvSim.config.workspacePath)
+        val file = File(eocvSim.config.workspacePath)
+        if(file.exists())
+            workspaceFile = file
+        else
+            workspaceFile = CompiledPipelineManager.DEF_WORKSPACE_FOLDER
+
         Log.blank()
     }
 
