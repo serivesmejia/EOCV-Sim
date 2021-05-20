@@ -124,7 +124,7 @@ public class Visualizer {
         Icons.INSTANCE.setDark(FlatLaf.isLafDark());
 
         if(Build.isDev) {
-            title += "-";
+            title += "-dev ";
         }
 
         //instantiate all swing elements after theme installation
