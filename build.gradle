@@ -47,7 +47,7 @@ allprojects {
 
         File libsFolder = new File(
             java.nio.file.Path.of(
-                    "$projectDir", "build", "libs"
+                    '$projectDir', 'build', 'libs'
             ).toAbsolutePath().toString()
         )
 
