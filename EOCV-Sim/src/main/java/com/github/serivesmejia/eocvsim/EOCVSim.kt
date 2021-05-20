@@ -54,7 +54,7 @@ import kotlin.system.exitProcess
 class EOCVSim(val params: Parameters = Parameters()) {
 
     companion object {
-        const val VERSION = "3.0.0"
+        const val VERSION = Build.versionString
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
         @JvmField

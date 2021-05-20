@@ -105,5 +105,7 @@ fabric.properties
 
 *.log
 
+**/Build.java
 **/build/*
+
 *.DS_Store

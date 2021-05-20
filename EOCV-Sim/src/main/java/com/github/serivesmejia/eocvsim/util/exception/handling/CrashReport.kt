@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.util.exception.handling
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.Build
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
@@ -56,6 +57,10 @@ class CrashReport(causedByException: Throwable) {
         sb.appendLine(StrUtil.fromException(causedByException)).appendLine()
 
         sb.appendLine("==========================================").appendLine()
+
+        sb.appendLine(": EOCV-Sim info")
+        sb.appendLine("   Version: ${EOCVSim.VERSION}")
+        sb.appendLine("   Built on: ${Build.buildDate}").appendLine()
 
         sb.appendLine(": System specs")
         sb.appendLine("   OS name: $OS_NAME")

@@ -18,35 +18,19 @@ jobs:
       run: chmod +x gradlew
     - name: Build shadow jar with Gradle
       run: ./gradlew shadowJar -x test
-    - name: Grant execute permission to all jars
-      run: |
-        cd EOCV-Sim/build/libs
-        for filename in *.jar; do
-            chmod 755 "$filename"
-            echo "Granted execution permissions to $filename"
-        done
+    - uses: eine/tip@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: 'Dev'
+        rm: true
+        files: |
+          'EOCV-Sim/build/libs/*.jar'
+        if: github.event_name == 'push'
     # Upload final fat jar as artifact.
     - uses: actions/upload-artifact@master
       with:
         name: jar
         path: 'EOCV-Sim/build/libs'
-
-  release-dev:
-    if: ${{ !startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/dev'}}
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: jar
-      - uses: eine/tip@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
-          rm: true
-          files: |
-            *.jar
-        if: github.event_name == 'push'
 
   release-stable:
     if: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/master' }}

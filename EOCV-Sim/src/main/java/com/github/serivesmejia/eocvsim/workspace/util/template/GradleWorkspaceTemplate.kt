@@ -24,6 +24,7 @@
 package com.github.serivesmejia.eocvsim.workspace.util.template
 
 import com.github.serivesmejia.eocvsim.util.Log
+import com.github.serivesmejia.eocvsim.Build
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher
 import com.github.serivesmejia.eocvsim.workspace.util.WorkspaceTemplate
@@ -69,7 +70,7 @@ object GradleWorkspaceTemplate : WorkspaceTemplate() {
         SysUtil.replaceStrInFile(settingsGradleFile, "\$workspace_name", folder.name)
 
         //replace the version of the eocvsim dependency in build.gradle to the current one
-        SysUtil.replaceStrInFile(buildGradleFile, "\$version", EOCVSim.VERSION)
+        SysUtil.replaceStrInFile(buildGradleFile, "\$version", Build.standardVersionString)
     }
 
 }
