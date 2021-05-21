@@ -126,7 +126,7 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
 # Change logs
 
-### [v3.0.0 - Compiling on the fly! Yay!](https://github.com/serivesmejia/releases/tag/v2.2.0)
+### [v3.0.0 - Compiling on the fly! Yay!](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v3.0.0)
 
    - This is the 9th release for EOCV-Sim
 
