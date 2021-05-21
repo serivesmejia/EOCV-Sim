@@ -40,16 +40,25 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 3) **Download the jar file, named `EOCV-Sim-X.X.X-all`, available at the bottom on the "assets" section**
 
-4) **Choose and install an IDE/text editor**<br/>
+4) **Choose and install an IDE/text editor**<br/><br/>
       The recommended is VS Code, with the Java Extension Pack. The sim provides direct support for it, including an option for opening it in the current workspace, or even creating "VS Code Workspaces" from a template, although they can also be opened in IntelliJ IDEA since it's just a normal Gradle project.
      
      You can download and install VS Code from the [Visual Studio page](https://code.visualstudio.com/). The [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack) can be installed from the [VS Code extension marketplace](https://code.visualstudio.com/docs/introvideos/extend).
+     
+     Here's a [tutorial video](https://www.youtube.com/watch?v=KwnavHTOBiA) explaining how to download and install VS Code & the Java Extension Pack
 
-5) **Running EOCV-Sim**
+5) **Running EOCV-Sim**<br/><br/>
      For running the sim, simply double click the jar file downloaded from the releases page. It can also be executed from the command line:
-     ```
+     ```python
      java -jar "EOCV-Sim-X.X.X-all.jar"
      ```
+     
+     When running on Linux (distros such as Ubuntu, Linux Mint, etc) or Unix-like restrictive operating systems, it might prohibit you to run it by double clicking the file. This can be fixed by giving execute permissions to the file with the following command
+     ```bash
+     chmod +x EOCV-Sim-X.X.X-all.jar
+     ```
+    
+**Now the sim should be running without any issues! If you find any problem feel free to open an issue, and check the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for more details about how to use the simulator.**
 
 ## Altenative installation method (IntelliJ IDEA)
 
