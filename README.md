@@ -126,6 +126,34 @@ For bug reporting or feature requesting, use the [issues tab](https://github.com
 
 # Change logs
 
+### [v3.0.0 - Compiling on the fly! Yay!](https://github.com/serivesmejia/releases/tag/v2.2.0)
+
+   - This is the 9th release for EOCV-Sim
+
+      - Changelog:
+        - Runtime building! The sim now supports building pipelines on the fly, which allows for more quick and efficient testing. (Running the sim with a JDK is required for this feature to work, since normal JREs don't include a compiler to use)
+        - Workspaces & VS Code is the new (and recommended) way of developing pipelines. A VS Code workspace template can be created from the sim, see the usage explanation for more details.
+        - A file watcher was implemented, so when any modification happens in the current workspace under the "source" or "resource" folders specified in the `eocvsim_workspace.json`, a new build will be automatically triggered every 8 seconds.
+        - VS Code can be executed by the sim if the current system has the `code` command. It is triggered by manually opening it in the top menu bar or when creating a VS Code workspace.
+        - Files can now be drag and dropped into the sim to add them as Input Sources. The sim will automatically open a create dialog depending on the file extension.
+        - Added a "Workspace" menu under the top menu bar, which contains the new features regarding the runtime compiling.
+        - The UI now has smoother icons, by using a smoothing option on Java swing which makes them look a little nicer (but not much).
+        - Current pipeline state is now stored and reestablished if a restart happens.
+        - When a build is finished, the simulator tries reinitializes the currently selected pipeline if it exists, to ensure the changes were applied. Or it falls back to the `DefaultPipeline` if the old pipeline doesn't exist anymore, it also saves the state of the old pipeline and tries to apply the snapshot of the pipeline before it was reinitialized if the names of the old and new classes match.
+        - The sim now uses a `.eocvsim` folder under the user directory to store its files, to avoid annoying the user with unwanted files now that the runtime compiling exists and it has to store the build output somewhere. If the user has previously run an older version of eocv sim which created `eocvsim_sources.json` and/or `eocvsim_config.json` under the user home directory, it automatically migrates them to the new folder. 
+        - Builds created by IntelliJ Idea (the common programming style) are now considered as "dev". This helps to distinguish between official & published builds created in a CI workflow and local builds, when an issue happens and it's reported.
+        - The sim compiling target was changed back to Java 8, since this is one of the most widely used versions and we weren't really using many Java 9 features that couldn't have been replaced or handle different. This is also more convenient and provides better support for users directly downloading the jar and executing it.
+
+      - Bugfixes:
+        - Fixed issues with the source selector regarding to selection when a modification or error happens. When a new source is added, it's automatically selected. And when a source is deleted, the previous source in the list is selected
+        - Fixed the color picker cursor size on non-windows systems
+        - Fixed pause not working when a tunable field that uses a combo box in the UI is included.
+        - Fixed an (apparently random, but it's just the garbage collector being weird) null pointer exception with `Enum` fields
+
+      - Internals:
+        - Improved event handlers to be more idiomatic and less weird. Bye bye KEventListener!
+        - Improved some messy parts of the internal code and logic
+
 ### [v2.2.1 - JVM crashing hotfix](https://github.com/serivesmejia/releases/tag/v2.2.0)
  
    - This is the 8th release for EOCV-Sim
