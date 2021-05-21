@@ -27,14 +27,37 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 # Installation
 
-## Recommended installation method (IntelliJ IDEA)
-
-No complicated setup is required, straight up importing the project into IntelliJ IDEA:
-
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
       JDK 8 is the minimum required one, any JDK above that version will probably work fine.<br/>
       You can download it from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html),
       and here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the installation process<br/>
+
+## Recommended method
+
+1) **Make sure you have downloaded a JDK as mentioned above**
+
+2) **Go to the releases page on this repo and find the latest version ([or click here](https://github.com/serivesmejia/EOCV-Sim/releases/latest))**
+
+3) **Download the jar file, named `EOCV-Sim-X.X.X-all`, available at the bottom on the "assets" section**
+
+4) **Choose and install an IDE/text editor**<br/>
+      The recommended is VS Code, with the Java Extension Pack. The sim provides direct support for it, including an option for opening it in the current workspace, or even creating "VS Code Workspaces" from a template, although they can also be opened in IntelliJ IDEA since it's just a normal Gradle project.
+     
+     You can download and install VS Code from the [Visual Studio page](https://code.visualstudio.com/). The [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack) can be installed from the [VS Code extension marketplace](https://code.visualstudio.com/docs/introvideos/extend).
+
+5) **Running EOCV-Sim**
+     For running the sim, simply double click the jar file downloaded from the releases page. It can also be executed from the command line:
+     ```
+     java -jar "EOCV-Sim-X.X.X-all.jar"
+     ```
+
+## Altenative installation method (IntelliJ IDEA)
+
+No complicated setup is required for this method either, it's straight up importing the EOCV-Sim project into IntelliJ IDEA:
+
+\**The downside of this method is that this repo has grown to a considerable amount of space, due to a bloated history, and takes some time to clone, and also builds can be slower depending on your device.*
+
+1) **Make sure you have downloaded a JDK as mentioned [here](#installation)**
 
 2) **Download & install IntelliJ IDEA Community IDE if you haven't already:**<br/><br/>
       You can download it from the JetBrains webpage (https://www.jetbrains.com/idea/download/)<br/>
@@ -95,7 +118,7 @@ No complicated setup is required, straight up importing the project into Intelli
    }
    
    dependencies {
-      implementation 'com.github.serivesmejia:EOCV-Sim:2.1.0' //add the EOCV-Sim dependency
+      implementation 'com.github.serivesmejia:EOCV-Sim:3.0.0' //add the EOCV-Sim dependency
    }
    ```
    
@@ -116,7 +139,7 @@ No complicated setup is required, straight up importing the project into Intelli
     <dependency>
 	    <groupId>com.github.serivesmejia</groupId>
 	    <artifactId>EOCV-Sim</artifactId>
-	    <version>2.1.0</version>
+	    <version>3.0.0</version>
 	</dependency>
    ```
 
