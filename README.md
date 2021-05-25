@@ -38,7 +38,7 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 2) **Go to the releases page on this repo and find the latest version ([or click here](https://github.com/serivesmejia/EOCV-Sim/releases/latest))**
 
-3) **Download the jar file, named `EOCV-Sim-X.X.X-all`, available at the bottom on the "assets" section**
+3) **Download the jar file, named `EOCV-Sim-X.X.X-all.jar`, available at the bottom on the "assets" section**
 
 4) **Choose and install an IDE/text editor**<br/><br/>
       The recommended text editor is VS Code, with the Java Extension Pack. EOCV-Sim provides direct support for it, for creating a "VS Code Workspace" from a template, although it can also be imported into IntelliJ IDEA since it's just a normal Gradle project.
