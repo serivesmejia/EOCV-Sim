@@ -71,7 +71,7 @@ No complicated setup is required for this method either, it's straight up import
 1) **Make sure you have downloaded a JDK as mentioned [here](#installation)**
 
 2) **Download & install IntelliJ IDEA Community IDE if you haven't already:**<br/><br/>
-      You can download it from the JetBrains webpage (https://www.jetbrains.com/idea/download/)<br/>
+      You can download it from the [JetBrains webpage](https://www.jetbrains.com/idea/download/)<br/>
       Here is another great [step by step video](https://www.youtube.com/watch?v=E2okEJIbUYs) for IntelliJ installation.
      
 3) **Clone and import the project:**<br/>
