@@ -1,15 +1,20 @@
-# Usage Explaination
+# Usage Explanation
 
 ### This guide is still a work in progress 
 
-The purpose of this software is to *simulate the package & class structure of OpenFTC's EasyOpenCV and a little bit of the FTC SDK*,
-while also providing OpenCV functionality and a simple GUI. By simulating the aforementioned structure, it allows the imports, class names, etc.
-to be the same as they would if you were using the FTC SDK with EasyOpenCV, allowing you to simply copy paste your vision code
-onto your Android Studio project once you want to transfer it to a robot.<br/>
+## Welcome!
+
+Thank you for your interest in EOCV-Sim :)
+
+We made this tool in hopes that it will be useful for all FTC teams seeking a way of learning and developing their seasonal OpenCV algorithms in a easy and straightforward way, while also providing some extra tools to improve the experience of developing such algorithms.
+
+The main purpose of this software is to *simulate the package & class structure of OpenFTC's EasyOpenCV and a little bit of the FTC SDK*, while also providing OpenCV functionality and a simple GUI. 
+
+By simulating the aforementioned structure, it allows the imports, class names, etc. to be the same as they would if you were using the FTC SDK with EasyOpenCV, allowing you to simply copy paste your vision code onto your Android Studio project once you want to transfer it to a robot.<br/>
 
 ## Table of Contents
-- [Workspaces & VS Code](#workspaces-vs-code)
-- [IntelliJ project structure (with the old installation method)](#intellij-project-structure-with-the-old-installation-method)
+- [Workspaces & VS Code](#workspaces--vs-code)
+- [IntelliJ Project Structure (with the old installation method)](#intellij-project-structure-with-the-old-installation-method)
     - [Creating pipelines](#creating-pipelines-with-the-old-installation-method)
 - [Empty Sample Pipeline](#empty-sample-pipeline)
 - [Input Sources](#input-sources)
@@ -22,13 +27,15 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
 
 ## Workspaces & VS Code
 
+**This part is applicable with any installation method**
+
 
 
 ## IntelliJ project structure (with the old installation method)
 
 **This part is only applicable if you downloaded EOCV-Sim with the [old method explained in the README](/README.md#altenative-installation-method-intellij-idea)**
 
-EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:<br/>
+EOCV-Sim uses Gradle starting from v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:<br/>
 1) Pop out the parent EOCV-Sim project folder by clicking on the "*>*" arrow
 2) Find the TeamCode module (folder) and pop it out just like before
 3) Find the src folder and open it
@@ -104,17 +111,16 @@ public class SamplePipeline extends OpenCvPipeline {
 
 To allow multiple ways to test your pipeline, the simulator comes with *Input Sources*, which are the ones in charge of giving your pipeline the input Mats, As of right now, the sim has three types of Input Sources:
 
-- Image Source:</br></br>
-    These will feed your pipeline with a static image loaded in your computer's hard drive.</br></br>
-    To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the "Pause" button under the pipeline selector.</br></br>
-- Camera Source:</br></br>
-    These will feed your pipeline with a constantly changing video stream from a specified camera plugged in your computer.</br></br>
-    Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.</br></br>
-- Video Source:</br></br>
-    These will feed your pipeline with a constantly changing video stream from a file in your hard drive, pause rules are the same as camera sources.<br/></br>
-    Most tested video format is *\*.avi*, although it depends on your operating system's codecs
-    
-    
+- **Image Source:**
+    - These will feed your pipeline with a static image loaded in your computer's hard drive.
+    - To save resources, your pipeline will just run once when you select an image source, but you can optionally resume the pipeline execution by clicking the "Pause" button under the pipeline selector.
+- **Camera Source:**
+    - These will feed your pipeline with a constantly changing video stream from a specified camera plugged in your computer.
+    - Unlike the image sources, these will not pause the execution of you pipeline by default, but you can click the "Pause" button to pause it at any time.
+- **Video Source:**
+    - These will feed your pipeline with a constantly changing video stream from a file in your hard drive, pause rules are the same as camera sources.
+    - Most tested video format is *\*.avi*, although it depends on your operating system's codecs.
+  
 ### Creating an Input Source
 
    1) Go to the panel located at the right. Under the "Sources" section, click on "Create"<br/><br/>
