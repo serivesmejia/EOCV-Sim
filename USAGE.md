@@ -8,9 +8,10 @@ to be the same as they would if you were using the FTC SDK with EasyOpenCV, allo
 onto your Android Studio project once you want to transfer it to a robot.<br/>
 
 ## Table of Contents
-- [IntelliJ project structure](#intellij-project-structure)
-- [Pipelines](#pipelines)
-    - [Empty Sample Pipeline](#empty-sample-pipeline)
+- [Workspaces & VS Code](#workspaces-vs-code)
+- [IntelliJ project structure (with the old installation method)](#intellij-project-structure-with-the-old-installation-method)
+    - [Creating pipelines](#creating-pipelines-with-the-old-installation-method)
+- [Empty Sample Pipeline](#empty-sample-pipeline)
 - [Input Sources](#input-sources)
     - [Creating an input source](#creating-an-input-source)
 - [Telemetry](#telemetry)
@@ -19,7 +20,13 @@ onto your Android Studio project once you want to transfer it to a robot.<br/>
     - [Configuration](#tuner-configuration) 
     - [Sample Usage](#sample-usage-of-the-variable-tuner)
 
-## IntelliJ project structure
+## Workspaces & VS Code
+
+
+
+## IntelliJ project structure (with the old installation method)
+
+**This part is only applicable if you downloaded EOCV-Sim with the [old method explained in the README](/README.md#altenative-installation-method-intellij-idea)**
 
 EOCV-Sim uses Gradle since v2.0.0, because of this, the project structure is a bit different. For finding the package in which the pipelines have to be placed:<br/>
 1) Pop out the parent EOCV-Sim project folder by clicking on the "*>*" arrow
@@ -31,7 +38,9 @@ These steps are illustrated in this gif:</br>
 
 <img src='doc/images/eocvsim_usage_popup_teamcode.gif' width='60%' height='60%'><br/>
 
-## Pipelines
+### Creating pipelines (with the old installation method)
+
+**This part is also only applicable if you downloaded EOCV-Sim with the [old method explained in the README](/README.md#altenative-installation-method-intellij-idea)**
 
 As said before, all of the pipeline classes **should be** placed under the *org.firstinspires.ftc.teamcode* package, in the *TeamCode* module. This way, they will be
 automatically detected by the simulator and will be selectionable from the GUI.
@@ -51,7 +60,7 @@ Here's a quick gif illustrating these steps:<br/>
 
 <img src='doc/images/eocvsim_usage_createclass.gif' width='75%' height='75%'><br/>
 
-### Empty sample pipeline
+## Empty sample pipeline
 
 If you want your class to be a pipeline, it **should also** extend the EOCV's OpenCvPipeline abstract class and override the processFrame() method.<br/><br/>
 Here's a empty pipeline template, with the SamplePipeline class we created before:
