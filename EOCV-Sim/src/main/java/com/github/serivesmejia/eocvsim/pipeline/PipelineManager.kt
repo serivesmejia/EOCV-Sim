@@ -156,6 +156,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
             currentTelemetry?.infoItem?.setValue("")
         }
 
+        if(currentPipeline == null)
+            requestChangePipeline(0)
+
         if(paused || currentPipeline == null) return
 
         timestampedPipelineHandler.update(currentPipeline)
@@ -255,6 +258,9 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun callViewportTapped() = currentPipeline?.let { pipeline -> //run only if our pipeline is not null
+
+        if(paused) requestSetPaused(false)
+
         //similar to pipeline processFrame, call the user function in the background
         //and wait for some X timeout for the user to finisih doing what it has to do.
         val viewportTappedJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {

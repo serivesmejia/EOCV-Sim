@@ -28,6 +28,7 @@ import com.github.serivesmejia.eocvsim.input.source.ImageSource;
 import com.github.serivesmejia.eocvsim.input.source.VideoSource;
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
+import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -42,7 +43,7 @@ public class InputSourceLoader {
 
     public static final String SOURCES_SAVEFILE_NAME = "eocvsim_sources.json";
 
-    public static final File SOURCES_SAVEFILE = new File(SysUtil.getEOCVSimFolder() + File.separator + SOURCES_SAVEFILE_NAME);
+    public static final File SOURCES_SAVEFILE = new File(EOCVSimFolder.INSTANCE + File.separator + SOURCES_SAVEFILE_NAME);
     public static final File SOURCES_SAVEFILE_OLD = new File(SysUtil.getAppData() + File.separator + SOURCES_SAVEFILE_NAME);
 
     public static final InputSourcesContainer.SourcesFileVersion CURRENT_FILE_VERSION = InputSourcesContainer.SourcesFileVersion.SEIS;

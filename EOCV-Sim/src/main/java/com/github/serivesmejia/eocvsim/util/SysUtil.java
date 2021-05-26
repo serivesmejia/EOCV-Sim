@@ -224,6 +224,7 @@ public class SysUtil {
     public static File getEOCVSimFolder() {
         File f = new File(getAppData() + File.separator + ".eocvsim");
         f.mkdir();
+
         return f;
     }
 

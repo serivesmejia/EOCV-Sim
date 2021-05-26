@@ -31,6 +31,7 @@ import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
+import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.workspace.util.template.DefaultWorkspaceTemplate
 import com.qualcomm.robotcore.util.ElapsedTime
 import kotlinx.coroutines.Dispatchers
@@ -43,14 +44,14 @@ import java.io.File
 class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     companion object {
-        val DEF_WORKSPACE_FOLDER  = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workspace").apply {
+        val DEF_WORKSPACE_FOLDER  = File(EOCVSimFolder, File.separator + "default_workspace").apply {
             if(!exists()) {
                 mkdir()
                 DefaultWorkspaceTemplate.extractToIfEmpty(this)
             }
         }
 
-        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").mkdirLazy()
+        val COMPILER_FOLDER       = File(EOCVSimFolder, File.separator + "compiler").mkdirLazy()
 
         val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gen_src").mkdirLazy()
         val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "out_classes").mkdirLazy()

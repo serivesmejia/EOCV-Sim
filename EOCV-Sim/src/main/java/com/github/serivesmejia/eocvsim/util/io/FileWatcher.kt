@@ -1,8 +1,9 @@
-package com.github.serivesmejia.eocvsim.util
+package com.github.serivesmejia.eocvsim.util.io
 
+import com.github.serivesmejia.eocvsim.util.Log
+import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import java.io.File
-import java.util.*
 
 class FileWatcher(private val watchingDirectories: List<File>,
                   watchingFileExtensions: List<String>?,

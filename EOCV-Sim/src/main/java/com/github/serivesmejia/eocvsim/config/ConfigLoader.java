@@ -25,6 +25,7 @@ package com.github.serivesmejia.eocvsim.config;
 
 import com.github.serivesmejia.eocvsim.util.Log;
 import com.github.serivesmejia.eocvsim.util.SysUtil;
+import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -35,7 +36,7 @@ public class ConfigLoader {
 
     public static final String CONFIG_SAVEFILE_NAME = "eocvsim_config.json";
 
-    public static final File CONFIG_SAVEFILE = new File(SysUtil.getEOCVSimFolder() + File.separator + CONFIG_SAVEFILE_NAME);
+    public static final File CONFIG_SAVEFILE = new File(EOCVSimFolder.INSTANCE + File.separator + CONFIG_SAVEFILE_NAME);
     public static final File OLD_CONFIG_SAVEFILE = new File(SysUtil.getAppData() + File.separator + CONFIG_SAVEFILE_NAME);
 
     static Gson gson = new GsonBuilder().setPrettyPrinting().create();
