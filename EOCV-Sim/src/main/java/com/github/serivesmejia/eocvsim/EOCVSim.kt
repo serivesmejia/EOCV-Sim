@@ -133,7 +133,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
 
         if(!EOCVSimFolder.couldLock) {
             Log.error(TAG,
-                "Couldn't claim lock file in \"${EOCVSimFolder.absolutePath}\"! " +
+                "Couldn't finally claim lock file in \"${EOCVSimFolder.absolutePath}\"! " +
                         "Is the folder opened by another EOCV-Sim instance?"
             )
 
