@@ -27,17 +27,51 @@ Since OpenCV in Java uses a native library, which is platform specific, the simu
 
 # Installation
 
-## Recommended installation method (IntelliJ IDEA)
-
-No complicated setup is required, straight up importing the project into IntelliJ IDEA:
-
 1) **Download & install the Java Development Kit if you haven't already:**<br/><br/>
       JDK 8 is the minimum required one, any JDK above that version will probably work fine.<br/>
       You can download it from [the Oracle webpage](https://www.oracle.com/java/technologies/javase-downloads.html),
       and here is a [step by step video](https://www.youtube.com/watch?v=IJ-PJbvJBGs) of the installation process<br/>
 
+## Recommended method
+
+1) **Make sure you have downloaded a JDK as mentioned above**
+
+2) **Go to the releases page on this repo and find the latest version ([or click here](https://github.com/serivesmejia/EOCV-Sim/releases/latest))**
+
+3) **Download the jar file, named `EOCV-Sim-X.X.X-all.jar`, available at the bottom on the "assets" section**
+
+4) **Choose and install an IDE/text editor**<br/><br/>
+      The recommended text editor is VS Code, with the Java Extension Pack. EOCV-Sim provides direct support for it, for creating a "VS Code Workspace" from a template, although it can also be imported into IntelliJ IDEA since it's just a normal Gradle project.
+      
+      This installation method provides the benefit of "runtime compiling", which means that the user pipelines are compiled and loaded on the fly and therefore the changes made in code can be reflected immediately, as opposed to the [old IntelliJ IDEA method](#altenative-installation-method-intellij-idea) in which the simulator had to be closed, compiled and then opened again to apply the smallest change made in a pipeline. Plus, VS Code is a lightweight editor which provides Java syntax highlighting and IntelliSense with the Java Extension Pack, making development of pipelines easy with tools like code completion.
+
+     You can download and install VS Code from the [Visual Studio page](https://code.visualstudio.com/). The [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack) can be installed from the [VS Code extension marketplace](https://code.visualstudio.com/docs/introvideos/extend).
+     
+     Here's a [tutorial video](https://www.youtube.com/watch?v=KwnavHTOBiA) explaining how to download and install VS Code & the Java Extension Pack
+
+5) **Running EOCV-Sim**<br/><br/>
+     For running the sim, simply double click the jar file downloaded from the releases page, or it can also be executed from the command line:
+     ```python
+     java -jar "EOCV-Sim-X.X.X-all.jar"
+     ```
+     
+     When running on Linux (distros such as Ubuntu, Linux Mint, etc) or Unix-like secure operating systems, it might prohibit you to run it by double clicking the file from a file explorer. This can be fixed by giving execute permissions to the jar file with the following command
+     ```bash
+     chmod +x EOCV-Sim-X.X.X-all.jar
+     ```
+    
+**Now the sim should be running without any issues! If you find any problem feel free to open an issue, and check the [usage explanation](https://github.com/serivesmejia/EOCV-Sim/blob/master/USAGE.md) for more details about how to use the simulator (and VS Code).**
+
+## Altenative installation method (IntelliJ IDEA)
+
+No complicated setup is required for this method either, it's straight up importing the EOCV-Sim project into IntelliJ IDEA:
+
+\**The downside of this method is that this repo has grown to a considerable amount of space, due to a bloated history, and takes some time to clone, and also builds can be slower depending on your device.*
+
+1) **Make sure you have downloaded a JDK as mentioned [here](#installation)**
+
 2) **Download & install IntelliJ IDEA Community IDE if you haven't already:**<br/><br/>
-      You can download it from the JetBrains webpage (https://www.jetbrains.com/idea/download/)<br/>
+      You can download it from the [JetBrains webpage](https://www.jetbrains.com/idea/download/)<br/>
       Here is another great [step by step video](https://www.youtube.com/watch?v=E2okEJIbUYs) for IntelliJ installation.
      
 3) **Clone and import the project:**<br/>
@@ -95,7 +129,7 @@ No complicated setup is required, straight up importing the project into Intelli
    }
    
    dependencies {
-      implementation 'com.github.serivesmejia:EOCV-Sim:2.1.0' //add the EOCV-Sim dependency
+      implementation 'com.github.serivesmejia:EOCV-Sim:3.0.0' //add the EOCV-Sim dependency
    }
    ```
    
@@ -116,7 +150,7 @@ No complicated setup is required, straight up importing the project into Intelli
     <dependency>
 	    <groupId>com.github.serivesmejia</groupId>
 	    <artifactId>EOCV-Sim</artifactId>
-	    <version>2.1.0</version>
+	    <version>3.0.0</version>
 	</dependency>
    ```
 
@@ -125,6 +159,34 @@ For any quick troubleshooting or help, you can find me on Discord as *serivesmej
 For bug reporting or feature requesting, use the [issues tab](https://github.com/serivesmejia/EOCV-Sim/issues) in this repository.
 
 # Change logs
+
+### [v3.0.0 - Compiling on the fly! Yay!](https://github.com/serivesmejia/EOCV-Sim/releases/tag/v3.0.0)
+
+   - This is the 9th release for EOCV-Sim
+
+      - Changelog:
+        - Runtime building! The sim now supports building pipelines on the fly, which allows for more quick and efficient testing. (Running the sim with a JDK is required for this feature to work, since normal JREs don't include a compiler to use)
+        - Workspaces & VS Code is the new (and recommended) way of developing pipelines. A VS Code workspace template can be created from the sim, see the usage explanation for more details.
+        - A file watcher was implemented, so when any modification happens in the current workspace under the "source" or "resource" folders specified in the `eocvsim_workspace.json`, a new build will be automatically triggered every 8 seconds.
+        - VS Code can be executed by the sim if the current system has the `code` command. It is triggered by manually opening it in the top menu bar or when creating a VS Code workspace.
+        - Files can now be drag and dropped into the sim to add them as Input Sources. The sim will automatically open a create dialog depending on the file extension.
+        - Added a "Workspace" menu under the top menu bar, which contains the new features regarding the runtime compiling.
+        - The UI now has smoother icons, by using a smoothing option on Java swing which makes them look a little nicer (but not much).
+        - Current pipeline state is now stored and reestablished if a restart happens.
+        - When a build is finished, the simulator tries reinitializes the currently selected pipeline if it exists, to ensure the changes were applied. Or it falls back to the `DefaultPipeline` if the old pipeline doesn't exist anymore, it also saves the state of the old pipeline and tries to apply the snapshot of the pipeline before it was reinitialized if the names of the old and new classes match.
+        - The sim now uses a `.eocvsim` folder under the user directory to store its files, to avoid annoying the user with unwanted files now that the runtime compiling exists and it has to store the build output somewhere. If the user has previously run an older version of eocv sim which created `eocvsim_sources.json` and/or `eocvsim_config.json` under the user home directory, it automatically migrates them to the new folder. 
+        - Builds created by IntelliJ Idea (the common programming style) are now considered as "dev". This helps to distinguish between official & published builds created in a CI workflow and local builds, when an issue happens and it's reported.
+        - The sim compiling target was changed back to Java 8, since this is one of the most widely used versions and we weren't really using many Java 9 features that couldn't have been replaced or handle different. This is also more convenient and provides better support for users directly downloading the jar and executing it.
+
+      - Bugfixes:
+        - Fixed issues with the source selector regarding to selection when a modification or error happens. When a new source is added, it's automatically selected. And when a source is deleted, the previous source in the list is selected
+        - Fixed the color picker cursor size on non-windows systems
+        - Fixed pause not working when a tunable field that uses a combo box in the UI is included.
+        - Fixed an (apparently random, but it's just the garbage collector being weird) null pointer exception with `Enum` fields
+
+      - Internals:
+        - Improved event handlers to be more idiomatic and less weird. Bye bye KEventListener!
+        - Improved some messy parts of the internal code and logic
 
 ### [v2.2.1 - JVM crashing hotfix](https://github.com/serivesmejia/releases/tag/v2.2.0)
  

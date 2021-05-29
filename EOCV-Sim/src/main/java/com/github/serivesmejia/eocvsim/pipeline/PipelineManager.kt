@@ -28,6 +28,7 @@ import com.github.serivesmejia.eocvsim.gui.util.MatPoster
 import com.github.serivesmejia.eocvsim.pipeline.compiler.CompiledPipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.compiler.PipelineClassLoader
 import com.github.serivesmejia.eocvsim.pipeline.util.PipelineSnapshot
+import com.github.serivesmejia.eocvsim.pipeline.util.PipelineExceptionTracker
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
@@ -103,6 +104,8 @@ class PipelineManager(var eocvSim: EOCVSim) {
 
     //this will be handling the special pipeline "timestamped" type
     val timestampedPipelineHandler = TimestampedPipelineHandler()
+
+    val pipelineExceptionTracker = PipelineExceptionTracker()
     
     enum class PauseReason {
         USER_REQUESTED, IMAGE_ONE_ANALYSIS, NOT_PAUSED
@@ -155,9 +158,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
             currentTelemetry?.infoItem?.caption = ""
             currentTelemetry?.infoItem?.setValue("")
         }
-
-        if(currentPipeline == null)
-            requestChangePipeline(0)
 
         if(paused || currentPipeline == null) return
 
@@ -215,11 +215,12 @@ class PipelineManager(var eocvSim: EOCVSim) {
                 //clear error messages in telemetry
                 currentTelemetry?.errItem?.caption = ""
                 currentTelemetry?.errItem?.setValue("")
-            } catch (ex: Exception) { //handling exceptions from pipelines
-                currentTelemetry?.errItem?.caption = "[/!\\]"
-                currentTelemetry?.errItem?.setValue("Uncaught exception thrown in pipeline\nCheck console for details.")
 
-                Log.error("PipelineManager", "Uncaught exception thrown while processing pipeline $currentPipelineName", ex)
+                pipelineExceptionTracker.clearException()
+            } catch (ex: Exception) { //handling exceptions from pipelines
+                pipelineExceptionTracker.reportException(
+                    pipelines[currentPipelineIndex], ex
+                )
             }
         }
 
@@ -258,9 +259,6 @@ class PipelineManager(var eocvSim: EOCVSim) {
     }
 
     fun callViewportTapped() = currentPipeline?.let { pipeline -> //run only if our pipeline is not null
-
-        if(paused) requestSetPaused(false)
-
         //similar to pipeline processFrame, call the user function in the background
         //and wait for some X timeout for the user to finisih doing what it has to do.
         val viewportTappedJob = GlobalScope.launch(currentPipelineContext ?: EmptyCoroutineContext) {

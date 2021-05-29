@@ -24,14 +24,13 @@
 package com.github.serivesmejia.eocvsim.pipeline.compiler
 
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
-import com.github.serivesmejia.eocvsim.gui.dialog.BuildOutput
+import com.github.serivesmejia.eocvsim.gui.dialog.Output
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.Log
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
-import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.workspace.util.template.DefaultWorkspaceTemplate
 import com.qualcomm.robotcore.util.ElapsedTime
 import kotlinx.coroutines.Dispatchers
@@ -44,14 +43,14 @@ import java.io.File
 class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
     companion object {
-        val DEF_WORKSPACE_FOLDER  = File(EOCVSimFolder, File.separator + "default_workspace").apply {
+        val DEF_WORKSPACE_FOLDER  = File(SysUtil.getEOCVSimFolder(), File.separator + "default_workspace").apply {
             if(!exists()) {
                 mkdir()
                 DefaultWorkspaceTemplate.extractToIfEmpty(this)
             }
         }
 
-        val COMPILER_FOLDER       = File(EOCVSimFolder, File.separator + "compiler").mkdirLazy()
+        val COMPILER_FOLDER       = File(SysUtil.getEOCVSimFolder(), File.separator + "compiler").mkdirLazy()
 
         val SOURCES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "gen_src").mkdirLazy()
         val CLASSES_OUTPUT_FOLDER = File(COMPILER_FOLDER, File.separator + "out_classes").mkdirLazy()
@@ -185,7 +184,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
         } else {
             Log.warn(TAG, "$lastBuildOutputMessage\n")
 
-            if(result.status == PipelineCompileStatus.FAILED && !BuildOutput.isAlreadyOpened)
+            if(result.status == PipelineCompileStatus.FAILED && !Output.isAlreadyOpened)
                 DialogFactory.createBuildOutput(pipelineManager.eocvSim)
         }
 
@@ -221,7 +220,7 @@ class CompiledPipelineManager(private val pipelineManager: PipelineManager) {
 
         lastBuildResult = PipelineCompileResult(PipelineCompileStatus.FAILED, lastBuildOutputMessage!!)
 
-        if(!BuildOutput.isAlreadyOpened)
+        if(!Output.isAlreadyOpened)
             DialogFactory.createBuildOutput(pipelineManager.eocvSim)
 
         lastBuildResult!!

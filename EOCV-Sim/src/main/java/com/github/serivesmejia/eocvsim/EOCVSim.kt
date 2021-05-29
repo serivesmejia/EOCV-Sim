@@ -26,6 +26,7 @@ package com.github.serivesmejia.eocvsim
 import com.github.serivesmejia.eocvsim.config.Config
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
+import com.github.serivesmejia.eocvsim.gui.dialog.Output
 import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
@@ -40,7 +41,6 @@ import com.github.serivesmejia.eocvsim.util.exception.MaxActiveContextsException
 import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.fps.FpsLimiter
-import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.workspace.WorkspaceManager
 import com.github.serivesmejia.eocvsim.workspace.util.VSCodeLauncher
 import nu.pattern.OpenCV
@@ -58,9 +58,7 @@ class EOCVSim(val params: Parameters = Parameters()) {
         const val VERSION = Build.versionString
         const val DEFAULT_EOCV_WIDTH = 320
         const val DEFAULT_EOCV_HEIGHT = 240
-        @JvmField val DEFAULT_EOCV_SIZE = Size(
-            DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble()
-        )
+        @JvmField val DEFAULT_EOCV_SIZE = Size(DEFAULT_EOCV_WIDTH.toDouble(), DEFAULT_EOCV_HEIGHT.toDouble())
 
         private const val TAG = "EOCVSim"
 
@@ -131,19 +129,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         loadOpenCvLib()
         Log.blank()
 
-        if(!EOCVSimFolder.couldLock) {
-            Log.error(TAG,
-                "Couldn't finally claim lock file in \"${EOCVSimFolder.absolutePath}\"! " +
-                        "Is the folder opened by another EOCV-Sim instance?"
-            )
-
-            Log.error(TAG, "Unable to continue with the execution, the sim will exit now.")
-            exitProcess(1)
-        } else {
-            Log.info(TAG, "Confirmed laiming of the lock file in ${EOCVSimFolder.absolutePath}")
-            Log.blank()
-        }
-
         configManager.init() //load config
 
         workspaceManager.init()
@@ -161,6 +146,12 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 "Falling back to DefaultPipeline",
                 "Close", Dimension(310, 150), true, true
             )
+        }
+
+        pipelineManager.pipelineExceptionTracker.onPipelineException {
+            if(!Output.isAlreadyOpened) {
+                DialogFactory.createPipelineOutput(this)
+            }
         }
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()
