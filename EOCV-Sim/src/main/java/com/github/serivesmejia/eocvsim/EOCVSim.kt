@@ -26,7 +26,6 @@ package com.github.serivesmejia.eocvsim
 import com.github.serivesmejia.eocvsim.config.Config
 import com.github.serivesmejia.eocvsim.config.ConfigManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
-import com.github.serivesmejia.eocvsim.gui.dialog.Output
 import com.github.serivesmejia.eocvsim.gui.Visualizer
 import com.github.serivesmejia.eocvsim.gui.dialog.FileAlreadyExists
 import com.github.serivesmejia.eocvsim.input.InputSourceManager
@@ -97,7 +96,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
     val pipelineManager = PipelineManager(this)
     @JvmField
     val tunerManager = TunerManager(this)
-
     @JvmField
     val workspaceManager = WorkspaceManager(this)
 
@@ -105,7 +103,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
         get() = configManager.config
 
     var currentRecordingSession: VideoRecordingSession? = null
-
     val fpsLimiter = FpsLimiter(30.0)
 
     lateinit var eocvSimThread: Thread
@@ -146,12 +143,6 @@ class EOCVSim(val params: Parameters = Parameters()) {
                 "Falling back to DefaultPipeline",
                 "Close", Dimension(310, 150), true, true
             )
-        }
-
-        pipelineManager.pipelineExceptionTracker.onPipelineException {
-            if(!Output.isAlreadyOpened) {
-                DialogFactory.createPipelineOutput(this)
-            }
         }
 
         inputSourceManager.inputSourceLoader.saveInputSourcesToFile()

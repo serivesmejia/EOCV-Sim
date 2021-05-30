@@ -34,14 +34,20 @@ class PipelineExceptionTracker {
     }
 
     var latestException: Pair<PipelineData, Throwable>? = null
-        private set
+    private set
 
     var timesHappenedCount = 0
         private set
 
-    val onPipelineException = EventHandler("OnPipelineException")
+    val onPipelineException      = EventHandler("OnPipelineException")
+    val onNewPipelineException   = EventHandler("OnNewPipelineException")
+
+    val onPipelineExceptionClear = EventHandler("OnPipelineExceptionClear")
 
     fun reportException(data: PipelineData, ex: Throwable) {
+        var beforeException = latestException
+        latestException = Pair(data, ex)
+
         if(timesHappenedCount == 0) {
             Log.blank()
             Log.warn(
@@ -53,16 +59,19 @@ class PipelineExceptionTracker {
             Log.warn(TAG, "It will be reported once the pipeline stops throwing the exception, or a new one is thrown.")
             Log.blank()
 
-            timesHappenedCount++;
+            onNewPipelineException.run()
+
+            timesHappenedCount++
+            beforeException = null
         }
 
-        latestException?.let {
+        beforeException?.let {
             if(StrUtil.fromException(ex) == StrUtil.fromException(it.second)) {
                 timesHappenedCount++
+            } else {
+                timesHappenedCount = 0
             }
         }
-
-        latestException = Pair(data, ex)
 
         onPipelineException.run()
     }
@@ -73,6 +82,8 @@ class PipelineExceptionTracker {
                 TAG,
                 "Pipeline ${it.first.clazz.simpleName} stopped throwing exception after $timesHappenedCount frames"
             )
+
+            onPipelineExceptionClear.run()
         }
 
         latestException = null

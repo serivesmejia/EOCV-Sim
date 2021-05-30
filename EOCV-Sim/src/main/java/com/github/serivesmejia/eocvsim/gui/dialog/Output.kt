@@ -26,6 +26,11 @@ package com.github.serivesmejia.eocvsim.gui.dialog
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.StrUtil
 import com.github.serivesmejia.eocvsim.gui.dialog.component.OutputPanel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.swing.Swing
 import java.awt.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -87,7 +92,7 @@ class Output @JvmOverloads constructor(
         output.isVisible = true
     }
 
-    private fun registerListeners() {
+    private fun registerListeners() = GlobalScope.launch(Dispatchers.Swing) {
         output.addWindowListener(object: WindowAdapter() {
             override fun windowClosing(e: WindowEvent) {
                 close()
@@ -125,11 +130,16 @@ class Output @JvmOverloads constructor(
     }
 
     private fun updatePipelineOutput() {
-         pipelineExceptionTracker.latestException?.let {
+        pipelineExceptionTracker.latestException?.let {
+            val exception = StrUtil.fromException(it.second)
+            val cuttedException = StrUtil.cutStringBy(
+                exception, "\n", 6
+            )
+
             val out = """
 Uncaught exception thrown in pipeline:
 
-${StrUtil.fromException(it.second)}
+$cuttedException
 
 It has been thrown ${pipelineExceptionTracker.timesHappenedCount} times.
             """.trimIndent()
