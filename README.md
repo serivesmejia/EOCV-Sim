@@ -1,11 +1,10 @@
-**This repo has been migrated to a [new repo in the DeltaCV organization](https://github.com/deltacv/EOCV-Sim)**
-
 <img src='/EOCV-Sim/src/main/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px'>
 
 ![Java CI with Gradle](https://github.com/serivesmejia/EOCV-Sim/workflows/Java%20CI%20with%20Gradle/badge.svg)
 [![](https://jitpack.io/v/serivesmejia/EOCV-Sim.svg)](https://jitpack.io/#serivesmejia/EOCV-Sim)
 [![Run on Repl.it](https://repl.it/badge/github/serivesmejia/EOCV-Sim)](https://repl.it/github/serivesmejia/EOCV-Sim)
 
+# EOCV-Sim has been migrated to a [new repo in the DeltaCV organization](https://github.com/deltacv/EOCV-Sim)
 
 # Welcome!
 
