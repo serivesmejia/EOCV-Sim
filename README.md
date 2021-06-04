@@ -1,3 +1,5 @@
+**This repo has been migrated to a [new repo in the DeltaCV organization](https://github.com/deltacv/EOCV-Sim)**
+
 <img src='/EOCV-Sim/src/main/resources/images/icon/ico_eocvsim_letters_transparent.png' height='128px'>
 
 ![Java CI with Gradle](https://github.com/serivesmejia/EOCV-Sim/workflows/Java%20CI%20with%20Gradle/badge.svg)
