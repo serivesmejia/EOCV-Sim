@@ -5,6 +5,8 @@
 [![Run on Repl.it](https://repl.it/badge/github/serivesmejia/EOCV-Sim)](https://repl.it/github/serivesmejia/EOCV-Sim)
 
 # EOCV-Sim has been migrated to a [new repo in the DeltaCV organization](https://github.com/deltacv/EOCV-Sim)
+# DO NOT USE THIS REPO AS IT'S NO LONGER UPDATED, ALL FUTURE UPDATES WILL BE MADE IN THE NEW AFOREMENTIONED REPO
+# DO NOT FOLLOW THE INSTRUCTIONS BELOW EITHER, THIS README IS KEPT FOR HISTORIC PURPOSES 
 
 # Welcome!
 
